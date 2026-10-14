@@ -17,3 +17,7 @@ final activeClassesProvider = FutureProvider(
         (records) => records.where((record) => record.isActive).toList(),
       ),
 );
+
+final allClassesProvider = FutureProvider(
+  (ref) => ref.watch(classRepositoryProvider).getClasses(),
+);
