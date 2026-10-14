@@ -156,7 +156,9 @@ class BatchesScreen extends ConsumerWidget {
           ],
         ),
       );
-      if (confirmed != true) return;
+      if (confirmed != true) {
+        return;
+      }
     }
     await ref.read(classRepositoryProvider).setBatchActive(batch.id, isActive: active);
     ref.invalidate(classBatchesProvider(classId));
@@ -177,7 +179,9 @@ class BatchesScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(child: Text('Could not load class: $error')),
         data: (classRecord) {
-          if (classRecord == null) return const Center(child: Text('Class not found.'));
+          if (classRecord == null) {
+            return const Center(child: Text('Class not found.'));
+          }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -200,7 +204,9 @@ class BatchesScreen extends ConsumerWidget {
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (error, stack) => Center(child: Text('Could not load batches: $error')),
                   data: (records) {
-                    if (records.isEmpty) return const Center(child: Text('No batches in this class yet.'));
+                    if (records.isEmpty) {
+                      return const Center(child: Text('No batches in this class yet.'));
+                    }
                     return ListView.separated(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 88),
                       itemCount: records.length,
