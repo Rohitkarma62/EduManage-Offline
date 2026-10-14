@@ -97,4 +97,23 @@ void main() {
     await expectLater(database.deleteClass(classWithBatch), throwsA(isA<StateError>()));
     expect(await database.getClass(classWithBatch), isNotNull);
   });
+  test('database rejects normalized duplicate batches and invalid parent classes on direct writes', () async {
+    final classId = await database.saveClass(
+      name: 'Class 11 A',
+      academicYear: '2026-2027',
+    );
+    await database.saveBatch(classId: classId, name: 'Evening');
+    await expectLater(
+      database.customStatement(
+        "INSERT INTO batches (class_id, name) VALUES ($classId, ' evening ')",
+      ),
+      throwsA(anything),
+    );
+    await expectLater(
+      database.customStatement(
+        "INSERT INTO batches (class_id, name) VALUES (999999, 'Orphan batch')",
+      ),
+      throwsA(anything),
+    );
+  });
 }
