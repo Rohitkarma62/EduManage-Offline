@@ -74,7 +74,7 @@ void main() {
     );
   });
 
-  test('class deletion unassigns students but is restricted when batches exist',
+  test('class deletion is restricted when assignment history or batches exist',
       () async {
     final classId = await database.saveClass(
       name: 'Class 10 A',
@@ -86,8 +86,12 @@ void main() {
       classId: classId,
     );
 
-    await database.deleteClass(classId);
-    expect((await database.getStudent(studentId))?.classId, isNull);
+    await expectLater(
+      database.deleteClass(classId),
+      throwsA(isA<StateError>()),
+    );
+    expect((await database.getStudent(studentId))?.classId, classId);
+    expect(await database.getClass(classId), isNotNull);
 
     final classWithBatch = await database.saveClass(
       name: 'Class 10 B',
