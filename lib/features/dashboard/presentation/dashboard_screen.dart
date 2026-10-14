@@ -1,68 +1,84 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-class DashboardScreen extends StatelessWidget {
+import '../../institute/providers/institute_providers.dart';
+
+class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
+    final institute = ref.watch(instituteProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('EduManage Offline'),
-      ),
+      appBar: AppBar(title: const Text('EduManage Offline')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text(
-            'Institute dashboard',
-            style: textTheme.headlineSmall,
-          ),
+          Text('Institute dashboard', style: textTheme.headlineSmall),
           const SizedBox(height: 8),
-          Text(
-            'Application foundation is being set up. No institute data has '
-            'been created or loaded yet.',
-            style: textTheme.bodyMedium,
+          institute.when(
+            loading: () => const LinearProgressIndicator(),
+            error: (_, __) => const Text(
+              'Institute details could not be loaded. Open setup to retry.',
+            ),
+            data: (value) => Text(
+              value == null
+                  ? 'Set up your institute to begin. Details stay on this device.'
+                  : '${value.name} • Academic year ${value.academicYear}',
+              style: textTheme.bodyMedium,
+            ),
           ),
           const SizedBox(height: 20),
-          const _SetupNotice(
-            title: 'Local database',
-            detail: 'Drift schema and migrations are the next foundation task.',
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Institute setup', style: textTheme.titleMedium),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Save or update the institute name, academic year, and '
+                    'optional phone number in the local database.',
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () => context.push('/institute-setup'),
+                      icon: const Icon(Icons.business_outlined),
+                      label: Text(
+                        institute.valueOrNull == null
+                            ? 'Set up institute'
+                            : 'Edit institute details',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: 12),
-          const _SetupNotice(
-            title: 'Institute setup',
-            detail:
-                'Onboarding and institute settings are not implemented yet.',
+          const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Local database'),
+                  SizedBox(height: 6),
+                  Text(
+                    'Institute details use Drift and SQLite. Other management '
+                    'modules will be added in later implementation steps.',
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _SetupNotice extends StatelessWidget {
-  const _SetupNotice({
-    required this.title,
-    required this.detail,
-  });
-
-  final String title;
-  final String detail;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 6),
-            Text(detail),
-          ],
-        ),
       ),
     );
   }
