@@ -20,7 +20,7 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
       TextField(controller: _search, onChanged: (v) => setState(() => _query = v.trim()), decoration: InputDecoration(labelText: 'Search students', prefixIcon: const Icon(Icons.search), suffixIcon: _query.isEmpty ? null : IconButton(onPressed: () { _search.clear(); setState(() => _query = ''); }, icon: const Icon(Icons.clear)), border: const OutlineInputBorder())),
       const SizedBox(height: 12),
       Expanded(child: students.when(loading: () => const Center(child: CircularProgressIndicator()), error: (e, s) => Center(child: Text('Could not load students: $e')), data: (records) {
-        if (records.isEmpty) return Center(child: Text(_query.isEmpty ? 'No students yet. Add the first student.' : 'No students match “$_query”.', textAlign: TextAlign.center));
+        if (records.isEmpty) { return Center(child: Text(_query.isEmpty ? 'No students yet. Add the first student.' : 'No students match “$_query”.', textAlign: TextAlign.center)); }
         return ListView.separated(itemCount: records.length, separatorBuilder: (_, __) => const Divider(height: 1), itemBuilder: (context, i) { final student = records[i]; return ListTile(leading: CircleAvatar(child: Text(student.fullName.substring(0, 1).toUpperCase())), title: Text(student.fullName), subtitle: Text('${student.admissionNumber}${student.phone == null ? '' : ' • ${student.phone}'}')); });
       })),
     ])));
