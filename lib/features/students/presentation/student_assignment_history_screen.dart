@@ -26,7 +26,8 @@ class StudentAssignmentHistoryScreen extends ConsumerWidget {
           }
           if (historySnapshot.hasError) {
             return Center(
-              child: Text('Could not load assignment history: ${historySnapshot.error}'),
+              child: Text(
+                  'Could not load assignment history: ${historySnapshot.error}'),
             );
           }
           final history = historySnapshot.data ?? [];
@@ -41,7 +42,9 @@ class StudentAssignmentHistoryScreen extends ConsumerWidget {
               child: Text('Could not load class names: $error'),
             ),
             data: (classRecords) {
-              final names = {for (final record in classRecords) record.id: record.name};
+              final names = {
+                for (final record in classRecords) record.id: record.name
+              };
               return ListView.separated(
                 padding: const EdgeInsets.all(16),
                 itemCount: history.length,
@@ -49,7 +52,8 @@ class StudentAssignmentHistoryScreen extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final assignment = history[index];
                   final isCurrent = assignment.effectiveTo == null;
-                  final className = names[assignment.classId] ?? 'Class #${assignment.classId}';
+                  final className = names[assignment.classId] ??
+                      'Class #${assignment.classId}';
                   return Card(
                     child: ListTile(
                       leading: CircleAvatar(
@@ -62,7 +66,8 @@ class StudentAssignmentHistoryScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('From: ${_date(assignment.effectiveFrom)}'),
-                            Text('To: ${isCurrent ? 'Current assignment' : _date(assignment.effectiveTo!)}'),
+                            Text(
+                                'To: ${isCurrent ? 'Current assignment' : _date(assignment.effectiveTo!)}'),
                             if (assignment.batchId != null)
                               Text('Batch ID: ${assignment.batchId}'),
                             if (assignment.transferReason?.isNotEmpty == true)
@@ -72,9 +77,8 @@ class StudentAssignmentHistoryScreen extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      trailing: isCurrent
-                          ? const Chip(label: Text('Current'))
-                          : null,
+                      trailing:
+                          isCurrent ? const Chip(label: Text('Current')) : null,
                       isThreeLine: true,
                     ),
                   );

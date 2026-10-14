@@ -122,14 +122,16 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                         subtitle: Text(
                           '${student.admissionNumber}${student.phone == null ? '' : ' • ${student.phone}'}',
                         ),
-                        onTap: () => context.push('/students/${student.id}/edit'),
+                        onTap: () =>
+                            context.push('/students/${student.id}/edit'),
                         trailing: PopupMenuButton<String>(
                           tooltip: 'Student actions',
                           onSelected: (action) {
                             if (action == 'edit') {
                               context.push('/students/${student.id}/edit');
                             } else if (action == 'history') {
-                              context.push('/students/${student.id}/assignments');
+                              context
+                                  .push('/students/${student.id}/assignments');
                             } else {
                               _setActive(student.id, action == 'activate');
                             }
@@ -152,7 +154,8 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                               ),
                             ),
                             PopupMenuItem(
-                              value: student.isActive ? 'deactivate' : 'activate',
+                              value:
+                                  student.isActive ? 'deactivate' : 'activate',
                               child: ListTile(
                                 leading: Icon(student.isActive
                                     ? Icons.person_off_outlined
