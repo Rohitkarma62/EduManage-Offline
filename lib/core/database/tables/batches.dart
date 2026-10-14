@@ -16,7 +16,7 @@ class Batches extends Table {
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
-  Set<Set<Column>> get uniqueKeys => {
+  List<Set<Column>> get uniqueKeys => [
         {classId, name},
-      };
+      ];
 }
