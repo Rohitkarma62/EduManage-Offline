@@ -4,14 +4,32 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   late AppDatabase database;
-  setUp(() { database = AppDatabase(NativeDatabase.memory()); });
-  tearDown(() async { await database.close(); });
+  setUp(() {
+    database = AppDatabase(NativeDatabase.memory());
+  });
+  tearDown(() async {
+    await database.close();
+  });
 
   test('saves and searches student by name or admission number', () async {
-    await database.saveStudent(admissionNumber: 'ADM-001', fullName: 'Asha Sharma', phone: '9876543210', guardianName: 'Ravi Sharma');
-    await database.saveStudent(admissionNumber: 'ADM-002', fullName: 'Kabir Verma');
-    expect((await database.searchStudents('Asha')).map((s) => s.admissionNumber), ['ADM-001']);
-    expect((await database.searchStudents('ADM-002')).single.fullName, 'Kabir Verma');
+    await database.saveStudent(
+      admissionNumber: 'ADM-001',
+      fullName: 'Asha Sharma',
+      phone: '9876543210',
+      guardianName: 'Ravi Sharma',
+    );
+    await database.saveStudent(
+      admissionNumber: 'ADM-002',
+      fullName: 'Kabir Verma',
+    );
+    expect(
+      (await database.searchStudents('Asha')).map((s) => s.admissionNumber),
+      ['ADM-001'],
+    );
+    expect(
+      (await database.searchStudents('ADM-002')).single.fullName,
+      'Kabir Verma',
+    );
     final student = (await database.searchStudents('')).first;
     expect(student.phone, '9876543210');
     expect(student.guardianName, 'Ravi Sharma');
@@ -19,13 +37,49 @@ void main() {
   });
 
   test('rejects duplicate admission numbers', () async {
-    await database.saveStudent(admissionNumber: 'ADM-001', fullName: 'Asha Sharma');
-    await expectLater(database.saveStudent(admissionNumber: 'ADM-001', fullName: 'Another Student'), throwsA(anything));
+    await database.saveStudent(
+      admissionNumber: 'ADM-001',
+      fullName: 'Asha Sharma',
+    );
+    await expectLater(
+      database.saveStudent(
+        admissionNumber: 'ADM-001',
+        fullName: 'Another Student',
+      ),
+      throwsA(anything),
+    );
+  });
+
+  test('edits student details and deactivates/reactivates without deleting', () async {
+    final id = await database.saveStudent(
+      admissionNumber: 'ADM-001',
+      fullName: 'Asha Sharma',
+    );
+    await database.saveStudent(
+      id: id,
+      admissionNumber: 'ADM-001',
+      fullName: 'Asha Verma',
+      phone: '9876543210',
+    );
+    expect((await database.getStudent(id))?.fullName, 'Asha Verma');
+    expect((await database.getStudent(id))?.phone, '9876543210');
+
+    await database.setStudentActive(id, isActive: false);
+    expect((await database.getStudent(id))?.isActive, isFalse);
+    await database.setStudentActive(id, isActive: true);
+    expect((await database.getStudent(id))?.isActive, isTrue);
+    expect(await database.searchStudents('ADM-001'), hasLength(1));
   });
 
   test('keeps institute data when student table is used', () async {
-    await database.saveInstitute(name: 'North Star', academicYear: '2026-2027');
-    await database.saveStudent(admissionNumber: 'ADM-001', fullName: 'Asha Sharma');
+    await database.saveInstitute(
+      name: 'North Star',
+      academicYear: '2026-2027',
+    );
+    await database.saveStudent(
+      admissionNumber: 'ADM-001',
+      fullName: 'Asha Sharma',
+    );
     expect((await database.getInstitute())?.name, 'North Star');
   });
 }
