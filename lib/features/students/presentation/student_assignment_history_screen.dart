@@ -61,8 +61,8 @@ class StudentAssignmentHistoryScreen extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final assignment = records[index];
                   final isCurrent = assignment.effectiveTo == null;
-                  final className =
-                      names[assignment.classId] ?? 'Class #${assignment.classId}';
+                  final className = names[assignment.classId] ??
+                      'Class #${assignment.classId}';
                   return Card(
                     child: ListTile(
                       leading: CircleAvatar(
@@ -76,8 +76,7 @@ class StudentAssignmentHistoryScreen extends ConsumerWidget {
                           children: [
                             Text('From: ${_date(assignment.effectiveFrom)}'),
                             Text(
-                              'To: ${isCurrent ? 'Current assignment' : _date(assignment.effectiveTo!)}',
-                            ),
+                                'To: ${isCurrent ? 'Current assignment' : _date(assignment.effectiveTo!)}'),
                             if (assignment.batchId != null)
                               Text('Batch ID: ${assignment.batchId}'),
                             if (assignment.transferReason?.isNotEmpty == true)
