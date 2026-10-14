@@ -36,6 +36,11 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+        beforeOpen: (details) async {
+          // SQLite foreign-key enforcement is connection-local and disabled by
+          // default. Enable it on every opened connection before app queries run.
+          await customStatement('PRAGMA foreign_keys = ON');
+        },
         onCreate: (m) async {
           await m.createAll();
           await _installBatchFeeGuards();
