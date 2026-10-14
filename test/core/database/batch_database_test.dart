@@ -6,10 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   late AppDatabase database;
 
-  setUp(() async {
-    database = AppDatabase(NativeDatabase.memory());
-    await database.customStatement('PRAGMA foreign_keys = ON');
-  });
+  setUp(() => database = AppDatabase(NativeDatabase.memory()));
   tearDown(() => database.close());
 
   test('batches belong to their parent class and preserve paise amounts', () async {
@@ -89,9 +86,7 @@ void main() {
       classId: classId,
     );
 
-    await (database.delete(database.classes)
-          ..where((row) => row.id.equals(classId)))
-        .go();
+    await database.deleteClass(classId);
     expect((await database.getStudent(studentId))?.classId, isNull);
 
     final classWithBatch = await database.saveClass(
@@ -99,12 +94,7 @@ void main() {
       academicYear: '2026-2027',
     );
     await database.saveBatch(classId: classWithBatch, name: 'Morning');
-    await expectLater(
-      (database.delete(database.classes)
-            ..where((row) => row.id.equals(classWithBatch)))
-          .go(),
-      throwsA(anything),
-    );
+    await expectLater(database.deleteClass(classWithBatch), throwsA(isA<StateError>()));
     expect(await database.getClass(classWithBatch), isNotNull);
   });
 }
