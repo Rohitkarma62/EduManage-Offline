@@ -5,8 +5,8 @@
 - Flutter app entry point with Riverpod.
 - GoRouter dashboard, institute setup, and student management routes.
 - Material 3 navy/teal theme.
-- Drift/SQLite database with institute and student tables, schema version 2, and an upgrade migration that preserves existing institute data.
-- Riverpod-managed database lifecycle and institute/student repositories.
+- Drift/SQLite database with institute, class/batch, and student tables, schema version 3, and upgrade migrations that preserve existing records.
+- Riverpod-managed database lifecycle and institute/student/class repositories.
 - Institute setup form that creates or updates the single institute record locally.
 - Student create/edit form with admission number, name, optional phone, and optional parent/guardian.
 - Student list and local search by name or admission number.
@@ -41,7 +41,7 @@
 - Database tests cover normalization, duplicate detection, and allowing the current student to keep its own admission number while editing.
 - Widget tests cover required-field validation and duplicate admission feedback.
 
-## Step 10: Class and batch management\n\n- Classes/batches can be created, searched, edited, deactivated, and reactivated locally.\n- Each class has a name, academic year, optional description, and active status.\n- Class names are unique per academic year; students can optionally be assigned to a class or batch.\n- Database schema version 3 migrates existing student records without removing them.\n\n## Not implemented yet
+## Step 10: Class and batch management\n\n- Classes/batches can be created, searched, edited, deactivated, and reactivated locally.\n- Each class has a name, academic year, optional description, and active status.\n- Class names are unique per academic year; students can optionally be assigned to a class or batch.\n- Database schema version 3 migrates existing student records without removing them.\n\n## Step 10: Class and batch management\n\n- Classes/batches can be created, searched, edited, deactivated, and reactivated locally.\n- Each class has a name, academic year, optional description, and active status.\n- Class names are unique per academic year; students can optionally be assigned to a class or batch.\n- Schema version 3 adds the classes table and nullable student class assignment while preserving existing student rows.\n\n## Not implemented yet
 
 - Fee, payment allocation, discounts/credits, refund/reversal, and attendance workflows.
 - Staff, salary, expenses, exams, results, and certificates.
