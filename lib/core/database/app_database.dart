@@ -276,7 +276,7 @@ class AppDatabase extends _$AppDatabase {
       final assignmentCount = await customSelect(
         'SELECT COUNT(*) AS total FROM student_assignments WHERE class_id = ?',
         variables: [Variable.withInt(id)],
-      ).getSingle().then((row) => row.read<int>('total') ?? 0);
+      ).getSingle().then((row) => row.read<int>('total'));
       if (assignmentCount > 0) {
         throw StateError('A class referenced by assignment history cannot be deleted');
       }
@@ -485,8 +485,9 @@ class AppDatabase extends _$AppDatabase {
     if (effectiveFrom.isAfter(DateTime.now())) {
       throw StateError('Future-dated assignments are not supported yet');
     }
+    final trimmedReason = reason?.trim();
     final normalizedReason =
-        reason == null || reason.trim().isEmpty ? null : reason.trim();
+        trimmedReason?.isNotEmpty == true ? trimmedReason : null;
     if (normalizedReason != null && normalizedReason.length > 240) {
       throw ArgumentError('Transfer reason must be 240 characters or fewer');
     }
