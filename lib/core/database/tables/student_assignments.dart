@@ -12,11 +12,11 @@ import 'students.dart';
 class StudentAssignments extends Table {
   IntColumn get id => integer().autoIncrement()();
 
-  IntColumn get studentId => integer()
-      .references(Students, #id, onDelete: KeyAction.restrict)();
+  IntColumn get studentId =>
+      integer().references(Students, #id, onDelete: KeyAction.restrict)();
 
-  IntColumn get classId => integer()
-      .references(Classes, #id, onDelete: KeyAction.restrict)();
+  IntColumn get classId =>
+      integer().references(Classes, #id, onDelete: KeyAction.restrict)();
 
   IntColumn get batchId => integer()
       .nullable()
@@ -26,8 +26,7 @@ class StudentAssignments extends Table {
   DateTimeColumn get effectiveTo => dateTime().nullable()();
   TextColumn get transferReason =>
       text().nullable().withLength(min: 1, max: 240)();
-  TextColumn get endReason =>
-      text().nullable().withLength(min: 1, max: 240)();
+  TextColumn get endReason => text().nullable().withLength(min: 1, max: 240)();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
   @override

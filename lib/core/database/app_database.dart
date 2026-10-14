@@ -8,7 +8,8 @@ import 'tables/student_assignments.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Institutes, Classes, Students, Batches, StudentAssignments])
+@DriftDatabase(
+    tables: [Institutes, Classes, Students, Batches, StudentAssignments])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
       : super(executor ?? driftDatabase(name: 'edumanage_offline'));
@@ -278,7 +279,8 @@ class AppDatabase extends _$AppDatabase {
         variables: [Variable.withInt(id)],
       ).getSingle().then((row) => row.read<int>('total'));
       if (assignmentCount > 0) {
-        throw StateError('A class referenced by assignment history cannot be deleted');
+        throw StateError(
+            'A class referenced by assignment history cannot be deleted');
       }
 
       await (update(students)..where((row) => row.classId.equals(id))).write(
@@ -434,7 +436,8 @@ class AppDatabase extends _$AppDatabase {
 
       final studentId = id ?? await into(students).insert(values);
       if (id != null) {
-        await (update(students)..where((row) => row.id.equals(id))).write(values);
+        await (update(students)..where((row) => row.id.equals(id)))
+            .write(values);
       }
 
       if (classId != existing?.classId) {
@@ -511,7 +514,8 @@ class AppDatabase extends _$AppDatabase {
       final current = await getCurrentStudentAssignment(studentId);
       if (current != null) {
         if (!effectiveFrom.isAfter(current.effectiveFrom)) {
-          throw StateError('Transfer date must be after the current assignment start');
+          throw StateError(
+              'Transfer date must be after the current assignment start');
         }
         await (update(studentAssignments)
               ..where((row) => row.id.equals(current.id)))
@@ -521,7 +525,8 @@ class AppDatabase extends _$AppDatabase {
         ));
       } else if (student.classId != null) {
         // A legacy/unmigrated assignment should never be silently discarded.
-        throw StateError('Student has a class but no assignment history; review data first');
+        throw StateError(
+            'Student has a class but no assignment history; review data first');
       }
 
       final assignmentId = await into(studentAssignments).insert(
@@ -556,7 +561,8 @@ class AppDatabase extends _$AppDatabase {
       final current = await getCurrentStudentAssignment(studentId);
       if (current == null) {
         if (student.classId != null) {
-          throw StateError('Student has a class but no assignment history; review data first');
+          throw StateError(
+              'Student has a class but no assignment history; review data first');
         }
         return;
       }

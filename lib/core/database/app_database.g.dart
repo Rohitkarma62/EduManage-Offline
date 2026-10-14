@@ -1746,6 +1746,485 @@ class BatchesCompanion extends UpdateCompanion<ClassBatchSession> {
   }
 }
 
+class $StudentAssignmentsTable extends StudentAssignments
+    with TableInfo<$StudentAssignmentsTable, StudentAssignment> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $StudentAssignmentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _studentIdMeta =
+      const VerificationMeta('studentId');
+  @override
+  late final GeneratedColumn<int> studentId = GeneratedColumn<int>(
+      'student_id', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _classIdMeta =
+      const VerificationMeta('classId');
+  @override
+  late final GeneratedColumn<int> classId = GeneratedColumn<int>(
+      'class_id', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _batchIdMeta =
+      const VerificationMeta('batchId');
+  @override
+  late final GeneratedColumn<int> batchId = GeneratedColumn<int>(
+      'batch_id', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _effectiveFromMeta =
+      const VerificationMeta('effectiveFrom');
+  @override
+  late final GeneratedColumn<DateTime> effectiveFrom =
+      GeneratedColumn<DateTime>('effective_from', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _effectiveToMeta =
+      const VerificationMeta('effectiveTo');
+  @override
+  late final GeneratedColumn<DateTime> effectiveTo = GeneratedColumn<DateTime>(
+      'effective_to', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _transferReasonMeta =
+      const VerificationMeta('transferReason');
+  @override
+  late final GeneratedColumn<String> transferReason = GeneratedColumn<String>(
+      'transfer_reason', aliasedName, true,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 240),
+      type: DriftSqlType.string,
+      requiredDuringInsert: false);
+  static const VerificationMeta _endReasonMeta =
+      const VerificationMeta('endReason');
+  @override
+  late final GeneratedColumn<String> endReason = GeneratedColumn<String>(
+      'end_reason', aliasedName, true,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 240),
+      type: DriftSqlType.string,
+      requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        studentId,
+        classId,
+        batchId,
+        effectiveFrom,
+        effectiveTo,
+        transferReason,
+        endReason,
+        createdAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'student_assignments';
+  @override
+  VerificationContext validateIntegrity(Insertable<StudentAssignment> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('student_id')) {
+      context.handle(_studentIdMeta,
+          studentId.isAcceptableOrUnknown(data['student_id']!, _studentIdMeta));
+    } else if (isInserting) {
+      context.missing(_studentIdMeta);
+    }
+    if (data.containsKey('class_id')) {
+      context.handle(_classIdMeta,
+          classId.isAcceptableOrUnknown(data['class_id']!, _classIdMeta));
+    } else if (isInserting) {
+      context.missing(_classIdMeta);
+    }
+    if (data.containsKey('batch_id')) {
+      context.handle(_batchIdMeta,
+          batchId.isAcceptableOrUnknown(data['batch_id']!, _batchIdMeta));
+    }
+    if (data.containsKey('effective_from')) {
+      context.handle(
+          _effectiveFromMeta,
+          effectiveFrom.isAcceptableOrUnknown(
+              data['effective_from']!, _effectiveFromMeta));
+    } else if (isInserting) {
+      context.missing(_effectiveFromMeta);
+    }
+    if (data.containsKey('effective_to')) {
+      context.handle(
+          _effectiveToMeta,
+          effectiveTo.isAcceptableOrUnknown(
+              data['effective_to']!, _effectiveToMeta));
+    }
+    if (data.containsKey('transfer_reason')) {
+      context.handle(
+          _transferReasonMeta,
+          transferReason.isAcceptableOrUnknown(
+              data['transfer_reason']!, _transferReasonMeta));
+    }
+    if (data.containsKey('end_reason')) {
+      context.handle(_endReasonMeta,
+          endReason.isAcceptableOrUnknown(data['end_reason']!, _endReasonMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  StudentAssignment map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return StudentAssignment(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      studentId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}student_id'])!,
+      classId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}class_id'])!,
+      batchId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}batch_id']),
+      effectiveFrom: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}effective_from'])!,
+      effectiveTo: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}effective_to']),
+      transferReason: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}transfer_reason']),
+      endReason: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}end_reason']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $StudentAssignmentsTable createAlias(String alias) {
+    return $StudentAssignmentsTable(attachedDatabase, alias);
+  }
+}
+
+class StudentAssignment extends DataClass
+    implements Insertable<StudentAssignment> {
+  final int id;
+  final int studentId;
+  final int classId;
+  final int? batchId;
+  final DateTime effectiveFrom;
+  final DateTime? effectiveTo;
+  final String? transferReason;
+  final String? endReason;
+  final DateTime createdAt;
+  const StudentAssignment(
+      {required this.id,
+      required this.studentId,
+      required this.classId,
+      this.batchId,
+      required this.effectiveFrom,
+      this.effectiveTo,
+      this.transferReason,
+      this.endReason,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['student_id'] = Variable<int>(studentId);
+    map['class_id'] = Variable<int>(classId);
+    if (!nullToAbsent || batchId != null) {
+      map['batch_id'] = Variable<int>(batchId);
+    }
+    map['effective_from'] = Variable<DateTime>(effectiveFrom);
+    if (!nullToAbsent || effectiveTo != null) {
+      map['effective_to'] = Variable<DateTime>(effectiveTo);
+    }
+    if (!nullToAbsent || transferReason != null) {
+      map['transfer_reason'] = Variable<String>(transferReason);
+    }
+    if (!nullToAbsent || endReason != null) {
+      map['end_reason'] = Variable<String>(endReason);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  StudentAssignmentsCompanion toCompanion(bool nullToAbsent) {
+    return StudentAssignmentsCompanion(
+      id: Value(id),
+      studentId: Value(studentId),
+      classId: Value(classId),
+      batchId: batchId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(batchId),
+      effectiveFrom: Value(effectiveFrom),
+      effectiveTo: effectiveTo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(effectiveTo),
+      transferReason: transferReason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(transferReason),
+      endReason: endReason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endReason),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory StudentAssignment.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return StudentAssignment(
+      id: serializer.fromJson<int>(json['id']),
+      studentId: serializer.fromJson<int>(json['studentId']),
+      classId: serializer.fromJson<int>(json['classId']),
+      batchId: serializer.fromJson<int?>(json['batchId']),
+      effectiveFrom: serializer.fromJson<DateTime>(json['effectiveFrom']),
+      effectiveTo: serializer.fromJson<DateTime?>(json['effectiveTo']),
+      transferReason: serializer.fromJson<String?>(json['transferReason']),
+      endReason: serializer.fromJson<String?>(json['endReason']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'studentId': serializer.toJson<int>(studentId),
+      'classId': serializer.toJson<int>(classId),
+      'batchId': serializer.toJson<int?>(batchId),
+      'effectiveFrom': serializer.toJson<DateTime>(effectiveFrom),
+      'effectiveTo': serializer.toJson<DateTime?>(effectiveTo),
+      'transferReason': serializer.toJson<String?>(transferReason),
+      'endReason': serializer.toJson<String?>(endReason),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  StudentAssignment copyWith(
+          {int? id,
+          int? studentId,
+          int? classId,
+          Value<int?> batchId = const Value.absent(),
+          DateTime? effectiveFrom,
+          Value<DateTime?> effectiveTo = const Value.absent(),
+          Value<String?> transferReason = const Value.absent(),
+          Value<String?> endReason = const Value.absent(),
+          DateTime? createdAt}) =>
+      StudentAssignment(
+        id: id ?? this.id,
+        studentId: studentId ?? this.studentId,
+        classId: classId ?? this.classId,
+        batchId: batchId.present ? batchId.value : this.batchId,
+        effectiveFrom: effectiveFrom ?? this.effectiveFrom,
+        effectiveTo: effectiveTo.present ? effectiveTo.value : this.effectiveTo,
+        transferReason:
+            transferReason.present ? transferReason.value : this.transferReason,
+        endReason: endReason.present ? endReason.value : this.endReason,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  StudentAssignment copyWithCompanion(StudentAssignmentsCompanion data) {
+    return StudentAssignment(
+      id: data.id.present ? data.id.value : this.id,
+      studentId: data.studentId.present ? data.studentId.value : this.studentId,
+      classId: data.classId.present ? data.classId.value : this.classId,
+      batchId: data.batchId.present ? data.batchId.value : this.batchId,
+      effectiveFrom: data.effectiveFrom.present
+          ? data.effectiveFrom.value
+          : this.effectiveFrom,
+      effectiveTo:
+          data.effectiveTo.present ? data.effectiveTo.value : this.effectiveTo,
+      transferReason: data.transferReason.present
+          ? data.transferReason.value
+          : this.transferReason,
+      endReason: data.endReason.present ? data.endReason.value : this.endReason,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StudentAssignment(')
+          ..write('id: $id, ')
+          ..write('studentId: $studentId, ')
+          ..write('classId: $classId, ')
+          ..write('batchId: $batchId, ')
+          ..write('effectiveFrom: $effectiveFrom, ')
+          ..write('effectiveTo: $effectiveTo, ')
+          ..write('transferReason: $transferReason, ')
+          ..write('endReason: $endReason, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, studentId, classId, batchId,
+      effectiveFrom, effectiveTo, transferReason, endReason, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is StudentAssignment &&
+          other.id == this.id &&
+          other.studentId == this.studentId &&
+          other.classId == this.classId &&
+          other.batchId == this.batchId &&
+          other.effectiveFrom == this.effectiveFrom &&
+          other.effectiveTo == this.effectiveTo &&
+          other.transferReason == this.transferReason &&
+          other.endReason == this.endReason &&
+          other.createdAt == this.createdAt);
+}
+
+class StudentAssignmentsCompanion extends UpdateCompanion<StudentAssignment> {
+  final Value<int> id;
+  final Value<int> studentId;
+  final Value<int> classId;
+  final Value<int?> batchId;
+  final Value<DateTime> effectiveFrom;
+  final Value<DateTime?> effectiveTo;
+  final Value<String?> transferReason;
+  final Value<String?> endReason;
+  final Value<DateTime> createdAt;
+  const StudentAssignmentsCompanion({
+    this.id = const Value.absent(),
+    this.studentId = const Value.absent(),
+    this.classId = const Value.absent(),
+    this.batchId = const Value.absent(),
+    this.effectiveFrom = const Value.absent(),
+    this.effectiveTo = const Value.absent(),
+    this.transferReason = const Value.absent(),
+    this.endReason = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  StudentAssignmentsCompanion.insert({
+    this.id = const Value.absent(),
+    required int studentId,
+    required int classId,
+    this.batchId = const Value.absent(),
+    required DateTime effectiveFrom,
+    this.effectiveTo = const Value.absent(),
+    this.transferReason = const Value.absent(),
+    this.endReason = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  })  : studentId = Value(studentId),
+        classId = Value(classId),
+        effectiveFrom = Value(effectiveFrom);
+  static Insertable<StudentAssignment> custom({
+    Expression<int>? id,
+    Expression<int>? studentId,
+    Expression<int>? classId,
+    Expression<int>? batchId,
+    Expression<DateTime>? effectiveFrom,
+    Expression<DateTime>? effectiveTo,
+    Expression<String>? transferReason,
+    Expression<String>? endReason,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (studentId != null) 'student_id': studentId,
+      if (classId != null) 'class_id': classId,
+      if (batchId != null) 'batch_id': batchId,
+      if (effectiveFrom != null) 'effective_from': effectiveFrom,
+      if (effectiveTo != null) 'effective_to': effectiveTo,
+      if (transferReason != null) 'transfer_reason': transferReason,
+      if (endReason != null) 'end_reason': endReason,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  StudentAssignmentsCompanion copyWith(
+      {Value<int>? id,
+      Value<int>? studentId,
+      Value<int>? classId,
+      Value<int?>? batchId,
+      Value<DateTime>? effectiveFrom,
+      Value<DateTime?>? effectiveTo,
+      Value<String?>? transferReason,
+      Value<String?>? endReason,
+      Value<DateTime>? createdAt}) {
+    return StudentAssignmentsCompanion(
+      id: id ?? this.id,
+      studentId: studentId ?? this.studentId,
+      classId: classId ?? this.classId,
+      batchId: batchId ?? this.batchId,
+      effectiveFrom: effectiveFrom ?? this.effectiveFrom,
+      effectiveTo: effectiveTo ?? this.effectiveTo,
+      transferReason: transferReason ?? this.transferReason,
+      endReason: endReason ?? this.endReason,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (studentId.present) {
+      map['student_id'] = Variable<int>(studentId.value);
+    }
+    if (classId.present) {
+      map['class_id'] = Variable<int>(classId.value);
+    }
+    if (batchId.present) {
+      map['batch_id'] = Variable<int>(batchId.value);
+    }
+    if (effectiveFrom.present) {
+      map['effective_from'] = Variable<DateTime>(effectiveFrom.value);
+    }
+    if (effectiveTo.present) {
+      map['effective_to'] = Variable<DateTime>(effectiveTo.value);
+    }
+    if (transferReason.present) {
+      map['transfer_reason'] = Variable<String>(transferReason.value);
+    }
+    if (endReason.present) {
+      map['end_reason'] = Variable<String>(endReason.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StudentAssignmentsCompanion(')
+          ..write('id: $id, ')
+          ..write('studentId: $studentId, ')
+          ..write('classId: $classId, ')
+          ..write('batchId: $batchId, ')
+          ..write('effectiveFrom: $effectiveFrom, ')
+          ..write('effectiveTo: $effectiveTo, ')
+          ..write('transferReason: $transferReason, ')
+          ..write('endReason: $endReason, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1753,12 +2232,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ClassesTable classes = $ClassesTable(this);
   late final $StudentsTable students = $StudentsTable(this);
   late final $BatchesTable batches = $BatchesTable(this);
+  late final $StudentAssignmentsTable studentAssignments =
+      $StudentAssignmentsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [institutes, classes, students, batches];
+      [institutes, classes, students, batches, studentAssignments];
 }
 
 typedef $$InstitutesTableCreateCompanionBuilder = InstitutesCompanion Function({
@@ -2591,6 +3072,238 @@ typedef $$BatchesTableProcessedTableManager = ProcessedTableManager<
     ),
     ClassBatchSession,
     PrefetchHooks Function()>;
+typedef $$StudentAssignmentsTableCreateCompanionBuilder
+    = StudentAssignmentsCompanion Function({
+  Value<int> id,
+  required int studentId,
+  required int classId,
+  Value<int?> batchId,
+  required DateTime effectiveFrom,
+  Value<DateTime?> effectiveTo,
+  Value<String?> transferReason,
+  Value<String?> endReason,
+  Value<DateTime> createdAt,
+});
+typedef $$StudentAssignmentsTableUpdateCompanionBuilder
+    = StudentAssignmentsCompanion Function({
+  Value<int> id,
+  Value<int> studentId,
+  Value<int> classId,
+  Value<int?> batchId,
+  Value<DateTime> effectiveFrom,
+  Value<DateTime?> effectiveTo,
+  Value<String?> transferReason,
+  Value<String?> endReason,
+  Value<DateTime> createdAt,
+});
+
+class $$StudentAssignmentsTableFilterComposer
+    extends Composer<_$AppDatabase, $StudentAssignmentsTable> {
+  $$StudentAssignmentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get studentId => $composableBuilder(
+      column: $table.studentId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get classId => $composableBuilder(
+      column: $table.classId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get batchId => $composableBuilder(
+      column: $table.batchId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get effectiveFrom => $composableBuilder(
+      column: $table.effectiveFrom, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get effectiveTo => $composableBuilder(
+      column: $table.effectiveTo, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get transferReason => $composableBuilder(
+      column: $table.transferReason,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get endReason => $composableBuilder(
+      column: $table.endReason, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$StudentAssignmentsTableOrderingComposer
+    extends Composer<_$AppDatabase, $StudentAssignmentsTable> {
+  $$StudentAssignmentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get studentId => $composableBuilder(
+      column: $table.studentId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get classId => $composableBuilder(
+      column: $table.classId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get batchId => $composableBuilder(
+      column: $table.batchId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get effectiveFrom => $composableBuilder(
+      column: $table.effectiveFrom,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get effectiveTo => $composableBuilder(
+      column: $table.effectiveTo, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get transferReason => $composableBuilder(
+      column: $table.transferReason,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get endReason => $composableBuilder(
+      column: $table.endReason, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$StudentAssignmentsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $StudentAssignmentsTable> {
+  $$StudentAssignmentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get studentId =>
+      $composableBuilder(column: $table.studentId, builder: (column) => column);
+
+  GeneratedColumn<int> get classId =>
+      $composableBuilder(column: $table.classId, builder: (column) => column);
+
+  GeneratedColumn<int> get batchId =>
+      $composableBuilder(column: $table.batchId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get effectiveFrom => $composableBuilder(
+      column: $table.effectiveFrom, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get effectiveTo => $composableBuilder(
+      column: $table.effectiveTo, builder: (column) => column);
+
+  GeneratedColumn<String> get transferReason => $composableBuilder(
+      column: $table.transferReason, builder: (column) => column);
+
+  GeneratedColumn<String> get endReason =>
+      $composableBuilder(column: $table.endReason, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$StudentAssignmentsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $StudentAssignmentsTable,
+    StudentAssignment,
+    $$StudentAssignmentsTableFilterComposer,
+    $$StudentAssignmentsTableOrderingComposer,
+    $$StudentAssignmentsTableAnnotationComposer,
+    $$StudentAssignmentsTableCreateCompanionBuilder,
+    $$StudentAssignmentsTableUpdateCompanionBuilder,
+    (
+      StudentAssignment,
+      BaseReferences<_$AppDatabase, $StudentAssignmentsTable, StudentAssignment>
+    ),
+    StudentAssignment,
+    PrefetchHooks Function()> {
+  $$StudentAssignmentsTableTableManager(
+      _$AppDatabase db, $StudentAssignmentsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$StudentAssignmentsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$StudentAssignmentsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$StudentAssignmentsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<int> studentId = const Value.absent(),
+            Value<int> classId = const Value.absent(),
+            Value<int?> batchId = const Value.absent(),
+            Value<DateTime> effectiveFrom = const Value.absent(),
+            Value<DateTime?> effectiveTo = const Value.absent(),
+            Value<String?> transferReason = const Value.absent(),
+            Value<String?> endReason = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              StudentAssignmentsCompanion(
+            id: id,
+            studentId: studentId,
+            classId: classId,
+            batchId: batchId,
+            effectiveFrom: effectiveFrom,
+            effectiveTo: effectiveTo,
+            transferReason: transferReason,
+            endReason: endReason,
+            createdAt: createdAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required int studentId,
+            required int classId,
+            Value<int?> batchId = const Value.absent(),
+            required DateTime effectiveFrom,
+            Value<DateTime?> effectiveTo = const Value.absent(),
+            Value<String?> transferReason = const Value.absent(),
+            Value<String?> endReason = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              StudentAssignmentsCompanion.insert(
+            id: id,
+            studentId: studentId,
+            classId: classId,
+            batchId: batchId,
+            effectiveFrom: effectiveFrom,
+            effectiveTo: effectiveTo,
+            transferReason: transferReason,
+            endReason: endReason,
+            createdAt: createdAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$StudentAssignmentsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $StudentAssignmentsTable,
+    StudentAssignment,
+    $$StudentAssignmentsTableFilterComposer,
+    $$StudentAssignmentsTableOrderingComposer,
+    $$StudentAssignmentsTableAnnotationComposer,
+    $$StudentAssignmentsTableCreateCompanionBuilder,
+    $$StudentAssignmentsTableUpdateCompanionBuilder,
+    (
+      StudentAssignment,
+      BaseReferences<_$AppDatabase, $StudentAssignmentsTable, StudentAssignment>
+    ),
+    StudentAssignment,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2603,4 +3316,6 @@ class $AppDatabaseManager {
       $$StudentsTableTableManager(_db, _db.students);
   $$BatchesTableTableManager get batches =>
       $$BatchesTableTableManager(_db, _db.batches);
+  $$StudentAssignmentsTableTableManager get studentAssignments =>
+      $$StudentAssignmentsTableTableManager(_db, _db.studentAssignments);
 }
