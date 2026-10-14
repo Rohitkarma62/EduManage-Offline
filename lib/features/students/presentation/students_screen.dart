@@ -92,9 +92,8 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                     Center(child: Text('Could not load students: $e')),
                 data: (records) {
                   final visible = records
-                      .where((student) => _showInactive
-                          ? !student.isActive
-                          : student.isActive)
+                      .where((student) =>
+                          _showInactive ? !student.isActive : student.isActive)
                       .toList();
                   if (visible.isEmpty) {
                     return Center(
@@ -147,7 +146,8 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                               ),
                             ),
                             PopupMenuItem(
-                              value: student.isActive ? 'deactivate' : 'activate',
+                              value:
+                                  student.isActive ? 'deactivate' : 'activate',
                               child: ListTile(
                                 leading: Icon(student.isActive
                                     ? Icons.person_off_outlined

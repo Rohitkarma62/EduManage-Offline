@@ -105,7 +105,8 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: Text(widget.studentId == null ? 'Add student' : 'Edit student'),
+          title:
+              Text(widget.studentId == null ? 'Add student' : 'Edit student'),
         ),
         body: _loading
             ? const Center(child: CircularProgressIndicator())
