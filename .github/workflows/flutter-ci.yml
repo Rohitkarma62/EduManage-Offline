@@ -8,15 +8,25 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: flutter-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   validate:
-    name: Resolve, analyze, and test
+    name: Format, analyze, test, and build Android APK
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -24,10 +34,15 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Show Flutter environment
-        run: flutter --version
+      - name: Show toolchain
+        run: |
+          flutter --version
+          java -version
 
-      - name: Resolve dependencies
+      - name: Generate missing Flutter Android platform files
+        run: flutter create --platforms=android --org com.example .
+
+      - name: Resolve and lock dependencies
         run: flutter pub get
 
       - name: Check formatting
@@ -38,3 +53,27 @@ jobs:
 
       - name: Run tests
         run: flutter test
+
+      - name: Build Android debug APK
+        run: flutter build apk --debug
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: edumanage-offline-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Commit generated dependency lock and Gradle wrapper
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pubspec.lock android/gradlew android/gradlew.bat android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties
+          if git diff --cached --quiet; then
+            echo "Lockfile and Gradle wrapper are already current."
+          else
+            git commit -m "Add Flutter dependency lock and Gradle wrapper"
+            git push
+          fi
