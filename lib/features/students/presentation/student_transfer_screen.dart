@@ -155,9 +155,10 @@ class _StudentTransferScreenState extends ConsumerState<StudentTransferScreen> {
                               'Could not load classes: $error',
                             ),
                             data: (classes) => DropdownButtonFormField<int>(
-                              initialValue: classes.any((item) => item.id == _classId)
-                                  ? _classId
-                                  : null,
+                              initialValue:
+                                  classes.any((item) => item.id == _classId)
+                                      ? _classId
+                                      : null,
                               decoration: const InputDecoration(
                                 labelText: 'New class *',
                                 border: OutlineInputBorder(),
@@ -193,8 +194,8 @@ class _StudentTransferScreenState extends ConsumerState<StudentTransferScreen> {
                                     .where((batch) => batch.isActive)
                                     .toList();
                                 return DropdownButtonFormField<int?>(
-                                  initialValue: available.any(
-                                          (batch) => batch.id == _batchId)
+                                  initialValue: available
+                                          .any((batch) => batch.id == _batchId)
                                       ? _batchId
                                       : null,
                                   decoration: const InputDecoration(
@@ -216,9 +217,9 @@ class _StudentTransferScreenState extends ConsumerState<StudentTransferScreen> {
                                   onChanged: _saving
                                       ? null
                                       : (value) => setState(() {
-                                          _batchId = value;
-                                          _placementError = null;
-                                        }),
+                                            _batchId = value;
+                                            _placementError = null;
+                                          }),
                                 );
                               },
                             ),
@@ -234,9 +235,8 @@ class _StudentTransferScreenState extends ConsumerState<StudentTransferScreen> {
                         ),
                       const SizedBox(height: 16),
                       OutlinedButton.icon(
-                        onPressed: _saving || dateUnavailable
-                            ? null
-                            : _chooseDate,
+                        onPressed:
+                            _saving || dateUnavailable ? null : _chooseDate,
                         icon: const Icon(Icons.calendar_month),
                         label: Text(
                           _effectiveFrom == null
@@ -275,9 +275,10 @@ class _StudentTransferScreenState extends ConsumerState<StudentTransferScreen> {
                       ),
                       const SizedBox(height: 24),
                       FilledButton.icon(
-                        onPressed: _saving || dateUnavailable || _effectiveFrom == null
-                            ? null
-                            : _save,
+                        onPressed:
+                            _saving || dateUnavailable || _effectiveFrom == null
+                                ? null
+                                : _save,
                         icon: const Icon(Icons.check),
                         label: Text(_saving ? 'Saving…' : 'Save transfer'),
                       ),
