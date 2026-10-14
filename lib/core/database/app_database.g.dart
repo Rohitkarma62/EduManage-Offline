@@ -355,6 +355,398 @@ class InstitutesCompanion extends UpdateCompanion<Institute> {
   }
 }
 
+class $ClassesTable extends Classes with TableInfo<$ClassesTable, ClassBatch> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ClassesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 100),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _academicYearMeta =
+      const VerificationMeta('academicYear');
+  @override
+  late final GeneratedColumn<String> academicYear = GeneratedColumn<String>(
+      'academic_year', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 4, maxTextLength: 20),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _descriptionMeta =
+      const VerificationMeta('description');
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+      'description', aliasedName, true,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 240),
+      type: DriftSqlType.string,
+      requiredDuringInsert: false);
+  static const VerificationMeta _isActiveMeta =
+      const VerificationMeta('isActive');
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+      'is_active', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_active" IN (0, 1))'),
+      defaultValue: const Constant(true));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, name, academicYear, description, isActive, createdAt, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'classes';
+  @override
+  VerificationContext validateIntegrity(Insertable<ClassBatch> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('academic_year')) {
+      context.handle(
+          _academicYearMeta,
+          academicYear.isAcceptableOrUnknown(
+              data['academic_year']!, _academicYearMeta));
+    } else if (isInserting) {
+      context.missing(_academicYearMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+          _descriptionMeta,
+          description.isAcceptableOrUnknown(
+              data['description']!, _descriptionMeta));
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(_isActiveMeta,
+          isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+        {name, academicYear},
+      ];
+  @override
+  ClassBatch map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ClassBatch(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      academicYear: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}academic_year'])!,
+      description: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}description']),
+      isActive: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_active'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+    );
+  }
+
+  @override
+  $ClassesTable createAlias(String alias) {
+    return $ClassesTable(attachedDatabase, alias);
+  }
+}
+
+class ClassBatch extends DataClass implements Insertable<ClassBatch> {
+  final int id;
+  final String name;
+  final String academicYear;
+  final String? description;
+  final bool isActive;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const ClassBatch(
+      {required this.id,
+      required this.name,
+      required this.academicYear,
+      this.description,
+      required this.isActive,
+      required this.createdAt,
+      required this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['academic_year'] = Variable<String>(academicYear);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    map['is_active'] = Variable<bool>(isActive);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ClassesCompanion toCompanion(bool nullToAbsent) {
+    return ClassesCompanion(
+      id: Value(id),
+      name: Value(name),
+      academicYear: Value(academicYear),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      isActive: Value(isActive),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ClassBatch.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ClassBatch(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      academicYear: serializer.fromJson<String>(json['academicYear']),
+      description: serializer.fromJson<String?>(json['description']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'academicYear': serializer.toJson<String>(academicYear),
+      'description': serializer.toJson<String?>(description),
+      'isActive': serializer.toJson<bool>(isActive),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ClassBatch copyWith(
+          {int? id,
+          String? name,
+          String? academicYear,
+          Value<String?> description = const Value.absent(),
+          bool? isActive,
+          DateTime? createdAt,
+          DateTime? updatedAt}) =>
+      ClassBatch(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        academicYear: academicYear ?? this.academicYear,
+        description: description.present ? description.value : this.description,
+        isActive: isActive ?? this.isActive,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  ClassBatch copyWithCompanion(ClassesCompanion data) {
+    return ClassBatch(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      academicYear: data.academicYear.present
+          ? data.academicYear.value
+          : this.academicYear,
+      description:
+          data.description.present ? data.description.value : this.description,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClassBatch(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('academicYear: $academicYear, ')
+          ..write('description: $description, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id, name, academicYear, description, isActive, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ClassBatch &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.academicYear == this.academicYear &&
+          other.description == this.description &&
+          other.isActive == this.isActive &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ClassesCompanion extends UpdateCompanion<ClassBatch> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> academicYear;
+  final Value<String?> description;
+  final Value<bool> isActive;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const ClassesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.academicYear = const Value.absent(),
+    this.description = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  ClassesCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    required String academicYear,
+    this.description = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  })  : name = Value(name),
+        academicYear = Value(academicYear);
+  static Insertable<ClassBatch> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? academicYear,
+    Expression<String>? description,
+    Expression<bool>? isActive,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (academicYear != null) 'academic_year': academicYear,
+      if (description != null) 'description': description,
+      if (isActive != null) 'is_active': isActive,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  ClassesCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? name,
+      Value<String>? academicYear,
+      Value<String?>? description,
+      Value<bool>? isActive,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt}) {
+    return ClassesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      academicYear: academicYear ?? this.academicYear,
+      description: description ?? this.description,
+      isActive: isActive ?? this.isActive,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (academicYear.present) {
+      map['academic_year'] = Variable<String>(academicYear.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClassesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('academicYear: $academicYear, ')
+          ..write('description: $description, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -405,6 +797,12 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
           GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 120),
       type: DriftSqlType.string,
       requiredDuringInsert: false);
+  static const VerificationMeta _classIdMeta =
+      const VerificationMeta('classId');
+  @override
+  late final GeneratedColumn<int> classId = GeneratedColumn<int>(
+      'class_id', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _isActiveMeta =
       const VerificationMeta('isActive');
   @override
@@ -438,6 +836,7 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
         fullName,
         phone,
         guardianName,
+        classId,
         isActive,
         createdAt,
         updatedAt
@@ -479,6 +878,10 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
           guardianName.isAcceptableOrUnknown(
               data['guardian_name']!, _guardianNameMeta));
     }
+    if (data.containsKey('class_id')) {
+      context.handle(_classIdMeta,
+          classId.isAcceptableOrUnknown(data['class_id']!, _classIdMeta));
+    }
     if (data.containsKey('is_active')) {
       context.handle(_isActiveMeta,
           isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta));
@@ -510,6 +913,8 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
           .read(DriftSqlType.string, data['${effectivePrefix}phone']),
       guardianName: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}guardian_name']),
+      classId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}class_id']),
       isActive: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_active'])!,
       createdAt: attachedDatabase.typeMapping
@@ -531,6 +936,7 @@ class Student extends DataClass implements Insertable<Student> {
   final String fullName;
   final String? phone;
   final String? guardianName;
+  final int? classId;
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -540,6 +946,7 @@ class Student extends DataClass implements Insertable<Student> {
       required this.fullName,
       this.phone,
       this.guardianName,
+      this.classId,
       required this.isActive,
       required this.createdAt,
       required this.updatedAt});
@@ -554,6 +961,9 @@ class Student extends DataClass implements Insertable<Student> {
     }
     if (!nullToAbsent || guardianName != null) {
       map['guardian_name'] = Variable<String>(guardianName);
+    }
+    if (!nullToAbsent || classId != null) {
+      map['class_id'] = Variable<int>(classId);
     }
     map['is_active'] = Variable<bool>(isActive);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -571,6 +981,9 @@ class Student extends DataClass implements Insertable<Student> {
       guardianName: guardianName == null && nullToAbsent
           ? const Value.absent()
           : Value(guardianName),
+      classId: classId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(classId),
       isActive: Value(isActive),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -586,6 +999,7 @@ class Student extends DataClass implements Insertable<Student> {
       fullName: serializer.fromJson<String>(json['fullName']),
       phone: serializer.fromJson<String?>(json['phone']),
       guardianName: serializer.fromJson<String?>(json['guardianName']),
+      classId: serializer.fromJson<int?>(json['classId']),
       isActive: serializer.fromJson<bool>(json['isActive']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -600,6 +1014,7 @@ class Student extends DataClass implements Insertable<Student> {
       'fullName': serializer.toJson<String>(fullName),
       'phone': serializer.toJson<String?>(phone),
       'guardianName': serializer.toJson<String?>(guardianName),
+      'classId': serializer.toJson<int?>(classId),
       'isActive': serializer.toJson<bool>(isActive),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -612,6 +1027,7 @@ class Student extends DataClass implements Insertable<Student> {
           String? fullName,
           Value<String?> phone = const Value.absent(),
           Value<String?> guardianName = const Value.absent(),
+          Value<int?> classId = const Value.absent(),
           bool? isActive,
           DateTime? createdAt,
           DateTime? updatedAt}) =>
@@ -622,6 +1038,7 @@ class Student extends DataClass implements Insertable<Student> {
         phone: phone.present ? phone.value : this.phone,
         guardianName:
             guardianName.present ? guardianName.value : this.guardianName,
+        classId: classId.present ? classId.value : this.classId,
         isActive: isActive ?? this.isActive,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
@@ -637,6 +1054,7 @@ class Student extends DataClass implements Insertable<Student> {
       guardianName: data.guardianName.present
           ? data.guardianName.value
           : this.guardianName,
+      classId: data.classId.present ? data.classId.value : this.classId,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -651,6 +1069,7 @@ class Student extends DataClass implements Insertable<Student> {
           ..write('fullName: $fullName, ')
           ..write('phone: $phone, ')
           ..write('guardianName: $guardianName, ')
+          ..write('classId: $classId, ')
           ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -660,7 +1079,7 @@ class Student extends DataClass implements Insertable<Student> {
 
   @override
   int get hashCode => Object.hash(id, admissionNumber, fullName, phone,
-      guardianName, isActive, createdAt, updatedAt);
+      guardianName, classId, isActive, createdAt, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -670,6 +1089,7 @@ class Student extends DataClass implements Insertable<Student> {
           other.fullName == this.fullName &&
           other.phone == this.phone &&
           other.guardianName == this.guardianName &&
+          other.classId == this.classId &&
           other.isActive == this.isActive &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -681,6 +1101,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
   final Value<String> fullName;
   final Value<String?> phone;
   final Value<String?> guardianName;
+  final Value<int?> classId;
   final Value<bool> isActive;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -690,6 +1111,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     this.fullName = const Value.absent(),
     this.phone = const Value.absent(),
     this.guardianName = const Value.absent(),
+    this.classId = const Value.absent(),
     this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -700,6 +1122,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     required String fullName,
     this.phone = const Value.absent(),
     this.guardianName = const Value.absent(),
+    this.classId = const Value.absent(),
     this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -711,6 +1134,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     Expression<String>? fullName,
     Expression<String>? phone,
     Expression<String>? guardianName,
+    Expression<int>? classId,
     Expression<bool>? isActive,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -721,6 +1145,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
       if (fullName != null) 'full_name': fullName,
       if (phone != null) 'phone': phone,
       if (guardianName != null) 'guardian_name': guardianName,
+      if (classId != null) 'class_id': classId,
       if (isActive != null) 'is_active': isActive,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -733,6 +1158,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
       Value<String>? fullName,
       Value<String?>? phone,
       Value<String?>? guardianName,
+      Value<int?>? classId,
       Value<bool>? isActive,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt}) {
@@ -742,6 +1168,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
       fullName: fullName ?? this.fullName,
       phone: phone ?? this.phone,
       guardianName: guardianName ?? this.guardianName,
+      classId: classId ?? this.classId,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -766,6 +1193,9 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     if (guardianName.present) {
       map['guardian_name'] = Variable<String>(guardianName.value);
     }
+    if (classId.present) {
+      map['class_id'] = Variable<int>(classId.value);
+    }
     if (isActive.present) {
       map['is_active'] = Variable<bool>(isActive.value);
     }
@@ -786,6 +1216,528 @@ class StudentsCompanion extends UpdateCompanion<Student> {
           ..write('fullName: $fullName, ')
           ..write('phone: $phone, ')
           ..write('guardianName: $guardianName, ')
+          ..write('classId: $classId, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $BatchesTable extends Batches
+    with TableInfo<$BatchesTable, ClassBatchSession> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $BatchesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _classIdMeta =
+      const VerificationMeta('classId');
+  @override
+  late final GeneratedColumn<int> classId = GeneratedColumn<int>(
+      'class_id', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 80),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _subjectMeta =
+      const VerificationMeta('subject');
+  @override
+  late final GeneratedColumn<String> subject = GeneratedColumn<String>(
+      'subject', aliasedName, true,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 80),
+      type: DriftSqlType.string,
+      requiredDuringInsert: false);
+  static const VerificationMeta _timingMeta = const VerificationMeta('timing');
+  @override
+  late final GeneratedColumn<String> timing = GeneratedColumn<String>(
+      'timing', aliasedName, true,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 100),
+      type: DriftSqlType.string,
+      requiredDuringInsert: false);
+  static const VerificationMeta _teacherNameMeta =
+      const VerificationMeta('teacherName');
+  @override
+  late final GeneratedColumn<String> teacherName = GeneratedColumn<String>(
+      'teacher_name', aliasedName, true,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 120),
+      type: DriftSqlType.string,
+      requiredDuringInsert: false);
+  static const VerificationMeta _monthlyFeePaiseMeta =
+      const VerificationMeta('monthlyFeePaise');
+  @override
+  late final GeneratedColumn<int> monthlyFeePaise = GeneratedColumn<int>(
+      'monthly_fee_paise', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _isActiveMeta =
+      const VerificationMeta('isActive');
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+      'is_active', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_active" IN (0, 1))'),
+      defaultValue: const Constant(true));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        classId,
+        name,
+        subject,
+        timing,
+        teacherName,
+        monthlyFeePaise,
+        isActive,
+        createdAt,
+        updatedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'batches';
+  @override
+  VerificationContext validateIntegrity(Insertable<ClassBatchSession> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('class_id')) {
+      context.handle(_classIdMeta,
+          classId.isAcceptableOrUnknown(data['class_id']!, _classIdMeta));
+    } else if (isInserting) {
+      context.missing(_classIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('subject')) {
+      context.handle(_subjectMeta,
+          subject.isAcceptableOrUnknown(data['subject']!, _subjectMeta));
+    }
+    if (data.containsKey('timing')) {
+      context.handle(_timingMeta,
+          timing.isAcceptableOrUnknown(data['timing']!, _timingMeta));
+    }
+    if (data.containsKey('teacher_name')) {
+      context.handle(
+          _teacherNameMeta,
+          teacherName.isAcceptableOrUnknown(
+              data['teacher_name']!, _teacherNameMeta));
+    }
+    if (data.containsKey('monthly_fee_paise')) {
+      context.handle(
+          _monthlyFeePaiseMeta,
+          monthlyFeePaise.isAcceptableOrUnknown(
+              data['monthly_fee_paise']!, _monthlyFeePaiseMeta));
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(_isActiveMeta,
+          isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+        {classId, name},
+      ];
+  @override
+  ClassBatchSession map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ClassBatchSession(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      classId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}class_id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      subject: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}subject']),
+      timing: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}timing']),
+      teacherName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}teacher_name']),
+      monthlyFeePaise: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}monthly_fee_paise']),
+      isActive: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_active'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+    );
+  }
+
+  @override
+  $BatchesTable createAlias(String alias) {
+    return $BatchesTable(attachedDatabase, alias);
+  }
+}
+
+class ClassBatchSession extends DataClass
+    implements Insertable<ClassBatchSession> {
+  final int id;
+  final int classId;
+  final String name;
+  final String? subject;
+  final String? timing;
+  final String? teacherName;
+  final int? monthlyFeePaise;
+  final bool isActive;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const ClassBatchSession(
+      {required this.id,
+      required this.classId,
+      required this.name,
+      this.subject,
+      this.timing,
+      this.teacherName,
+      this.monthlyFeePaise,
+      required this.isActive,
+      required this.createdAt,
+      required this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['class_id'] = Variable<int>(classId);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || subject != null) {
+      map['subject'] = Variable<String>(subject);
+    }
+    if (!nullToAbsent || timing != null) {
+      map['timing'] = Variable<String>(timing);
+    }
+    if (!nullToAbsent || teacherName != null) {
+      map['teacher_name'] = Variable<String>(teacherName);
+    }
+    if (!nullToAbsent || monthlyFeePaise != null) {
+      map['monthly_fee_paise'] = Variable<int>(monthlyFeePaise);
+    }
+    map['is_active'] = Variable<bool>(isActive);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  BatchesCompanion toCompanion(bool nullToAbsent) {
+    return BatchesCompanion(
+      id: Value(id),
+      classId: Value(classId),
+      name: Value(name),
+      subject: subject == null && nullToAbsent
+          ? const Value.absent()
+          : Value(subject),
+      timing:
+          timing == null && nullToAbsent ? const Value.absent() : Value(timing),
+      teacherName: teacherName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(teacherName),
+      monthlyFeePaise: monthlyFeePaise == null && nullToAbsent
+          ? const Value.absent()
+          : Value(monthlyFeePaise),
+      isActive: Value(isActive),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ClassBatchSession.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ClassBatchSession(
+      id: serializer.fromJson<int>(json['id']),
+      classId: serializer.fromJson<int>(json['classId']),
+      name: serializer.fromJson<String>(json['name']),
+      subject: serializer.fromJson<String?>(json['subject']),
+      timing: serializer.fromJson<String?>(json['timing']),
+      teacherName: serializer.fromJson<String?>(json['teacherName']),
+      monthlyFeePaise: serializer.fromJson<int?>(json['monthlyFeePaise']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'classId': serializer.toJson<int>(classId),
+      'name': serializer.toJson<String>(name),
+      'subject': serializer.toJson<String?>(subject),
+      'timing': serializer.toJson<String?>(timing),
+      'teacherName': serializer.toJson<String?>(teacherName),
+      'monthlyFeePaise': serializer.toJson<int?>(monthlyFeePaise),
+      'isActive': serializer.toJson<bool>(isActive),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ClassBatchSession copyWith(
+          {int? id,
+          int? classId,
+          String? name,
+          Value<String?> subject = const Value.absent(),
+          Value<String?> timing = const Value.absent(),
+          Value<String?> teacherName = const Value.absent(),
+          Value<int?> monthlyFeePaise = const Value.absent(),
+          bool? isActive,
+          DateTime? createdAt,
+          DateTime? updatedAt}) =>
+      ClassBatchSession(
+        id: id ?? this.id,
+        classId: classId ?? this.classId,
+        name: name ?? this.name,
+        subject: subject.present ? subject.value : this.subject,
+        timing: timing.present ? timing.value : this.timing,
+        teacherName: teacherName.present ? teacherName.value : this.teacherName,
+        monthlyFeePaise: monthlyFeePaise.present
+            ? monthlyFeePaise.value
+            : this.monthlyFeePaise,
+        isActive: isActive ?? this.isActive,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  ClassBatchSession copyWithCompanion(BatchesCompanion data) {
+    return ClassBatchSession(
+      id: data.id.present ? data.id.value : this.id,
+      classId: data.classId.present ? data.classId.value : this.classId,
+      name: data.name.present ? data.name.value : this.name,
+      subject: data.subject.present ? data.subject.value : this.subject,
+      timing: data.timing.present ? data.timing.value : this.timing,
+      teacherName:
+          data.teacherName.present ? data.teacherName.value : this.teacherName,
+      monthlyFeePaise: data.monthlyFeePaise.present
+          ? data.monthlyFeePaise.value
+          : this.monthlyFeePaise,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClassBatchSession(')
+          ..write('id: $id, ')
+          ..write('classId: $classId, ')
+          ..write('name: $name, ')
+          ..write('subject: $subject, ')
+          ..write('timing: $timing, ')
+          ..write('teacherName: $teacherName, ')
+          ..write('monthlyFeePaise: $monthlyFeePaise, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, classId, name, subject, timing,
+      teacherName, monthlyFeePaise, isActive, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ClassBatchSession &&
+          other.id == this.id &&
+          other.classId == this.classId &&
+          other.name == this.name &&
+          other.subject == this.subject &&
+          other.timing == this.timing &&
+          other.teacherName == this.teacherName &&
+          other.monthlyFeePaise == this.monthlyFeePaise &&
+          other.isActive == this.isActive &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class BatchesCompanion extends UpdateCompanion<ClassBatchSession> {
+  final Value<int> id;
+  final Value<int> classId;
+  final Value<String> name;
+  final Value<String?> subject;
+  final Value<String?> timing;
+  final Value<String?> teacherName;
+  final Value<int?> monthlyFeePaise;
+  final Value<bool> isActive;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const BatchesCompanion({
+    this.id = const Value.absent(),
+    this.classId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.subject = const Value.absent(),
+    this.timing = const Value.absent(),
+    this.teacherName = const Value.absent(),
+    this.monthlyFeePaise = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  BatchesCompanion.insert({
+    this.id = const Value.absent(),
+    required int classId,
+    required String name,
+    this.subject = const Value.absent(),
+    this.timing = const Value.absent(),
+    this.teacherName = const Value.absent(),
+    this.monthlyFeePaise = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  })  : classId = Value(classId),
+        name = Value(name);
+  static Insertable<ClassBatchSession> custom({
+    Expression<int>? id,
+    Expression<int>? classId,
+    Expression<String>? name,
+    Expression<String>? subject,
+    Expression<String>? timing,
+    Expression<String>? teacherName,
+    Expression<int>? monthlyFeePaise,
+    Expression<bool>? isActive,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (classId != null) 'class_id': classId,
+      if (name != null) 'name': name,
+      if (subject != null) 'subject': subject,
+      if (timing != null) 'timing': timing,
+      if (teacherName != null) 'teacher_name': teacherName,
+      if (monthlyFeePaise != null) 'monthly_fee_paise': monthlyFeePaise,
+      if (isActive != null) 'is_active': isActive,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  BatchesCompanion copyWith(
+      {Value<int>? id,
+      Value<int>? classId,
+      Value<String>? name,
+      Value<String?>? subject,
+      Value<String?>? timing,
+      Value<String?>? teacherName,
+      Value<int?>? monthlyFeePaise,
+      Value<bool>? isActive,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt}) {
+    return BatchesCompanion(
+      id: id ?? this.id,
+      classId: classId ?? this.classId,
+      name: name ?? this.name,
+      subject: subject ?? this.subject,
+      timing: timing ?? this.timing,
+      teacherName: teacherName ?? this.teacherName,
+      monthlyFeePaise: monthlyFeePaise ?? this.monthlyFeePaise,
+      isActive: isActive ?? this.isActive,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (classId.present) {
+      map['class_id'] = Variable<int>(classId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (subject.present) {
+      map['subject'] = Variable<String>(subject.value);
+    }
+    if (timing.present) {
+      map['timing'] = Variable<String>(timing.value);
+    }
+    if (teacherName.present) {
+      map['teacher_name'] = Variable<String>(teacherName.value);
+    }
+    if (monthlyFeePaise.present) {
+      map['monthly_fee_paise'] = Variable<int>(monthlyFeePaise.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BatchesCompanion(')
+          ..write('id: $id, ')
+          ..write('classId: $classId, ')
+          ..write('name: $name, ')
+          ..write('subject: $subject, ')
+          ..write('timing: $timing, ')
+          ..write('teacherName: $teacherName, ')
+          ..write('monthlyFeePaise: $monthlyFeePaise, ')
           ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -798,12 +1750,15 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $InstitutesTable institutes = $InstitutesTable(this);
+  late final $ClassesTable classes = $ClassesTable(this);
   late final $StudentsTable students = $StudentsTable(this);
+  late final $BatchesTable batches = $BatchesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [institutes, students];
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
+      [institutes, classes, students, batches];
 }
 
 typedef $$InstitutesTableCreateCompanionBuilder = InstitutesCompanion Function({
@@ -982,12 +1937,203 @@ typedef $$InstitutesTableProcessedTableManager = ProcessedTableManager<
     (Institute, BaseReferences<_$AppDatabase, $InstitutesTable, Institute>),
     Institute,
     PrefetchHooks Function()>;
+typedef $$ClassesTableCreateCompanionBuilder = ClassesCompanion Function({
+  Value<int> id,
+  required String name,
+  required String academicYear,
+  Value<String?> description,
+  Value<bool> isActive,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+typedef $$ClassesTableUpdateCompanionBuilder = ClassesCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<String> academicYear,
+  Value<String?> description,
+  Value<bool> isActive,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+
+class $$ClassesTableFilterComposer
+    extends Composer<_$AppDatabase, $ClassesTable> {
+  $$ClassesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get academicYear => $composableBuilder(
+      column: $table.academicYear, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$ClassesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ClassesTable> {
+  $$ClassesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get academicYear => $composableBuilder(
+      column: $table.academicYear,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$ClassesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ClassesTable> {
+  $$ClassesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get academicYear => $composableBuilder(
+      column: $table.academicYear, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$ClassesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ClassesTable,
+    ClassBatch,
+    $$ClassesTableFilterComposer,
+    $$ClassesTableOrderingComposer,
+    $$ClassesTableAnnotationComposer,
+    $$ClassesTableCreateCompanionBuilder,
+    $$ClassesTableUpdateCompanionBuilder,
+    (ClassBatch, BaseReferences<_$AppDatabase, $ClassesTable, ClassBatch>),
+    ClassBatch,
+    PrefetchHooks Function()> {
+  $$ClassesTableTableManager(_$AppDatabase db, $ClassesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ClassesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ClassesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ClassesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String> academicYear = const Value.absent(),
+            Value<String?> description = const Value.absent(),
+            Value<bool> isActive = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              ClassesCompanion(
+            id: id,
+            name: name,
+            academicYear: academicYear,
+            description: description,
+            isActive: isActive,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+            required String academicYear,
+            Value<String?> description = const Value.absent(),
+            Value<bool> isActive = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              ClassesCompanion.insert(
+            id: id,
+            name: name,
+            academicYear: academicYear,
+            description: description,
+            isActive: isActive,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ClassesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $ClassesTable,
+    ClassBatch,
+    $$ClassesTableFilterComposer,
+    $$ClassesTableOrderingComposer,
+    $$ClassesTableAnnotationComposer,
+    $$ClassesTableCreateCompanionBuilder,
+    $$ClassesTableUpdateCompanionBuilder,
+    (ClassBatch, BaseReferences<_$AppDatabase, $ClassesTable, ClassBatch>),
+    ClassBatch,
+    PrefetchHooks Function()>;
 typedef $$StudentsTableCreateCompanionBuilder = StudentsCompanion Function({
   Value<int> id,
   required String admissionNumber,
   required String fullName,
   Value<String?> phone,
   Value<String?> guardianName,
+  Value<int?> classId,
   Value<bool> isActive,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
@@ -998,6 +2144,7 @@ typedef $$StudentsTableUpdateCompanionBuilder = StudentsCompanion Function({
   Value<String> fullName,
   Value<String?> phone,
   Value<String?> guardianName,
+  Value<int?> classId,
   Value<bool> isActive,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
@@ -1027,6 +2174,9 @@ class $$StudentsTableFilterComposer
 
   ColumnFilters<String> get guardianName => $composableBuilder(
       column: $table.guardianName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get classId => $composableBuilder(
+      column: $table.classId, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<bool> get isActive => $composableBuilder(
       column: $table.isActive, builder: (column) => ColumnFilters(column));
@@ -1064,6 +2214,9 @@ class $$StudentsTableOrderingComposer
       column: $table.guardianName,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<int> get classId => $composableBuilder(
+      column: $table.classId, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<bool> get isActive => $composableBuilder(
       column: $table.isActive, builder: (column) => ColumnOrderings(column));
 
@@ -1097,6 +2250,9 @@ class $$StudentsTableAnnotationComposer
 
   GeneratedColumn<String> get guardianName => $composableBuilder(
       column: $table.guardianName, builder: (column) => column);
+
+  GeneratedColumn<int> get classId =>
+      $composableBuilder(column: $table.classId, builder: (column) => column);
 
   GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
@@ -1136,6 +2292,7 @@ class $$StudentsTableTableManager extends RootTableManager<
             Value<String> fullName = const Value.absent(),
             Value<String?> phone = const Value.absent(),
             Value<String?> guardianName = const Value.absent(),
+            Value<int?> classId = const Value.absent(),
             Value<bool> isActive = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
@@ -1146,6 +2303,7 @@ class $$StudentsTableTableManager extends RootTableManager<
             fullName: fullName,
             phone: phone,
             guardianName: guardianName,
+            classId: classId,
             isActive: isActive,
             createdAt: createdAt,
             updatedAt: updatedAt,
@@ -1156,6 +2314,7 @@ class $$StudentsTableTableManager extends RootTableManager<
             required String fullName,
             Value<String?> phone = const Value.absent(),
             Value<String?> guardianName = const Value.absent(),
+            Value<int?> classId = const Value.absent(),
             Value<bool> isActive = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
@@ -1166,6 +2325,7 @@ class $$StudentsTableTableManager extends RootTableManager<
             fullName: fullName,
             phone: phone,
             guardianName: guardianName,
+            classId: classId,
             isActive: isActive,
             createdAt: createdAt,
             updatedAt: updatedAt,
@@ -1189,12 +2349,258 @@ typedef $$StudentsTableProcessedTableManager = ProcessedTableManager<
     (Student, BaseReferences<_$AppDatabase, $StudentsTable, Student>),
     Student,
     PrefetchHooks Function()>;
+typedef $$BatchesTableCreateCompanionBuilder = BatchesCompanion Function({
+  Value<int> id,
+  required int classId,
+  required String name,
+  Value<String?> subject,
+  Value<String?> timing,
+  Value<String?> teacherName,
+  Value<int?> monthlyFeePaise,
+  Value<bool> isActive,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+typedef $$BatchesTableUpdateCompanionBuilder = BatchesCompanion Function({
+  Value<int> id,
+  Value<int> classId,
+  Value<String> name,
+  Value<String?> subject,
+  Value<String?> timing,
+  Value<String?> teacherName,
+  Value<int?> monthlyFeePaise,
+  Value<bool> isActive,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+
+class $$BatchesTableFilterComposer
+    extends Composer<_$AppDatabase, $BatchesTable> {
+  $$BatchesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get classId => $composableBuilder(
+      column: $table.classId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get subject => $composableBuilder(
+      column: $table.subject, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get timing => $composableBuilder(
+      column: $table.timing, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get teacherName => $composableBuilder(
+      column: $table.teacherName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get monthlyFeePaise => $composableBuilder(
+      column: $table.monthlyFeePaise,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$BatchesTableOrderingComposer
+    extends Composer<_$AppDatabase, $BatchesTable> {
+  $$BatchesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get classId => $composableBuilder(
+      column: $table.classId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get subject => $composableBuilder(
+      column: $table.subject, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get timing => $composableBuilder(
+      column: $table.timing, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get teacherName => $composableBuilder(
+      column: $table.teacherName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get monthlyFeePaise => $composableBuilder(
+      column: $table.monthlyFeePaise,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$BatchesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $BatchesTable> {
+  $$BatchesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get classId =>
+      $composableBuilder(column: $table.classId, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get subject =>
+      $composableBuilder(column: $table.subject, builder: (column) => column);
+
+  GeneratedColumn<String> get timing =>
+      $composableBuilder(column: $table.timing, builder: (column) => column);
+
+  GeneratedColumn<String> get teacherName => $composableBuilder(
+      column: $table.teacherName, builder: (column) => column);
+
+  GeneratedColumn<int> get monthlyFeePaise => $composableBuilder(
+      column: $table.monthlyFeePaise, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$BatchesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $BatchesTable,
+    ClassBatchSession,
+    $$BatchesTableFilterComposer,
+    $$BatchesTableOrderingComposer,
+    $$BatchesTableAnnotationComposer,
+    $$BatchesTableCreateCompanionBuilder,
+    $$BatchesTableUpdateCompanionBuilder,
+    (
+      ClassBatchSession,
+      BaseReferences<_$AppDatabase, $BatchesTable, ClassBatchSession>
+    ),
+    ClassBatchSession,
+    PrefetchHooks Function()> {
+  $$BatchesTableTableManager(_$AppDatabase db, $BatchesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$BatchesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$BatchesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$BatchesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<int> classId = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String?> subject = const Value.absent(),
+            Value<String?> timing = const Value.absent(),
+            Value<String?> teacherName = const Value.absent(),
+            Value<int?> monthlyFeePaise = const Value.absent(),
+            Value<bool> isActive = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              BatchesCompanion(
+            id: id,
+            classId: classId,
+            name: name,
+            subject: subject,
+            timing: timing,
+            teacherName: teacherName,
+            monthlyFeePaise: monthlyFeePaise,
+            isActive: isActive,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required int classId,
+            required String name,
+            Value<String?> subject = const Value.absent(),
+            Value<String?> timing = const Value.absent(),
+            Value<String?> teacherName = const Value.absent(),
+            Value<int?> monthlyFeePaise = const Value.absent(),
+            Value<bool> isActive = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              BatchesCompanion.insert(
+            id: id,
+            classId: classId,
+            name: name,
+            subject: subject,
+            timing: timing,
+            teacherName: teacherName,
+            monthlyFeePaise: monthlyFeePaise,
+            isActive: isActive,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$BatchesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $BatchesTable,
+    ClassBatchSession,
+    $$BatchesTableFilterComposer,
+    $$BatchesTableOrderingComposer,
+    $$BatchesTableAnnotationComposer,
+    $$BatchesTableCreateCompanionBuilder,
+    $$BatchesTableUpdateCompanionBuilder,
+    (
+      ClassBatchSession,
+      BaseReferences<_$AppDatabase, $BatchesTable, ClassBatchSession>
+    ),
+    ClassBatchSession,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
   $$InstitutesTableTableManager get institutes =>
       $$InstitutesTableTableManager(_db, _db.institutes);
+  $$ClassesTableTableManager get classes =>
+      $$ClassesTableTableManager(_db, _db.classes);
   $$StudentsTableTableManager get students =>
       $$StudentsTableTableManager(_db, _db.students);
+  $$BatchesTableTableManager get batches =>
+      $$BatchesTableTableManager(_db, _db.batches);
 }

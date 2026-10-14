@@ -11,8 +11,9 @@ class Students extends Table {
   TextColumn get phone => text().nullable().withLength(min: 7, max: 20)();
   TextColumn get guardianName =>
       text().nullable().withLength(min: 1, max: 120)();
-  IntColumn get classId =>
-      integer().nullable().references(Classes, #id, onDelete: KeyAction.setNull)();
+  IntColumn get classId => integer()
+      .nullable()
+      .references(Classes, #id, onDelete: KeyAction.setNull)();
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();

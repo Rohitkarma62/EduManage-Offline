@@ -93,7 +93,8 @@ class DashboardScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Class & batch management', style: textTheme.titleMedium),
+                  Text('Class & batch management',
+                      style: textTheme.titleMedium),
                   const SizedBox(height: 6),
                   const Text(
                     'Create classes or coaching batches by academic year, then assign students to them.',

@@ -36,12 +36,30 @@ class ClassRepository {
   Future<void> setClassActive(int id, {required bool isActive}) =>
       _database.setClassActive(id, isActive: isActive);
 
-  Future<List<ClassBatchSession>> getBatches(int classId) => _database.getBatches(classId);
+  Future<List<ClassBatchSession>> getBatches(int classId) =>
+      _database.getBatches(classId);
   Future<ClassBatchSession?> getBatch(int id) => _database.getBatch(id);
-  Future<bool> batchExists({required int classId, required String name, int? excludingId}) =>
-      _database.batchExists(classId: classId, name: name, excludingId: excludingId);
-  Future<int> saveBatch({int? id, required int classId, required String name, String? subject, String? timing, String? teacherName, int? monthlyFeePaise}) =>
-      _database.saveBatch(id: id, classId: classId, name: name, subject: subject, timing: timing, teacherName: teacherName, monthlyFeePaise: monthlyFeePaise);
-  Future<void> setBatchActive(int id, {required bool isActive}) => _database.setBatchActive(id, isActive: isActive);
+  Future<bool> batchExists(
+          {required int classId, required String name, int? excludingId}) =>
+      _database.batchExists(
+          classId: classId, name: name, excludingId: excludingId);
+  Future<int> saveBatch(
+          {int? id,
+          required int classId,
+          required String name,
+          String? subject,
+          String? timing,
+          String? teacherName,
+          int? monthlyFeePaise}) =>
+      _database.saveBatch(
+          id: id,
+          classId: classId,
+          name: name,
+          subject: subject,
+          timing: timing,
+          teacherName: teacherName,
+          monthlyFeePaise: monthlyFeePaise);
+  Future<void> setBatchActive(int id, {required bool isActive}) =>
+      _database.setBatchActive(id, isActive: isActive);
   Future<int> countBatches(int classId) => _database.countBatches(classId);
 }

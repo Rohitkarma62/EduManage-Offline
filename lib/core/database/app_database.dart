@@ -113,11 +113,10 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  Future<List<ClassBatchSession>> getBatches(int classId) =>
-      (select(batches)
-            ..where((row) => row.classId.equals(classId))
-            ..orderBy([(row) => OrderingTerm.asc(row.name)]))
-          .get();
+  Future<List<ClassBatchSession>> getBatches(int classId) => (select(batches)
+        ..where((row) => row.classId.equals(classId))
+        ..orderBy([(row) => OrderingTerm.asc(row.name)]))
+      .get();
 
   Future<ClassBatchSession?> getBatch(int id) =>
       (select(batches)..where((row) => row.id.equals(id))).getSingleOrNull();
@@ -128,8 +127,8 @@ class AppDatabase extends _$AppDatabase {
     int? excludingId,
   }) async {
     final statement = select(batches)
-      ..where((row) =>
-          row.classId.equals(classId) & row.name.equals(name.trim()));
+      ..where(
+          (row) => row.classId.equals(classId) & row.name.equals(name.trim()));
     final existing = await statement.getSingleOrNull();
     return existing != null && existing.id != excludingId;
   }

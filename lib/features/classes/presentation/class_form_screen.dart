@@ -31,7 +31,8 @@ class _ClassFormScreenState extends ConsumerState<ClassFormScreen> {
 
   Future<void> _loadClass() async {
     try {
-      final record = await ref.read(classRepositoryProvider).getClass(widget.classId!);
+      final record =
+          await ref.read(classRepositoryProvider).getClass(widget.classId!);
       if (!mounted) {
         return;
       }
@@ -83,7 +84,9 @@ class _ClassFormScreenState extends ConsumerState<ClassFormScreen> {
       )) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('A class with this name already exists for this year')),
+            const SnackBar(
+                content: Text(
+                    'A class with this name already exists for this year')),
           );
         }
         return;
@@ -98,7 +101,10 @@ class _ClassFormScreenState extends ConsumerState<ClassFormScreen> {
       ref.invalidate(activeClassesProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(widget.classId == null ? 'Class saved on this device' : 'Class changes saved')),
+          SnackBar(
+              content: Text(widget.classId == null
+                  ? 'Class saved on this device'
+                  : 'Class changes saved')),
         );
         context.pop();
       }
@@ -118,7 +124,8 @@ class _ClassFormScreenState extends ConsumerState<ClassFormScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: Text(widget.classId == null ? 'Add class or batch' : 'Edit class'),
+          title: Text(
+              widget.classId == null ? 'Add class or batch' : 'Edit class'),
         ),
         body: _loading
             ? const Center(child: CircularProgressIndicator())
@@ -170,7 +177,8 @@ class _ClassFormScreenState extends ConsumerState<ClassFormScreen> {
                       controller: _description,
                       maxLength: 240,
                       maxLines: 3,
-                      decoration: const InputDecoration(labelText: 'Description (optional)'),
+                      decoration: const InputDecoration(
+                          labelText: 'Description (optional)'),
                       validator: (value) => (value?.trim().length ?? 0) > 240
                           ? 'Maximum 240 characters'
                           : null,
@@ -178,7 +186,11 @@ class _ClassFormScreenState extends ConsumerState<ClassFormScreen> {
                     const SizedBox(height: 24),
                     FilledButton(
                       onPressed: _saving ? null : _save,
-                      child: Text(_saving ? 'Saving…' : widget.classId == null ? 'Save class' : 'Save changes'),
+                      child: Text(_saving
+                          ? 'Saving…'
+                          : widget.classId == null
+                              ? 'Save class'
+                              : 'Save changes'),
                     ),
                   ],
                 ),
