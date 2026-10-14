@@ -404,19 +404,54 @@ class AppDatabase extends _$AppDatabase {
     int? classId,
   }) async {
     final now = DateTime.now();
-    final values = StudentsCompanion(
-      admissionNumber: Value(admissionNumber.trim().toUpperCase()),
-      fullName: Value(fullName.trim()),
-      phone: Value(phone == null || phone.trim().isEmpty ? null : phone.trim()),
-      guardianName: Value(guardianName == null || guardianName.trim().isEmpty
-          ? null
-          : guardianName.trim()),
-      classId: Value(classId),
-      updatedAt: Value(now),
-    );
-    if (id == null) return into(students).insert(values);
-    await (update(students)..where((row) => row.id.equals(id))).write(values);
-    return id;
+    return transaction(() async {
+      final existing = id == null ? null : await getStudent(id);
+      if (id != null && existing == null) {
+        throw StateError('Student does not exist');
+      }
+      final values = StudentsCompanion(
+        admissionNumber: Value(admissionNumber.trim().toUpperCase()),
+        fullName: Value(fullName.trim()),
+        phone: Value(
+          phone == null || phone.trim().isEmpty ? null : phone.trim(),
+        ),
+        guardianName: Value(
+          guardianName == null || guardianName.trim().isEmpty
+              ? null
+              : guardianName.trim(),
+        ),
+        // Assignment changes are written through the history ledger below.
+        classId: Value(existing?.classId),
+        updatedAt: Value(now),
+      );
+
+      final studentId = id == null
+          ? await into(students).insert(values)
+          : id;
+      if (id != null) {
+        await (update(students)..where((row) => row.id.equals(id))).write(values);
+      }
+
+      if (classId != existing?.classId) {
+        if (classId == null) {
+          await clearStudentAssignment(
+            studentId: studentId,
+            effectiveTo: now,
+            reason: 'Class assignment removed from student form',
+          );
+        } else {
+          await assignStudentToClass(
+            studentId: studentId,
+            classId: classId,
+            effectiveFrom: now,
+            reason: existing?.classId == null
+                ? 'Initial class assignment'
+                : 'Class transfer from student form',
+          );
+        }
+      }
+      return studentId;
+    });
   }
 
   Future<List<StudentAssignment>> getStudentAssignmentHistory(int studentId) =>
