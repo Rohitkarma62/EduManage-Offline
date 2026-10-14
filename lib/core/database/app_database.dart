@@ -475,6 +475,9 @@ class AppDatabase extends _$AppDatabase {
     required DateTime effectiveFrom,
     String? reason,
   }) async {
+    if (effectiveFrom.isAfter(DateTime.now())) {
+      throw StateError('Future-dated assignments are not supported yet');
+    }
     final normalizedReason =
         reason == null || reason.trim().isEmpty ? null : reason.trim();
     if (normalizedReason != null && normalizedReason.length > 240) {
