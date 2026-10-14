@@ -19,7 +19,7 @@ void main() {
       );
 
   Future<int> createStudent({int? classId}) => database.saveStudent(
-        admissionNumber: 'ADM-' + DateTime.now().microsecondsSinceEpoch.toString(),
+        admissionNumber: 'ADM-${DateTime.now().microsecondsSinceEpoch}',
         fullName: 'Test Student',
         classId: classId,
       );
