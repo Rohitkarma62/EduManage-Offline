@@ -273,6 +273,13 @@ class AppDatabase extends _$AppDatabase {
       if (batchCount > 0) {
         throw StateError('A class with batches cannot be deleted');
       }
+      final assignmentCount = await customSelect(
+        'SELECT COUNT(*) AS total FROM student_assignments WHERE class_id = ?',
+        variables: [Variable.withInt(id)],
+      ).getSingle().then((row) => row.read<int>('total') ?? 0);
+      if (assignmentCount > 0) {
+        throw StateError('A class referenced by assignment history cannot be deleted');
+      }
 
       await (update(students)..where((row) => row.classId.equals(id))).write(
         StudentsCompanion(
