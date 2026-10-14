@@ -35,6 +35,27 @@ class StudentRepository {
         classId: classId,
       );
 
+  Future<List<StudentAssignment>> getAssignmentHistory(int studentId) =>
+      _database.getStudentAssignmentHistory(studentId);
+
+  Future<StudentAssignment?> getCurrentAssignment(int studentId) =>
+      _database.getCurrentStudentAssignment(studentId);
+
+  Future<int> transferStudent({
+    required int studentId,
+    required int classId,
+    int? batchId,
+    required DateTime effectiveFrom,
+    String? reason,
+  }) =>
+      _database.assignStudentToClass(
+        studentId: studentId,
+        classId: classId,
+        batchId: batchId,
+        effectiveFrom: effectiveFrom,
+        reason: reason,
+      );
+
   Future<void> setStudentActive(int id, {required bool isActive}) =>
       _database.setStudentActive(id, isActive: isActive);
 }

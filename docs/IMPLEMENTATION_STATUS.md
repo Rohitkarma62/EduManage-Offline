@@ -46,7 +46,7 @@
 
 ## Not implemented yet
 
-- Effective-dated student class/batch assignment and transfer history.
+
 - Fee charges, payments, payment allocation, discounts/credits, refund/reversal, and attendance workflows.
 - Staff, salary, expenses, exams, results, and certificates.
 - Offline PDF generation workflows.

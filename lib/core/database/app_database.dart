@@ -4,16 +4,17 @@ import 'tables/batches.dart';
 import 'tables/classes.dart';
 import 'tables/institutes.dart';
 import 'tables/students.dart';
+import 'tables/student_assignments.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Institutes, Classes, Students, Batches])
+@DriftDatabase(tables: [Institutes, Classes, Students, Batches, StudentAssignments])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
       : super(executor ?? driftDatabase(name: 'edumanage_offline'));
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   Future<void> _installBatchFeeGuards() async {
     await customStatement('''
@@ -105,12 +106,50 @@ class AppDatabase extends _$AppDatabase {
     """);
   }
 
+  Future<void> _installAssignmentGuards() async {
+    await customStatement('''
+      CREATE UNIQUE INDEX IF NOT EXISTS student_assignments_one_current
+      ON student_assignments(student_id) WHERE effective_to IS NULL
+    ''');
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS student_assignments_valid_dates_insert
+      BEFORE INSERT ON student_assignments
+      WHEN NEW.effective_to IS NOT NULL AND NEW.effective_to <= NEW.effective_from
+      BEGIN SELECT RAISE(ABORT, 'assignment end must be after start'); END
+    """);
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS student_assignments_valid_dates_update
+      BEFORE UPDATE OF effective_from, effective_to ON student_assignments
+      WHEN NEW.effective_to IS NOT NULL AND NEW.effective_to <= NEW.effective_from
+      BEGIN SELECT RAISE(ABORT, 'assignment end must be after start'); END
+    """);
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS student_assignments_batch_class_insert
+      BEFORE INSERT ON student_assignments
+      WHEN NEW.batch_id IS NOT NULL AND NOT EXISTS (
+        SELECT 1 FROM batches b
+        WHERE b.id = NEW.batch_id AND b.class_id = NEW.class_id
+      )
+      BEGIN SELECT RAISE(ABORT, 'assigned batch must belong to assigned class'); END
+    """);
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS student_assignments_batch_class_update
+      BEFORE UPDATE OF batch_id, class_id ON student_assignments
+      WHEN NEW.batch_id IS NOT NULL AND NOT EXISTS (
+        SELECT 1 FROM batches b
+        WHERE b.id = NEW.batch_id AND b.class_id = NEW.class_id
+      )
+      BEGIN SELECT RAISE(ABORT, 'assigned batch must belong to assigned class'); END
+    """);
+  }
+
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
           await m.createAll();
           await _installBatchFeeGuards();
           await _installIntegrityGuards();
+          await _installAssignmentGuards();
         },
         onUpgrade: (m, from, to) async {
           if (from < 2) await m.createTable(students);
@@ -121,6 +160,17 @@ class AppDatabase extends _$AppDatabase {
           if (from < 4) await m.createTable(batches);
           if (from < 5) await _installBatchFeeGuards();
           if (from < 6) await _installIntegrityGuards();
+          if (from < 7) {
+            await m.createTable(studentAssignments);
+            await customStatement('''
+              INSERT INTO student_assignments
+                (student_id, class_id, batch_id, effective_from, effective_to, transfer_reason, created_at)
+              SELECT id, class_id, NULL, created_at, NULL, 'Migrated existing class assignment', created_at
+              FROM students
+              WHERE class_id IS NOT NULL
+            ''');
+            await _installAssignmentGuards();
+          }
         },
       );
 
@@ -222,6 +272,13 @@ class AppDatabase extends _$AppDatabase {
       final batchCount = await countBatches(id);
       if (batchCount > 0) {
         throw StateError('A class with batches cannot be deleted');
+      }
+      final assignmentCount = await customSelect(
+        'SELECT COUNT(*) AS total FROM student_assignments WHERE class_id = ?',
+        variables: [Variable.withInt(id)],
+      ).getSingle().then((row) => row.read<int>('total'));
+      if (assignmentCount > 0) {
+        throw StateError('A class referenced by assignment history cannot be deleted');
       }
 
       await (update(students)..where((row) => row.classId.equals(id))).write(
@@ -354,19 +411,171 @@ class AppDatabase extends _$AppDatabase {
     int? classId,
   }) async {
     final now = DateTime.now();
-    final values = StudentsCompanion(
-      admissionNumber: Value(admissionNumber.trim().toUpperCase()),
-      fullName: Value(fullName.trim()),
-      phone: Value(phone == null || phone.trim().isEmpty ? null : phone.trim()),
-      guardianName: Value(guardianName == null || guardianName.trim().isEmpty
-          ? null
-          : guardianName.trim()),
-      classId: Value(classId),
-      updatedAt: Value(now),
-    );
-    if (id == null) return into(students).insert(values);
-    await (update(students)..where((row) => row.id.equals(id))).write(values);
-    return id;
+    return transaction(() async {
+      final existing = id == null ? null : await getStudent(id);
+      if (id != null && existing == null) {
+        throw StateError('Student does not exist');
+      }
+      final values = StudentsCompanion(
+        admissionNumber: Value(admissionNumber.trim().toUpperCase()),
+        fullName: Value(fullName.trim()),
+        phone: Value(
+          phone == null || phone.trim().isEmpty ? null : phone.trim(),
+        ),
+        guardianName: Value(
+          guardianName == null || guardianName.trim().isEmpty
+              ? null
+              : guardianName.trim(),
+        ),
+        // Assignment changes are written through the history ledger below.
+        classId: Value(existing?.classId),
+        updatedAt: Value(now),
+      );
+
+      final studentId = id ?? await into(students).insert(values);
+      if (id != null) {
+        await (update(students)..where((row) => row.id.equals(id))).write(values);
+      }
+
+      if (classId != existing?.classId) {
+        if (classId == null) {
+          final currentAssignment =
+              await getCurrentStudentAssignment(studentId);
+          final effectiveTo = currentAssignment != null &&
+                  now.difference(currentAssignment.effectiveFrom) <
+                      const Duration(seconds: 1)
+              ? currentAssignment.effectiveFrom.add(const Duration(seconds: 1))
+              : now;
+          await clearStudentAssignment(
+            studentId: studentId,
+            effectiveTo: effectiveTo,
+            reason: 'Class assignment removed from student form',
+          );
+        } else {
+          await assignStudentToClass(
+            studentId: studentId,
+            classId: classId,
+            effectiveFrom: now,
+            reason: existing?.classId == null
+                ? 'Initial class assignment'
+                : 'Class transfer from student form',
+          );
+        }
+      }
+      return studentId;
+    });
+  }
+
+  Future<List<StudentAssignment>> getStudentAssignmentHistory(int studentId) =>
+      (select(studentAssignments)
+            ..where((row) => row.studentId.equals(studentId))
+            ..orderBy([(row) => OrderingTerm.asc(row.effectiveFrom)]))
+          .get();
+
+  Future<StudentAssignment?> getCurrentStudentAssignment(int studentId) =>
+      (select(studentAssignments)
+            ..where((row) =>
+                row.studentId.equals(studentId) & row.effectiveTo.isNull()))
+          .getSingleOrNull();
+
+  /// Transfers a student without overwriting their previous placement.
+  /// The end of the old assignment is exclusive, matching the new start.
+  Future<int> assignStudentToClass({
+    required int studentId,
+    required int classId,
+    int? batchId,
+    required DateTime effectiveFrom,
+    String? reason,
+  }) async {
+    if (effectiveFrom.isAfter(DateTime.now())) {
+      throw StateError('Future-dated assignments are not supported yet');
+    }
+    final trimmedReason = reason?.trim();
+    final normalizedReason =
+        trimmedReason?.isNotEmpty == true ? trimmedReason : null;
+    if (normalizedReason != null && normalizedReason.length > 240) {
+      throw ArgumentError('Transfer reason must be 240 characters or fewer');
+    }
+    return transaction(() async {
+      final student = await getStudent(studentId);
+      if (student == null) throw StateError('Student does not exist');
+      final targetClass = await getClass(classId);
+      if (targetClass == null) throw StateError('Target class does not exist');
+      if (batchId != null) {
+        final targetBatch = await getBatch(batchId);
+        if (targetBatch == null || targetBatch.classId != classId) {
+          throw StateError('Selected batch must belong to the target class');
+        }
+      }
+
+      final current = await getCurrentStudentAssignment(studentId);
+      if (current != null) {
+        if (!effectiveFrom.isAfter(current.effectiveFrom)) {
+          throw StateError('Transfer date must be after the current assignment start');
+        }
+        await (update(studentAssignments)
+              ..where((row) => row.id.equals(current.id)))
+            .write(StudentAssignmentsCompanion(
+          effectiveTo: Value(effectiveFrom),
+          endReason: Value(normalizedReason),
+        ));
+      } else if (student.classId != null) {
+        // A legacy/unmigrated assignment should never be silently discarded.
+        throw StateError('Student has a class but no assignment history; review data first');
+      }
+
+      final assignmentId = await into(studentAssignments).insert(
+        StudentAssignmentsCompanion.insert(
+          studentId: studentId,
+          classId: classId,
+          batchId: Value(batchId),
+          effectiveFrom: effectiveFrom,
+          transferReason: Value(normalizedReason),
+        ),
+      );
+      await (update(students)..where((row) => row.id.equals(studentId))).write(
+        StudentsCompanion(
+          classId: Value(classId),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+      return assignmentId;
+    });
+  }
+
+  Future<void> clearStudentAssignment({
+    required int studentId,
+    required DateTime effectiveTo,
+    String? reason,
+  }) async {
+    final normalizedReason =
+        reason == null || reason.trim().isEmpty ? null : reason.trim();
+    await transaction(() async {
+      final student = await getStudent(studentId);
+      if (student == null) throw StateError('Student does not exist');
+      final current = await getCurrentStudentAssignment(studentId);
+      if (current == null) {
+        if (student.classId != null) {
+          throw StateError('Student has a class but no assignment history; review data first');
+        }
+        return;
+      }
+      if (!effectiveTo.isAfter(current.effectiveFrom)) {
+        throw StateError('End date must be after the assignment start');
+      }
+      await (update(studentAssignments)
+            ..where((row) => row.id.equals(current.id)))
+          .write(StudentAssignmentsCompanion(
+        effectiveTo: Value(effectiveTo),
+        endReason: Value(normalizedReason),
+      ));
+      await (update(students)..where((row) => row.id.equals(studentId))).write(
+        StudentsCompanion(
+          classId: const Value(null),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+    });
   }
 
   Future<void> setStudentActive(int id, {required bool isActive}) async {

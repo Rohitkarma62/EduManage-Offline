@@ -66,6 +66,10 @@ void main() {
     expect(student?.classId, 7);
     expect(classRecord?.name, 'Class 10 A');
     expect(await database.getBatches(7), isEmpty);
+    final migratedHistory = await database.getStudentAssignmentHistory(9);
+    expect(migratedHistory, hasLength(1));
+    expect(migratedHistory.single.classId, 7);
+    expect(migratedHistory.single.effectiveTo, isNull);
 
     final batchId = await database.saveBatch(
       classId: 7,
