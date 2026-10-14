@@ -97,12 +97,15 @@ class AppDatabase extends _$AppDatabase {
     required String academicYear,
     int? excludingId,
   }) async {
-    final statement = select(classes)
-      ..where((row) =>
-          row.name.equals(name.trim()) &
-          row.academicYear.equals(academicYear.trim()));
-    final existing = await statement.getSingleOrNull();
-    return existing != null && existing.id != excludingId;
+    final normalizedName = name.trim().toLowerCase();
+    final normalizedYear = academicYear.trim().toLowerCase();
+    final existing = await (select(classes)
+          ..where((row) => row.id.isNotIn([excludingId ?? -1])))
+        .get();
+    return existing.any((row) =>
+        row.id != excludingId &&
+        row.name.trim().toLowerCase() == normalizedName &&
+        row.academicYear.trim().toLowerCase() == normalizedYear);
   }
 
   Future<int> saveClass({
@@ -111,6 +114,13 @@ class AppDatabase extends _$AppDatabase {
     required String academicYear,
     String? description,
   }) async {
+    if (await classExists(
+      name: name,
+      academicYear: academicYear,
+      excludingId: id,
+    )) {
+      throw StateError('A class with this name already exists for this year');
+    }
     final now = DateTime.now();
     final values = ClassesCompanion(
       name: Value(name.trim()),
@@ -149,11 +159,13 @@ class AppDatabase extends _$AppDatabase {
     required String name,
     int? excludingId,
   }) async {
-    final statement = select(batches)
-      ..where(
-          (row) => row.classId.equals(classId) & row.name.equals(name.trim()));
-    final existing = await statement.getSingleOrNull();
-    return existing != null && existing.id != excludingId;
+    final normalizedName = name.trim().toLowerCase();
+    final existing = await (select(batches)
+          ..where((row) => row.classId.equals(classId)))
+        .get();
+    return existing.any((row) =>
+        row.id != excludingId &&
+        row.name.trim().toLowerCase() == normalizedName);
   }
 
   Future<int> saveBatch({
@@ -165,6 +177,13 @@ class AppDatabase extends _$AppDatabase {
     String? teacherName,
     int? monthlyFeePaise,
   }) async {
+    if (await batchExists(
+      classId: classId,
+      name: name,
+      excludingId: id,
+    )) {
+      throw StateError('A batch with this name already exists in this class');
+    }
     String? optionalText(String? value) =>
         value == null || value.trim().isEmpty ? null : value.trim();
     final values = BatchesCompanion(
