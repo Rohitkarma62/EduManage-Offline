@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../providers/student_providers.dart';
 import '../../classes/providers/class_providers.dart';
+import '../providers/student_providers.dart';
 
 class StudentFormScreen extends ConsumerStatefulWidget {
   const StudentFormScreen({super.key, this.studentId});
@@ -20,7 +20,8 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
   final _name = TextEditingController();
   final _phone = TextEditingController();
   final _guardian = TextEditingController();
-  int? _classId;\n  bool _saving = false;
+  int? _classId;
+  bool _saving = false;
   bool _loading = false;
 
   @override
@@ -48,7 +49,8 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
       _admission.text = student.admissionNumber;
       _name.text = student.fullName;
       _phone.text = student.phone ?? '';
-      _guardian.text = student.guardianName ?? '';\n      _classId = student.classId;
+      _guardian.text = student.guardianName ?? '';
+      _classId = student.classId;
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -83,9 +85,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
       if (alreadyExists) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Admission number already exists'),
-            ),
+            const SnackBar(content: Text('Admission number already exists')),
           );
         }
         return;
@@ -97,6 +97,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
         fullName: _name.text.trim(),
         phone: _phone.text,
         guardianName: _guardian.text,
+        classId: _classId,
       );
       ref.invalidate(studentsProvider);
       if (mounted) {
