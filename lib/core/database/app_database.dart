@@ -504,6 +504,7 @@ class AppDatabase extends _$AppDatabase {
               ..where((row) => row.id.equals(current.id)))
             .write(StudentAssignmentsCompanion(
           effectiveTo: Value(effectiveFrom),
+          endReason: Value(normalizedReason),
         ));
       } else if (student.classId != null) {
         // A legacy/unmigrated assignment should never be silently discarded.
@@ -553,7 +554,7 @@ class AppDatabase extends _$AppDatabase {
             ..where((row) => row.id.equals(current.id)))
           .write(StudentAssignmentsCompanion(
         effectiveTo: Value(effectiveTo),
-        transferReason: Value(normalizedReason),
+        endReason: Value(normalizedReason),
       ));
       await (update(students)..where((row) => row.id.equals(studentId))).write(
         StudentsCompanion(
