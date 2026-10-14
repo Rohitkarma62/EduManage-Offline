@@ -33,6 +33,14 @@
 - The list separates active and inactive students with a toggle; inactive records remain searchable and recoverable.
 - The updated timestamp changes when student details or active status changes.
 
+## Step 9: Student management hardening
+
+- Admission numbers are trimmed and normalized to uppercase before saving.
+- The form checks for an existing admission number before saving and displays a clear duplicate message.
+- Admission number, name, phone, and guardian fields enforce length limits in the form.
+- Database tests cover normalization, duplicate detection, and allowing the current student to keep its own admission number while editing.
+- Widget tests cover required-field validation and duplicate admission feedback.
+
 ## Not implemented yet
 
 - Class/batch, fee, payment allocation, discounts/credits, refund/reversal, and attendance workflows.

@@ -36,14 +36,35 @@ void main() {
     expect(student.isActive, isTrue);
   });
 
-  test('rejects duplicate admission numbers', () async {
-    await database.saveStudent(
-      admissionNumber: 'ADM-001',
+  test('normalizes admission numbers and detects duplicates case-insensitively', () async {
+    final id = await database.saveStudent(
+      admissionNumber: '  adm-001 ',
       fullName: 'Asha Sharma',
+    );
+    expect((await database.getStudent(id))?.admissionNumber, 'ADM-001');
+    expect(
+      await database.studentAdmissionNumberExists(
+        admissionNumber: 'adm-001',
+      ),
+      isTrue,
+    );
+    expect(
+      await database.studentAdmissionNumberExists(
+        admissionNumber: ' ADM-001 ',
+        excludingId: id,
+      ),
+      isFalse,
+    );
+    expect(
+      await database.studentAdmissionNumberExists(
+        admissionNumber: 'ADM-002',
+        excludingId: id,
+      ),
+      isFalse,
     );
     await expectLater(
       database.saveStudent(
-        admissionNumber: 'ADM-001',
+        admissionNumber: 'adm-001',
         fullName: 'Another Student',
       ),
       throwsA(anything),
