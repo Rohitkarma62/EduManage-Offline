@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/database/app_database.dart';
+
 import '../providers/class_providers.dart';
 
 class BatchesScreen extends ConsumerWidget {
