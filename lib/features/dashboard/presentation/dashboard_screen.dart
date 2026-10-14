@@ -41,8 +41,7 @@ class DashboardScreen extends ConsumerWidget {
                   Text('Institute setup', style: textTheme.titleMedium),
                   const SizedBox(height: 6),
                   const Text(
-                    'Save or update the institute name, academic year, and '
-                    'optional phone number in the local database.',
+                    'Save or update institute details in the local database.',
                   ),
                   const SizedBox(height: 16),
                   SizedBox(
@@ -62,6 +61,32 @@ class DashboardScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Student management', style: textTheme.titleMedium),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Add student records and search by name or admission '
+                    'number. Records stay on this device.',
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () => context.push('/students'),
+                      icon: const Icon(Icons.people_outline),
+                      label: const Text('Open students'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           const Card(
             child: Padding(
               padding: EdgeInsets.all(16),
@@ -71,8 +96,9 @@ class DashboardScreen extends ConsumerWidget {
                   Text('Local database'),
                   SizedBox(height: 6),
                   Text(
-                    'Institute details use Drift and SQLite. Other management '
-                    'modules will be added in later implementation steps.',
+                    'Institute and student details use Drift and SQLite. '
+                    'Other management modules will be added in later '
+                    'implementation steps.',
                   ),
                 ],
               ),
