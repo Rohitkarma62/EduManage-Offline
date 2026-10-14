@@ -103,7 +103,6 @@ void main() {
     );
     expect((await database.getInstitute())?.name, 'North Star');
   });
-}
 
   test('creates, searches, edits, and deactivates classes', () async {
     final id = await database.saveClass(

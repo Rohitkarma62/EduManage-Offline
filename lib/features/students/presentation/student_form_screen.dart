@@ -193,7 +193,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
                             'Class list unavailable. Student can remain unassigned.',
                           ),
                           data: (classes) => DropdownButtonFormField<int>(
-                            value: classes.any((record) => record.id == _classId)
+                            initialValue: classes.any((record) => record.id == _classId)
                                 ? _classId
                                 : null,
                             decoration: const InputDecoration(
