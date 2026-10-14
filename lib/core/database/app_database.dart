@@ -13,7 +13,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'edumanage_offline'));
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   Future<void> _installBatchFeeGuards() async {
     await customStatement('''
@@ -34,11 +34,83 @@ class AppDatabase extends _$AppDatabase {
     ''');
   }
 
+  Future<void> _installIntegrityGuards() async {
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS classes_normalized_duplicate_insert
+      BEFORE INSERT ON classes
+      WHEN EXISTS (
+        SELECT 1 FROM classes c
+        WHERE lower(trim(c.name)) = lower(trim(NEW.name))
+          AND lower(trim(c.academic_year)) = lower(trim(NEW.academic_year))
+      )
+      BEGIN SELECT RAISE(ABORT, 'duplicate class name for academic year'); END
+    """);
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS classes_normalized_duplicate_update
+      BEFORE UPDATE OF name, academic_year ON classes
+      WHEN EXISTS (
+        SELECT 1 FROM classes c
+        WHERE c.id != NEW.id
+          AND lower(trim(c.name)) = lower(trim(NEW.name))
+          AND lower(trim(c.academic_year)) = lower(trim(NEW.academic_year))
+      )
+      BEGIN SELECT RAISE(ABORT, 'duplicate class name for academic year'); END
+    """);
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS batches_normalized_duplicate_insert
+      BEFORE INSERT ON batches
+      WHEN EXISTS (
+        SELECT 1 FROM batches b
+        WHERE b.class_id = NEW.class_id
+          AND lower(trim(b.name)) = lower(trim(NEW.name))
+      )
+      BEGIN SELECT RAISE(ABORT, 'duplicate batch name for class'); END
+    """);
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS batches_normalized_duplicate_update
+      BEFORE UPDATE OF class_id, name ON batches
+      WHEN EXISTS (
+        SELECT 1 FROM batches b
+        WHERE b.id != NEW.id
+          AND b.class_id = NEW.class_id
+          AND lower(trim(b.name)) = lower(trim(NEW.name))
+      )
+      BEGIN SELECT RAISE(ABORT, 'duplicate batch name for class'); END
+    """);
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS batches_parent_class_insert
+      BEFORE INSERT ON batches
+      WHEN NOT EXISTS (SELECT 1 FROM classes c WHERE c.id = NEW.class_id)
+      BEGIN SELECT RAISE(ABORT, 'batch parent class does not exist'); END
+    """);
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS batches_parent_class_update
+      BEFORE UPDATE OF class_id ON batches
+      WHEN NOT EXISTS (SELECT 1 FROM classes c WHERE c.id = NEW.class_id)
+      BEGIN SELECT RAISE(ABORT, 'batch parent class does not exist'); END
+    """);
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS students_class_reference_insert
+      BEFORE INSERT ON students
+      WHEN NEW.class_id IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM classes c WHERE c.id = NEW.class_id)
+      BEGIN SELECT RAISE(ABORT, 'student class does not exist'); END
+    """);
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS students_class_reference_update
+      BEFORE UPDATE OF class_id ON students
+      WHEN NEW.class_id IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM classes c WHERE c.id = NEW.class_id)
+      BEGIN SELECT RAISE(ABORT, 'student class does not exist'); END
+    """);
+  }
+
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
           await m.createAll();
           await _installBatchFeeGuards();
+          await _installIntegrityGuards();
         },
         onUpgrade: (m, from, to) async {
           if (from < 2) await m.createTable(students);
@@ -48,6 +120,7 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 4) await m.createTable(batches);
           if (from < 5) await _installBatchFeeGuards();
+          if (from < 6) await _installIntegrityGuards();
         },
       );
 
@@ -97,15 +170,19 @@ class AppDatabase extends _$AppDatabase {
     required String academicYear,
     int? excludingId,
   }) async {
-    final normalizedName = name.trim().toLowerCase();
-    final normalizedYear = academicYear.trim().toLowerCase();
-    final existing = await (select(classes)
-          ..where((row) => row.id.isNotIn([excludingId ?? -1])))
-        .get();
-    return existing.any((row) =>
-        row.id != excludingId &&
-        row.name.trim().toLowerCase() == normalizedName &&
-        row.academicYear.trim().toLowerCase() == normalizedYear);
+    final variables = <Variable<Object>>[
+      Variable.withString(name.trim().toLowerCase()),
+      Variable.withString(academicYear.trim().toLowerCase()),
+    ];
+    final exclusion = excludingId == null ? '' : 'AND id != ?';
+    if (excludingId != null) variables.add(Variable.withInt(excludingId));
+    final existing = await customSelect(
+      'SELECT 1 AS matched FROM classes '
+      'WHERE lower(trim(name)) = ? AND lower(trim(academic_year)) = ? '
+      '$exclusion LIMIT 1',
+      variables: variables,
+    ).getSingleOrNull();
+    return existing != null;
   }
 
   Future<int> saveClass({
@@ -179,13 +256,18 @@ class AppDatabase extends _$AppDatabase {
     required String name,
     int? excludingId,
   }) async {
-    final normalizedName = name.trim().toLowerCase();
-    final existing = await (select(batches)
-          ..where((row) => row.classId.equals(classId)))
-        .get();
-    return existing.any((row) =>
-        row.id != excludingId &&
-        row.name.trim().toLowerCase() == normalizedName);
+    final variables = <Variable<Object>>[
+      Variable.withInt(classId),
+      Variable.withString(name.trim().toLowerCase()),
+    ];
+    final exclusion = excludingId == null ? '' : 'AND id != ?';
+    if (excludingId != null) variables.add(Variable.withInt(excludingId));
+    final existing = await customSelect(
+      'SELECT 1 AS matched FROM batches WHERE class_id = ? '
+      'AND lower(trim(name)) = ? $exclusion LIMIT 1',
+      variables: variables,
+    ).getSingleOrNull();
+    return existing != null;
   }
 
   Future<int> saveBatch({
