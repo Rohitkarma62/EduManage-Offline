@@ -74,7 +74,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Transfer reason *'),
+      find.byType(TextFormField),
       'No actual placement change',
     );
     await tester.tap(find.text('Save transfer'));
@@ -131,5 +131,4 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     await database.close();
   });
-
 }
