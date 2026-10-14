@@ -181,4 +181,32 @@ void main() {
       throwsA(anything),
     );
   });
+  test('database rejects student assignment to a missing class', () async {
+    await expectLater(
+      database.saveStudent(
+        admissionNumber: 'ADM-BAD-CLASS',
+        fullName: 'Invalid Assignment',
+        classId: 999999,
+      ),
+      throwsA(anything),
+    );
+    await expectLater(
+      database.customStatement(
+        "INSERT INTO students (admission_number, full_name, class_id) "
+        "VALUES ('ADM-BAD-DIRECT', 'Invalid Direct Assignment', 999999)",
+      ),
+      throwsA(anything),
+    );
+  });
+
+  test('database rejects normalized duplicate classes even on direct writes', () async {
+    await database.saveClass(name: 'Class 10 A', academicYear: '2026-2027');
+    await expectLater(
+      database.customStatement(
+        "INSERT INTO classes (name, academic_year) "
+        "VALUES (' class 10 a ', '2026-2027')",
+      ),
+      throwsA(anything),
+    );
+  });
 }
