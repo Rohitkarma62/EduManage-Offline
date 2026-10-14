@@ -21,3 +21,11 @@ final activeClassesProvider = FutureProvider(
 final allClassesProvider = FutureProvider(
   (ref) => ref.watch(classRepositoryProvider).getClasses(),
 );
+
+final classDetailProvider = FutureProvider.family(
+  (ref, int id) => ref.watch(classRepositoryProvider).getClass(id),
+);
+
+final classBatchesProvider = FutureProvider.family(
+  (ref, int classId) => ref.watch(classRepositoryProvider).getBatches(classId),
+);
