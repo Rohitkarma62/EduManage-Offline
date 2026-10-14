@@ -57,6 +57,17 @@ class AppDatabase extends _$AppDatabase {
   Future<Student?> getStudent(int id) =>
       (select(students)..where((row) => row.id.equals(id))).getSingleOrNull();
 
+  Future<bool> studentAdmissionNumberExists({
+    required String admissionNumber,
+    int? excludingId,
+  }) async {
+    final normalized = admissionNumber.trim().toUpperCase();
+    final existing = await (select(students)
+          ..where((row) => row.admissionNumber.equals(normalized)))
+        .getSingleOrNull();
+    return existing != null && existing.id != excludingId;
+  }
+
   Future<int> saveStudent(
       {int? id,
       required String admissionNumber,
@@ -65,7 +76,7 @@ class AppDatabase extends _$AppDatabase {
       String? guardianName}) async {
     final now = DateTime.now();
     final values = StudentsCompanion(
-      admissionNumber: Value(admissionNumber.trim()),
+      admissionNumber: Value(admissionNumber.trim().toUpperCase()),
       fullName: Value(fullName.trim()),
       phone: Value(phone == null || phone.trim().isEmpty ? null : phone.trim()),
       guardianName: Value(guardianName == null || guardianName.trim().isEmpty
