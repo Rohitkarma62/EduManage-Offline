@@ -103,7 +103,9 @@ class _ClassFormScreenState extends ConsumerState<ClassFormScreen> {
         );
       }
     } finally {
-      if (mounted) setState(() => _saving = false);
+      if (mounted) {
+        setState(() => _saving = false);
+      }
     }
   }
 
