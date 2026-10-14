@@ -112,6 +112,31 @@ class DashboardScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Class & batch management', style: textTheme.titleMedium),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Create classes or coaching batches by academic year, then assign students to them.',
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () => context.push('/classes'),
+                      icon: const Icon(Icons.groups_outlined),
+                      label: const Text('Open classes & batches'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           const Card(
             child: Padding(
               padding: EdgeInsets.all(16),
