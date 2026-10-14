@@ -32,7 +32,9 @@ class _ClassFormScreenState extends ConsumerState<ClassFormScreen> {
   Future<void> _loadClass() async {
     try {
       final record = await ref.read(classRepositoryProvider).getClass(widget.classId!);
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       if (record == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Class or batch not found')),
@@ -51,7 +53,9 @@ class _ClassFormScreenState extends ConsumerState<ClassFormScreen> {
         context.pop();
       }
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -64,7 +68,9 @@ class _ClassFormScreenState extends ConsumerState<ClassFormScreen> {
   }
 
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
     setState(() => _saving = true);
     try {
       final repository = ref.read(classRepositoryProvider);
@@ -131,8 +137,12 @@ class _ClassFormScreenState extends ConsumerState<ClassFormScreen> {
                       ),
                       validator: (value) {
                         final text = value?.trim() ?? '';
-                        if (text.isEmpty) return 'Enter a class or batch name';
-                        if (text.length > 100) return 'Maximum 100 characters';
+                        if (text.isEmpty) {
+                          return 'Enter a class or batch name';
+                        }
+                        if (text.length > 100) {
+                          return 'Maximum 100 characters';
+                        }
                         return null;
                       },
                     ),
@@ -146,8 +156,12 @@ class _ClassFormScreenState extends ConsumerState<ClassFormScreen> {
                       ),
                       validator: (value) {
                         final text = value?.trim() ?? '';
-                        if (text.length < 4) return 'Enter a valid academic year';
-                        if (text.length > 20) return 'Maximum 20 characters';
+                        if (text.length < 4) {
+                          return 'Enter a valid academic year';
+                        }
+                        if (text.length > 20) {
+                          return 'Maximum 20 characters';
+                        }
                         return null;
                       },
                     ),
