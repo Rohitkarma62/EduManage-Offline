@@ -2,6 +2,7 @@ import 'package:drift/native.dart';
 import 'package:edumanage_offline/app/app.dart';
 import 'package:edumanage_offline/core/database/app_database.dart';
 import 'package:edumanage_offline/core/database/database_provider.dart';
+import 'package:edumanage_offline/features/students/presentation/student_form_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -36,14 +37,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [appDatabaseProvider.overrideWithValue(database)],
-        child: const EduManageApp(),
+        child: const MaterialApp(home: StudentFormScreen()),
       ),
     );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Open students'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Add student'));
-    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Save student'));
     await tester.pumpAndSettle();
@@ -64,14 +60,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [appDatabaseProvider.overrideWithValue(database)],
-        child: const EduManageApp(),
+        child: const MaterialApp(home: StudentFormScreen()),
       ),
     );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Open students'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Add student'));
-    await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextFormField).at(0), ' adm-001 ');
     await tester.enterText(find.byType(TextFormField).at(1), 'New Student');
@@ -84,4 +75,5 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     await database.close();
   });
+
 }
