@@ -26,6 +26,8 @@ class StudentAssignments extends Table {
   DateTimeColumn get effectiveTo => dateTime().nullable()();
   TextColumn get transferReason =>
       text().nullable().withLength(min: 1, max: 240)();
+  TextColumn get endReason =>
+      text().nullable().withLength(min: 1, max: 240)();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
