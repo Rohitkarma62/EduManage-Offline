@@ -104,8 +104,8 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
                     separatorBuilder: (_, __) => const Divider(height: 1),
                     itemBuilder: (context, index) {
                       final record = visible[index];
-                      void edit() => context.push('/classes/' + record.id.toString() + '/edit');
-                      void openBatches() => context.push('/classes/' + record.id.toString() + '/batches');
+                      void edit() => context.push('/classes/${record.id}/edit');
+                      void openBatches() => context.push('/classes/${record.id}/batches');
                       return ListTile(
                         leading: CircleAvatar(
                           child: Icon(record.isActive ? Icons.groups_outlined : Icons.groups_2_outlined),
