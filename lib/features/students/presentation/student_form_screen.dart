@@ -73,13 +73,30 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     try {
-      await ref.read(studentRepositoryProvider).saveStudent(
-            id: widget.studentId,
-            admissionNumber: _admission.text,
-            fullName: _name.text,
-            phone: _phone.text,
-            guardianName: _guardian.text,
+      final repository = ref.read(studentRepositoryProvider);
+      final admissionNumber = _admission.text.trim().toUpperCase();
+      final alreadyExists = await repository.admissionNumberExists(
+        admissionNumber: admissionNumber,
+        excludingId: widget.studentId,
+      );
+      if (alreadyExists) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Admission number already exists'),
+            ),
           );
+        }
+        return;
+      }
+
+      await repository.saveStudent(
+        id: widget.studentId,
+        admissionNumber: admissionNumber,
+        fullName: _name.text.trim(),
+        phone: _phone.text,
+        guardianName: _guardian.text,
+      );
       ref.invalidate(studentsProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -118,6 +135,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
                     TextFormField(
                       controller: _admission,
                       textCapitalization: TextCapitalization.characters,
+                      maxLength: 40,
                       decoration: const InputDecoration(
                         labelText: 'Admission number *',
                       ),
@@ -131,6 +149,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
                     TextFormField(
                       controller: _name,
                       textCapitalization: TextCapitalization.words,
+                      maxLength: 120,
                       decoration:
                           const InputDecoration(labelText: 'Student name *'),
                       validator: (v) => v == null || v.trim().isEmpty
@@ -143,6 +162,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
                     TextFormField(
                       controller: _phone,
                       keyboardType: TextInputType.phone,
+                      maxLength: 20,
                       decoration:
                           const InputDecoration(labelText: 'Phone (optional)'),
                       validator: (v) {
@@ -156,6 +176,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
                     TextFormField(
                       controller: _guardian,
                       textCapitalization: TextCapitalization.words,
+                      maxLength: 120,
                       decoration: const InputDecoration(
                         labelText: 'Parent/guardian (optional)',
                       ),
