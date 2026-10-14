@@ -24,6 +24,7 @@ class StudentRepository {
     required String fullName,
     String? phone,
     String? guardianName,
+    int? classId,
   }) =>
       _database.saveStudent(
         id: id,
@@ -31,6 +32,7 @@ class StudentRepository {
         fullName: fullName,
         phone: phone,
         guardianName: guardianName,
+        classId: classId,
       );
 
   Future<void> setStudentActive(int id, {required bool isActive}) =>
