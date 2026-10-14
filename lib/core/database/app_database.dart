@@ -36,11 +36,6 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        beforeOpen: (details) async {
-          // SQLite foreign-key enforcement is connection-local and disabled by
-          // default. Enable it on every opened connection before app queries run.
-          await customStatement('PRAGMA foreign_keys = ON');
-        },
         onCreate: (m) async {
           await m.createAll();
           await _installBatchFeeGuards();
@@ -140,6 +135,26 @@ class AppDatabase extends _$AppDatabase {
     if (id == null) return into(classes).insert(values);
     await (update(classes)..where((row) => row.id.equals(id))).write(values);
     return id;
+  }
+
+  /// Deletes a class only when it has no batches, and safely unassigns its students.
+  /// This explicit transaction keeps the app's deletion policy consistent even
+  /// when a SQLite executor does not enable foreign-key enforcement.
+  Future<void> deleteClass(int id) async {
+    await transaction(() async {
+      final batchCount = await countBatches(id);
+      if (batchCount > 0) {
+        throw StateError('A class with batches cannot be deleted');
+      }
+
+      await (update(students)..where((row) => row.classId.equals(id))).write(
+        StudentsCompanion(
+          classId: const Value(null),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+      await (delete(classes)..where((row) => row.id.equals(id))).go();
+    });
   }
 
   Future<void> setClassActive(int id, {required bool isActive}) async {
