@@ -1,18 +1,19 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'tables/batches.dart';
 import 'tables/classes.dart';
 import 'tables/institutes.dart';
 import 'tables/students.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Institutes, Classes, Students])
+@DriftDatabase(tables: [Institutes, Classes, Students, Batches])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
       : super(executor ?? driftDatabase(name: 'edumanage_offline'));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -23,6 +24,7 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(classes);
             await m.addColumn(students, students.classId);
           }
+          if (from < 4) await m.createTable(batches);
         },
       );
 
@@ -109,6 +111,69 @@ class AppDatabase extends _$AppDatabase {
         updatedAt: Value(DateTime.now()),
       ),
     );
+  }
+
+  Future<List<ClassBatchSession>> getBatches(int classId) =>
+      (select(batches)
+            ..where((row) => row.classId.equals(classId))
+            ..orderBy([(row) => OrderingTerm.asc(row.name)]))
+          .get();
+
+  Future<ClassBatchSession?> getBatch(int id) =>
+      (select(batches)..where((row) => row.id.equals(id))).getSingleOrNull();
+
+  Future<bool> batchExists({
+    required int classId,
+    required String name,
+    int? excludingId,
+  }) async {
+    final statement = select(batches)
+      ..where((row) =>
+          row.classId.equals(classId) & row.name.equals(name.trim()));
+    final existing = await statement.getSingleOrNull();
+    return existing != null && existing.id != excludingId;
+  }
+
+  Future<int> saveBatch({
+    int? id,
+    required int classId,
+    required String name,
+    String? subject,
+    String? timing,
+    String? teacherName,
+    int? monthlyFeePaise,
+  }) async {
+    String? optionalText(String? value) =>
+        value == null || value.trim().isEmpty ? null : value.trim();
+    final values = BatchesCompanion(
+      classId: Value(classId),
+      name: Value(name.trim()),
+      subject: Value(optionalText(subject)),
+      timing: Value(optionalText(timing)),
+      teacherName: Value(optionalText(teacherName)),
+      monthlyFeePaise: Value(monthlyFeePaise),
+      updatedAt: Value(DateTime.now()),
+    );
+    if (id == null) return into(batches).insert(values);
+    await (update(batches)..where((row) => row.id.equals(id))).write(values);
+    return id;
+  }
+
+  Future<void> setBatchActive(int id, {required bool isActive}) async {
+    await (update(batches)..where((row) => row.id.equals(id))).write(
+      BatchesCompanion(
+        isActive: Value(isActive),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  Future<int> countBatches(int classId) async {
+    final count = batches.id.count();
+    final query = selectOnly(batches)
+      ..addColumns([count])
+      ..where(batches.classId.equals(classId));
+    return await query.map((row) => row.read(count) ?? 0).getSingle();
   }
 
   Future<List<Student>> searchStudents(String query) {
