@@ -432,9 +432,7 @@ class AppDatabase extends _$AppDatabase {
         updatedAt: Value(now),
       );
 
-      final studentId = id == null
-          ? await into(students).insert(values)
-          : id;
+      final studentId = id ?? await into(students).insert(values);
       if (id != null) {
         await (update(students)..where((row) => row.id.equals(id))).write(values);
       }
