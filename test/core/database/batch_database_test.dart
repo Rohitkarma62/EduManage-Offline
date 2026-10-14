@@ -6,7 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   late AppDatabase database;
 
-  setUp(() => database = AppDatabase(NativeDatabase.memory()));
+  setUp(() => database = AppDatabase(
+        NativeDatabase.memory(setup: (db) => db.execute('PRAGMA foreign_keys = ON')),
+      ));
   tearDown(() => database.close());
 
   test('batches belong to their parent class and preserve paise amounts', () async {
