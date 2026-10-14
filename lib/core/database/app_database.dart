@@ -77,4 +77,13 @@ class AppDatabase extends _$AppDatabase {
     await (update(students)..where((row) => row.id.equals(id))).write(values);
     return id;
   }
+  
+  Future<void> setStudentActive(int id, {required bool isActive}) async {
+    await (update(students)..where((row) => row.id.equals(id))).write(
+      StudentsCompanion(
+        isActive: Value(isActive),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
 }
