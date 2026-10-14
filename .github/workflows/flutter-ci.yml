@@ -45,7 +45,10 @@ jobs:
       - name: Resolve and lock dependencies
         run: flutter pub get
 
-      - name: Check formatting
+      - name: Format Dart sources
+        run: dart format .
+
+      - name: Verify formatting
         run: dart format --output=none --set-exit-if-changed .
 
       - name: Analyze Dart code
@@ -70,7 +73,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add pubspec.lock android/gradlew android/gradlew.bat android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties
+          git add pubspec.lock android/gradlew android/gradlew.bat android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties lib
           if git diff --cached --quiet; then
             echo "Lockfile and Gradle wrapper are already current."
           else
