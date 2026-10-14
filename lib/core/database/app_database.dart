@@ -13,7 +13,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'edumanage_offline'));
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   Future<void> _installBatchFeeGuards() async {
     await customStatement('''
@@ -34,11 +34,83 @@ class AppDatabase extends _$AppDatabase {
     ''');
   }
 
+  Future<void> _installIntegrityGuards() async {
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS classes_normalized_duplicate_insert
+      BEFORE INSERT ON classes
+      WHEN EXISTS (
+        SELECT 1 FROM classes c
+        WHERE lower(trim(c.name)) = lower(trim(NEW.name))
+          AND lower(trim(c.academic_year)) = lower(trim(NEW.academic_year))
+      )
+      BEGIN SELECT RAISE(ABORT, 'duplicate class name for academic year'); END
+    """);
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS classes_normalized_duplicate_update
+      BEFORE UPDATE OF name, academic_year ON classes
+      WHEN EXISTS (
+        SELECT 1 FROM classes c
+        WHERE c.id != NEW.id
+          AND lower(trim(c.name)) = lower(trim(NEW.name))
+          AND lower(trim(c.academic_year)) = lower(trim(NEW.academic_year))
+      )
+      BEGIN SELECT RAISE(ABORT, 'duplicate class name for academic year'); END
+    """);
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS batches_normalized_duplicate_insert
+      BEFORE INSERT ON batches
+      WHEN EXISTS (
+        SELECT 1 FROM batches b
+        WHERE b.class_id = NEW.class_id
+          AND lower(trim(b.name)) = lower(trim(NEW.name))
+      )
+      BEGIN SELECT RAISE(ABORT, 'duplicate batch name for class'); END
+    """);
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS batches_normalized_duplicate_update
+      BEFORE UPDATE OF class_id, name ON batches
+      WHEN EXISTS (
+        SELECT 1 FROM batches b
+        WHERE b.id != NEW.id
+          AND b.class_id = NEW.class_id
+          AND lower(trim(b.name)) = lower(trim(NEW.name))
+      )
+      BEGIN SELECT RAISE(ABORT, 'duplicate batch name for class'); END
+    """);
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS batches_parent_class_insert
+      BEFORE INSERT ON batches
+      WHEN NOT EXISTS (SELECT 1 FROM classes c WHERE c.id = NEW.class_id)
+      BEGIN SELECT RAISE(ABORT, 'batch parent class does not exist'); END
+    """);
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS batches_parent_class_update
+      BEFORE UPDATE OF class_id ON batches
+      WHEN NOT EXISTS (SELECT 1 FROM classes c WHERE c.id = NEW.class_id)
+      BEGIN SELECT RAISE(ABORT, 'batch parent class does not exist'); END
+    """);
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS students_class_reference_insert
+      BEFORE INSERT ON students
+      WHEN NEW.class_id IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM classes c WHERE c.id = NEW.class_id)
+      BEGIN SELECT RAISE(ABORT, 'student class does not exist'); END
+    """);
+    await customStatement("""
+      CREATE TRIGGER IF NOT EXISTS students_class_reference_update
+      BEFORE UPDATE OF class_id ON students
+      WHEN NEW.class_id IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM classes c WHERE c.id = NEW.class_id)
+      BEGIN SELECT RAISE(ABORT, 'student class does not exist'); END
+    """);
+  }
+
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
           await m.createAll();
           await _installBatchFeeGuards();
+          await _installIntegrityGuards();
         },
         onUpgrade: (m, from, to) async {
           if (from < 2) await m.createTable(students);
@@ -48,6 +120,7 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 4) await m.createTable(batches);
           if (from < 5) await _installBatchFeeGuards();
+          if (from < 6) await _installIntegrityGuards();
         },
       );
 
