@@ -29,7 +29,8 @@ class _InstituteSetupScreenState extends ConsumerState<InstituteSetupScreen> {
 
   Future<void> _loadInstitute() async {
     try {
-      final institute = await ref.read(instituteRepositoryProvider).getInstitute();
+      final institute =
+          await ref.read(instituteRepositoryProvider).getInstitute();
       if (!mounted) return;
       if (institute != null) {
         _nameController.text = institute.name;
@@ -41,7 +42,9 @@ class _InstituteSetupScreenState extends ConsumerState<InstituteSetupScreen> {
         _showMessage('Could not load institute details from local storage.');
       }
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -60,9 +63,13 @@ class _InstituteSetupScreenState extends ConsumerState<InstituteSetupScreen> {
       _showMessage('Institute details saved on this device.');
       context.go('/');
     } catch (_) {
-      if (mounted) _showMessage('Save failed. Your details were not confirmed.');
+      if (mounted) {
+        _showMessage('Save failed. Your details were not confirmed.');
+      }
     } finally {
-      if (mounted) setState(() => _saving = false);
+      if (mounted) {
+        setState(() => _saving = false);
+      }
     }
   }
 
@@ -113,7 +120,9 @@ class _InstituteSetupScreenState extends ConsumerState<InstituteSetupScreen> {
                           ),
                           validator: (value) {
                             final name = value?.trim() ?? '';
-                            if (name.isEmpty) return 'Institute name is required';
+                            if (name.isEmpty) {
+                              return 'Institute name is required';
+                            }
                             if (name.length > 120) {
                               return 'Use 120 characters or fewer';
                             }
@@ -166,7 +175,9 @@ class _InstituteSetupScreenState extends ConsumerState<InstituteSetupScreen> {
                                     ),
                                   )
                                 : const Icon(Icons.save_outlined),
-                            label: Text(_saving ? 'Saving...' : 'Save institute'),
+                            label: Text(
+                              _saving ? 'Saving...' : 'Save institute',
+                            ),
                           ),
                         ),
                       ],
