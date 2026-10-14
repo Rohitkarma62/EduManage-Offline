@@ -7,6 +7,7 @@ import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/institute/presentation/institute_setup_screen.dart';
 import '../../features/students/presentation/student_assignment_history_screen.dart';
 import '../../features/students/presentation/student_form_screen.dart';
+import '../../features/students/presentation/student_transfer_screen.dart';
 import '../../features/students/presentation/students_screen.dart';
 
 final GoRouter appRouter = GoRouter(routes: <RouteBase>[
@@ -65,6 +66,13 @@ final GoRouter appRouter = GoRouter(routes: <RouteBase>[
     path: '/students/:id/assignments',
     name: 'student-assignment-history',
     builder: (context, state) => StudentAssignmentHistoryScreen(
+      studentId: int.parse(state.pathParameters['id']!),
+    ),
+  ),
+  GoRoute(
+    path: '/students/:id/transfer',
+    name: 'student-transfer',
+    builder: (context, state) => StudentTransferScreen(
       studentId: int.parse(state.pathParameters['id']!),
     ),
   ),
