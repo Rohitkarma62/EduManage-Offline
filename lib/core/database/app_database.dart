@@ -13,11 +13,33 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'edumanage_offline'));
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
+
+  Future<void> _installBatchFeeGuards() async {
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS batches_fee_nonnegative_insert
+      BEFORE INSERT ON batches
+      WHEN NEW.monthly_fee_paise IS NOT NULL AND NEW.monthly_fee_paise < 0
+      BEGIN
+        SELECT RAISE(ABORT, 'monthly_fee_paise must be non-negative');
+      END
+    ''');
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS batches_fee_nonnegative_update
+      BEFORE UPDATE OF monthly_fee_paise ON batches
+      WHEN NEW.monthly_fee_paise IS NOT NULL AND NEW.monthly_fee_paise < 0
+      BEGIN
+        SELECT RAISE(ABORT, 'monthly_fee_paise must be non-negative');
+      END
+    ''');
+  }
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) async => m.createAll(),
+        onCreate: (m) async {
+          await m.createAll();
+          await _installBatchFeeGuards();
+        },
         onUpgrade: (m, from, to) async {
           if (from < 2) await m.createTable(students);
           if (from < 3) {
@@ -25,6 +47,7 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(students, students.classId);
           }
           if (from < 4) await m.createTable(batches);
+          if (from < 5) await _installBatchFeeGuards();
         },
       );
 
