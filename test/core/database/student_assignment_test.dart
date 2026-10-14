@@ -35,7 +35,7 @@ void main() {
     expect(original!.classId, firstClass);
     expect(original.effectiveTo, isNull);
 
-    final transferDate = DateTime.now().add(const Duration(days: 2));
+    final transferDate = original.effectiveFrom.add(const Duration(seconds: 2));
     await database.assignStudentToClass(
       studentId: studentId,
       classId: secondClass,
