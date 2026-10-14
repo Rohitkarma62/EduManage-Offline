@@ -439,9 +439,15 @@ class AppDatabase extends _$AppDatabase {
 
       if (classId != existing?.classId) {
         if (classId == null) {
+          final currentAssignment =
+              await getCurrentStudentAssignment(studentId);
+          final effectiveTo = currentAssignment != null &&
+                  !now.isAfter(currentAssignment.effectiveFrom)
+              ? currentAssignment.effectiveFrom.add(const Duration(seconds: 1))
+              : now;
           await clearStudentAssignment(
             studentId: studentId,
-            effectiveTo: now,
+            effectiveTo: effectiveTo,
             reason: 'Class assignment removed from student form',
           );
         } else {
