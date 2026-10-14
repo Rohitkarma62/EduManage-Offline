@@ -5,6 +5,8 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('EduManage Offline'),
@@ -14,23 +16,25 @@ class DashboardScreen extends StatelessWidget {
         children: [
           Text(
             'Institute dashboard',
-            style: Theme.of(context).textTheme.headlineSmall,
+            style: textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
             'Application foundation is being set up. No institute data has '
             'been created or loaded yet.',
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: textTheme.bodyMedium,
           ),
           const SizedBox(height: 20),
           const _SetupNotice(
             title: 'Local database',
-            detail: 'Drift schema and migrations are the next foundation task.',
+            detail:
+                'Drift schema and migrations are the next foundation task.',
           ),
           const SizedBox(height: 12),
           const _SetupNotice(
             title: 'Institute setup',
-            detail: 'Onboarding and institute settings are not implemented yet.',
+            detail:
+                'Onboarding and institute settings are not implemented yet.',
           ),
         ],
       ),
