@@ -104,3 +104,53 @@ void main() {
     expect((await database.getInstitute())?.name, 'North Star');
   });
 }
+
+  test('creates, searches, edits, and deactivates classes', () async {
+    final id = await database.saveClass(
+      name: 'Class 10 A',
+      academicYear: '2026-2027',
+      description: 'Morning section',
+    );
+    expect(await database.classExists(
+      name: 'Class 10 A',
+      academicYear: '2026-2027',
+    ), isTrue);
+    expect(await database.classExists(
+      name: 'Class 10 A',
+      academicYear: '2026-2027',
+      excludingId: id,
+    ), isFalse);
+    expect((await database.searchClasses('Morning')).single.id, id);
+
+    await database.saveClass(
+      id: id,
+      name: 'Class 10 B',
+      academicYear: '2026-2027',
+    );
+    expect((await database.getClass(id))?.name, 'Class 10 B');
+    await database.setClassActive(id, isActive: false);
+    expect((await database.getClass(id))?.isActive, isFalse);
+    await database.setClassActive(id, isActive: true);
+    expect((await database.getClass(id))?.isActive, isTrue);
+  });
+
+  test('assigns students to a class without breaking existing student data', () async {
+    final classId = await database.saveClass(
+      name: 'NEET Morning',
+      academicYear: '2026-2027',
+    );
+    final studentId = await database.saveStudent(
+      admissionNumber: 'ADM-010',
+      fullName: 'Asha Sharma',
+      classId: classId,
+    );
+    expect((await database.getStudent(studentId))?.classId, classId);
+
+    await database.saveStudent(
+      id: studentId,
+      admissionNumber: 'ADM-010',
+      fullName: 'Asha Sharma',
+      classId: null,
+    );
+    expect((await database.getStudent(studentId))?.classId, isNull);
+  });
