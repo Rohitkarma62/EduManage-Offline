@@ -131,7 +131,7 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                           onSelected: (action) {
                             if (action == 'edit') {
                               context.push(
-                                '/students/' + student.id.toString() + '/edit',
+                                '/students/${student.id}/edit',
                               );
                             } else {
                               _setActive(student.id, action == 'activate');
