@@ -105,6 +105,7 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
                     itemBuilder: (context, index) {
                       final record = visible[index];
                       void edit() => context.push('/classes/' + record.id.toString() + '/edit');
+                      void openBatches() => context.push('/classes/' + record.id.toString() + '/batches');
                       return ListTile(
                         leading: CircleAvatar(
                           child: Icon(record.isActive ? Icons.groups_outlined : Icons.groups_2_outlined),
@@ -116,16 +117,19 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
                               : 'Academic year ${record.academicYear}\n${record.description}',
                         ),
                         isThreeLine: record.description != null && record.description!.isNotEmpty,
-                        onTap: edit,
+                        onTap: openBatches,
                         trailing: PopupMenuButton<String>(
                           onSelected: (action) {
                             if (action == 'edit') {
                               edit();
+                            } else if (action == 'batches') {
+                              openBatches();
                             } else {
                               _setActive(record.id, action == 'activate');
                             }
                           },
                           itemBuilder: (context) => [
+                            const PopupMenuItem(value: 'batches', child: Text('Manage batches')),
                             const PopupMenuItem(value: 'edit', child: Text('Edit')),
                             PopupMenuItem(
                               value: record.isActive ? 'deactivate' : 'activate',
