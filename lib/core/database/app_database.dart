@@ -442,7 +442,8 @@ class AppDatabase extends _$AppDatabase {
           final currentAssignment =
               await getCurrentStudentAssignment(studentId);
           final effectiveTo = currentAssignment != null &&
-                  !now.isAfter(currentAssignment.effectiveFrom)
+                  now.difference(currentAssignment.effectiveFrom) <
+                      const Duration(seconds: 1)
               ? currentAssignment.effectiveFrom.add(const Duration(seconds: 1))
               : now;
           await clearStudentAssignment(
