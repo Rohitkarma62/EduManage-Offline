@@ -103,7 +103,7 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                             ? 'No inactive students.'
                             : _query.isEmpty
                                 ? 'No students yet. Add the first student.'
-                                : 'No students match “' + _query + '”.',
+                                : 'No students match “$_query”.',
                         textAlign: TextAlign.center,
                       ),
                     );
@@ -121,11 +121,10 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                         ),
                         title: Text(student.fullName),
                         subtitle: Text(
-                          student.admissionNumber +
-                              (student.phone == null ? '' : ' • ' + student.phone!),
+                          '${student.admissionNumber}${student.phone == null ? '' : ' • ${student.phone}'}',
                         ),
                         onTap: () => context.push(
-                          '/students/' + student.id.toString() + '/edit',
+                          '/students/${student.id}/edit',
                         ),
                         trailing: PopupMenuButton<String>(
                           tooltip: 'Student actions',
