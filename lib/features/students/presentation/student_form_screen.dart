@@ -19,15 +19,15 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
   @override
   void dispose() { _admission.dispose(); _name.dispose(); _phone.dispose(); _guardian.dispose(); super.dispose(); }
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) { return; }
     setState(() => _saving = true);
     try {
       await ref.read(studentRepositoryProvider).saveStudent(admissionNumber: _admission.text, fullName: _name.text, phone: _phone.text, guardianName: _guardian.text);
       ref.invalidate(studentsProvider);
       if (mounted) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Student saved on this device'))); context.pop(); }
     } catch (error) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not save student: $error')));
-    } finally { if (mounted) setState(() => _saving = false); }
+      if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not save student: $error'))); }
+    } finally { if (mounted) { setState(() => _saving = false); } }
   }
   @override
   Widget build(BuildContext context) => Scaffold(
