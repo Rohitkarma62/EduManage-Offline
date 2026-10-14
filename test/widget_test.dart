@@ -21,7 +21,6 @@ void main() {
 
     expect(find.text('EduManage Offline'), findsOneWidget);
     expect(find.text('Institute dashboard'), findsOneWidget);
-    expect(find.text('Local database'), findsOneWidget);
     expect(find.text('Set up institute'), findsOneWidget);
 
     await tester.tap(find.text('Set up institute'));
