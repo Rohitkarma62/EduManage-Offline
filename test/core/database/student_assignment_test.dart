@@ -28,7 +28,14 @@ void main() {
       () async {
     final firstClass = await createClass('Class A');
     final secondClass = await createClass('Class B');
-    final studentId = await createStudent(classId: firstClass);
+    final studentId = await createStudent();
+    final initialDate = DateTime.now().subtract(const Duration(days: 1));
+    await database.assignStudentToClass(
+      studentId: studentId,
+      classId: firstClass,
+      effectiveFrom: initialDate,
+      reason: 'Initial placement',
+    );
     final original = await database.getCurrentStudentAssignment(studentId);
 
     expect(original, isNotNull);
