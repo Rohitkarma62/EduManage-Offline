@@ -9,6 +9,15 @@ class StudentRepository {
 
   Future<Student?> getStudent(int id) => _database.getStudent(id);
 
+  Future<bool> admissionNumberExists({
+    required String admissionNumber,
+    int? excludingId,
+  }) =>
+      _database.studentAdmissionNumberExists(
+        admissionNumber: admissionNumber,
+        excludingId: excludingId,
+      );
+
   Future<int> saveStudent({
     int? id,
     required String admissionNumber,
