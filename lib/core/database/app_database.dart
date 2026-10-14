@@ -170,15 +170,19 @@ class AppDatabase extends _$AppDatabase {
     required String academicYear,
     int? excludingId,
   }) async {
-    final normalizedName = name.trim().toLowerCase();
-    final normalizedYear = academicYear.trim().toLowerCase();
-    final existing = await (select(classes)
-          ..where((row) => row.id.isNotIn([excludingId ?? -1])))
-        .get();
-    return existing.any((row) =>
-        row.id != excludingId &&
-        row.name.trim().toLowerCase() == normalizedName &&
-        row.academicYear.trim().toLowerCase() == normalizedYear);
+    final variables = <Variable<Object>>[
+      Variable.withString(name.trim().toLowerCase()),
+      Variable.withString(academicYear.trim().toLowerCase()),
+    ];
+    final exclusion = excludingId == null ? '' : 'AND id != ?';
+    if (excludingId != null) variables.add(Variable.withInt(excludingId));
+    final existing = await customSelect(
+      'SELECT 1 AS matched FROM classes '
+      'WHERE lower(trim(name)) = ? AND lower(trim(academic_year)) = ? '
+      '$exclusion LIMIT 1',
+      variables: variables,
+    ).getSingleOrNull();
+    return existing != null;
   }
 
   Future<int> saveClass({
@@ -252,13 +256,18 @@ class AppDatabase extends _$AppDatabase {
     required String name,
     int? excludingId,
   }) async {
-    final normalizedName = name.trim().toLowerCase();
-    final existing = await (select(batches)
-          ..where((row) => row.classId.equals(classId)))
-        .get();
-    return existing.any((row) =>
-        row.id != excludingId &&
-        row.name.trim().toLowerCase() == normalizedName);
+    final variables = <Variable<Object>>[
+      Variable.withInt(classId),
+      Variable.withString(name.trim().toLowerCase()),
+    ];
+    final exclusion = excludingId == null ? '' : 'AND id != ?';
+    if (excludingId != null) variables.add(Variable.withInt(excludingId));
+    final existing = await customSelect(
+      'SELECT 1 AS matched FROM batches WHERE class_id = ? '
+      'AND lower(trim(name)) = ? $exclusion LIMIT 1',
+      variables: variables,
+    ).getSingleOrNull();
+    return existing != null;
   }
 
   Future<int> saveBatch({
