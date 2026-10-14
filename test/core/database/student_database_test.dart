@@ -153,4 +153,32 @@ void main() {
     );
     expect((await database.getStudent(studentId))?.classId, isNull);
   });
+  test('class uniqueness ignores letter case and surrounding spaces', () async {
+    final id = await database.saveClass(
+      name: 'Class 10 A',
+      academicYear: '2026-2027',
+    );
+    expect(
+      await database.classExists(
+        name: ' class 10 a ',
+        academicYear: '2026-2027',
+      ),
+      isTrue,
+    );
+    expect(
+      await database.classExists(
+        name: 'CLASS 10 A',
+        academicYear: '2026-2027',
+        excludingId: id,
+      ),
+      isFalse,
+    );
+    await expectLater(
+      database.saveClass(
+        name: 'CLASS 10 A',
+        academicYear: '2026-2027',
+      ),
+      throwsA(anything),
+    );
+  });
 }
