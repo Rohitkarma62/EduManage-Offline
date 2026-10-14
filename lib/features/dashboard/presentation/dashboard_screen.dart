@@ -27,8 +27,7 @@ class DashboardScreen extends StatelessWidget {
           const SizedBox(height: 20),
           const _SetupNotice(
             title: 'Local database',
-            detail:
-                'Drift schema and migrations are the next foundation task.',
+            detail: 'Drift schema and migrations are the next foundation task.',
           ),
           const SizedBox(height: 12),
           const _SetupNotice(
