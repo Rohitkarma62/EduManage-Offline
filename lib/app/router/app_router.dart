@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 
+import '../../features/classes/presentation/batches_screen.dart';
 import '../../features/classes/presentation/class_form_screen.dart';
 import '../../features/classes/presentation/classes_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
@@ -22,6 +23,13 @@ final GoRouter appRouter = GoRouter(routes: <RouteBase>[
     path: '/classes',
     name: 'classes',
     builder: (context, state) => const ClassesScreen(),
+  ),
+  GoRoute(
+    path: '/classes/:id/batches',
+    name: 'class-batches',
+    builder: (context, state) => BatchesScreen(
+      classId: int.parse(state.pathParameters['id']!),
+    ),
   ),
   GoRoute(
     path: '/classes/new',
