@@ -42,10 +42,18 @@
 - Class names are unique within an academic year; class records can be deactivated/reactivated rather than deleted.
 - Each batch belongs to one class and includes a name plus optional subject, timing, teacher, and monthly fee.
 - Monthly fees are stored as integer paise; duplicate batch names are checked within the parent class.
-- Archived batch records remain in the database. Student assignment is currently class-level; effective-dated batch assignment and transfer history remain future work.
+- Archived batch records remain in the database.
+
+## Student assignment and transfer history
+
+- Student assignments are effective-dated and preserve assignment history.
+- Existing student assignments are backfilled through the schema migration.
+- Assignment and transfer history is available in the student UI.
+- The transfer form supports selecting an active class and optional batch, an effective date, and a required reason.
+- No-op transfers are blocked, and same-day transfers are rejected according to assignment-history rules.
+- Transfer and assignment-history behavior is covered by database and widget tests.
 
 ## Not implemented yet
-
 
 - Fee charges, payments, payment allocation, discounts/credits, refund/reversal, and attendance workflows.
 - Staff, salary, expenses, exams, results, and certificates.
