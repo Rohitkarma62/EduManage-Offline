@@ -154,3 +154,4 @@ void main() {
     );
     expect((await database.getStudent(studentId))?.classId, isNull);
   });
+}
