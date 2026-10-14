@@ -22,6 +22,9 @@ class _StudentTransferScreenState extends ConsumerState<StudentTransferScreen> {
   int? _batchId;
   DateTime? _effectiveFrom;
   DateTime? _currentStart;
+  int? _currentClassId;
+  int? _currentBatchId;
+  String? _placementError;
   bool _loading = true;
   bool _saving = false;
   String? _loadError;
@@ -47,6 +50,8 @@ class _StudentTransferScreenState extends ConsumerState<StudentTransferScreen> {
       setState(() {
         _classId = current?.classId ?? student.classId;
         _batchId = current?.batchId;
+        _currentClassId = current?.classId ?? student.classId;
+        _currentBatchId = current?.batchId;
         _currentStart = current?.effectiveFrom;
         final minDate = _minimumDate!;
         _effectiveFrom = minDate.isAfter(_today) ? null : _today;
@@ -88,8 +93,16 @@ class _StudentTransferScreenState extends ConsumerState<StudentTransferScreen> {
     final effectiveFrom = _effectiveFrom;
     final classId = _classId;
     if (effectiveFrom == null || classId == null) return;
+    if (classId == _currentClassId && _batchId == _currentBatchId) {
+      setState(() => _placementError =
+          'Choose a different class or batch before saving a transfer.');
+      return;
+    }
 
-    setState(() => _saving = true);
+    setState(() {
+      _placementError = null;
+      _saving = true;
+    });
     try {
       await ref.read(studentRepositoryProvider).transferStudent(
             studentId: widget.studentId,
@@ -164,6 +177,7 @@ class _StudentTransferScreenState extends ConsumerState<StudentTransferScreen> {
                                   : (value) => setState(() {
                                         _classId = value;
                                         _batchId = null;
+                                        _placementError = null;
                                       }),
                             ),
                           ),
@@ -201,11 +215,23 @@ class _StudentTransferScreenState extends ConsumerState<StudentTransferScreen> {
                                   ],
                                   onChanged: _saving
                                       ? null
-                                      : (value) =>
-                                          setState(() => _batchId = value),
+                                      : (value) => setState(() {
+                                          _batchId = value;
+                                          _placementError = null;
+                                        }),
                                 );
                               },
                             ),
+                      if (_placementError != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            _placementError!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                        ),
                       const SizedBox(height: 16),
                       OutlinedButton.icon(
                         onPressed: _saving || dateUnavailable
@@ -222,7 +248,7 @@ class _StudentTransferScreenState extends ConsumerState<StudentTransferScreen> {
                         const Padding(
                           padding: EdgeInsets.only(top: 8),
                           child: Text(
-                            'A transfer cannot start until the day after the current assignment began. Choose the next day and try again.',
+                            'This student’s current assignment started today. Transfers can be scheduled from tomorrow; come back then.',
                           ),
                         ),
                       const SizedBox(height: 16),
