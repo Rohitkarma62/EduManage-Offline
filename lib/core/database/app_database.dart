@@ -12,4 +12,27 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   int get schemaVersion => 1;
+
+  Future<Institute?> getInstitute() =>
+      (select(institutes)..limit(1)).getSingleOrNull();
+
+  Future<void> saveInstitute({
+    required String name,
+    required String academicYear,
+    String? phone,
+  }) async {
+    final existing = await getInstitute();
+    final values = InstitutesCompanion(
+      name: Value(name.trim()),
+      academicYear: Value(academicYear.trim()),
+      phone: Value(phone == null || phone.trim().isEmpty ? null : phone.trim()),
+    );
+
+    if (existing == null) {
+      await into(institutes).insert(values);
+    } else {
+      await (update(institutes)..where((row) => row.id.equals(existing.id)))
+          .write(values);
+    }
+  }
 }
