@@ -32,8 +32,9 @@ void main() {
     final original = await database.getCurrentStudentAssignment(studentId);
 
     expect(original, isNotNull);
-    expect(original!.classId, firstClass);
-    expect(original.effectiveTo, isNull);
+    final initialAssignment = original!;
+    expect(initialAssignment.classId, firstClass);
+    expect(initialAssignment.effectiveTo, isNull);
 
     final transferDate = DateTime.now();
     await database.assignStudentToClass(
