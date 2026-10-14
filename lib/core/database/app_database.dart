@@ -13,11 +13,33 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'edumanage_offline'));
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
+
+  Future<void> _installBatchFeeGuards() async {
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS batches_fee_nonnegative_insert
+      BEFORE INSERT ON batches
+      WHEN NEW.monthly_fee_paise IS NOT NULL AND NEW.monthly_fee_paise < 0
+      BEGIN
+        SELECT RAISE(ABORT, 'monthly_fee_paise must be non-negative');
+      END
+    ''');
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS batches_fee_nonnegative_update
+      BEFORE UPDATE OF monthly_fee_paise ON batches
+      WHEN NEW.monthly_fee_paise IS NOT NULL AND NEW.monthly_fee_paise < 0
+      BEGIN
+        SELECT RAISE(ABORT, 'monthly_fee_paise must be non-negative');
+      END
+    ''');
+  }
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) async => m.createAll(),
+        onCreate: (m) async {
+          await m.createAll();
+          await _installBatchFeeGuards();
+        },
         onUpgrade: (m, from, to) async {
           if (from < 2) await m.createTable(students);
           if (from < 3) {
@@ -25,6 +47,7 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(students, students.classId);
           }
           if (from < 4) await m.createTable(batches);
+          if (from < 5) await _installBatchFeeGuards();
         },
       );
 
@@ -74,12 +97,15 @@ class AppDatabase extends _$AppDatabase {
     required String academicYear,
     int? excludingId,
   }) async {
-    final statement = select(classes)
-      ..where((row) =>
-          row.name.equals(name.trim()) &
-          row.academicYear.equals(academicYear.trim()));
-    final existing = await statement.getSingleOrNull();
-    return existing != null && existing.id != excludingId;
+    final normalizedName = name.trim().toLowerCase();
+    final normalizedYear = academicYear.trim().toLowerCase();
+    final existing = await (select(classes)
+          ..where((row) => row.id.isNotIn([excludingId ?? -1])))
+        .get();
+    return existing.any((row) =>
+        row.id != excludingId &&
+        row.name.trim().toLowerCase() == normalizedName &&
+        row.academicYear.trim().toLowerCase() == normalizedYear);
   }
 
   Future<int> saveClass({
@@ -88,6 +114,13 @@ class AppDatabase extends _$AppDatabase {
     required String academicYear,
     String? description,
   }) async {
+    if (await classExists(
+      name: name,
+      academicYear: academicYear,
+      excludingId: id,
+    )) {
+      throw StateError('A class with this name already exists for this year');
+    }
     final now = DateTime.now();
     final values = ClassesCompanion(
       name: Value(name.trim()),
@@ -102,6 +135,26 @@ class AppDatabase extends _$AppDatabase {
     if (id == null) return into(classes).insert(values);
     await (update(classes)..where((row) => row.id.equals(id))).write(values);
     return id;
+  }
+
+  /// Deletes a class only when it has no batches, and safely unassigns its students.
+  /// This explicit transaction keeps the app's deletion policy consistent even
+  /// when a SQLite executor does not enable foreign-key enforcement.
+  Future<void> deleteClass(int id) async {
+    await transaction(() async {
+      final batchCount = await countBatches(id);
+      if (batchCount > 0) {
+        throw StateError('A class with batches cannot be deleted');
+      }
+
+      await (update(students)..where((row) => row.classId.equals(id))).write(
+        StudentsCompanion(
+          classId: const Value(null),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+      await (delete(classes)..where((row) => row.id.equals(id))).go();
+    });
   }
 
   Future<void> setClassActive(int id, {required bool isActive}) async {
@@ -126,11 +179,13 @@ class AppDatabase extends _$AppDatabase {
     required String name,
     int? excludingId,
   }) async {
-    final statement = select(batches)
-      ..where(
-          (row) => row.classId.equals(classId) & row.name.equals(name.trim()));
-    final existing = await statement.getSingleOrNull();
-    return existing != null && existing.id != excludingId;
+    final normalizedName = name.trim().toLowerCase();
+    final existing = await (select(batches)
+          ..where((row) => row.classId.equals(classId)))
+        .get();
+    return existing.any((row) =>
+        row.id != excludingId &&
+        row.name.trim().toLowerCase() == normalizedName);
   }
 
   Future<int> saveBatch({
@@ -142,6 +197,13 @@ class AppDatabase extends _$AppDatabase {
     String? teacherName,
     int? monthlyFeePaise,
   }) async {
+    if (await batchExists(
+      classId: classId,
+      name: name,
+      excludingId: id,
+    )) {
+      throw StateError('A batch with this name already exists in this class');
+    }
     String? optionalText(String? value) =>
         value == null || value.trim().isEmpty ? null : value.trim();
     final values = BatchesCompanion(
