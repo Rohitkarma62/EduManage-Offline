@@ -12,7 +12,7 @@ void main() {
     await database.saveStudent(admissionNumber: 'ADM-002', fullName: 'Kabir Verma');
     expect((await database.searchStudents('Asha')).map((s) => s.admissionNumber), ['ADM-001']);
     expect((await database.searchStudents('ADM-002')).single.fullName, 'Kabir Verma');
-    final student = (await database.searchStudents()).first;
+    final student = (await database.searchStudents('')).first;
     expect(student.phone, '9876543210');
     expect(student.guardianName, 'Ravi Sharma');
     expect(student.isActive, isTrue);
@@ -20,7 +20,7 @@ void main() {
 
   test('rejects duplicate admission numbers', () async {
     await database.saveStudent(admissionNumber: 'ADM-001', fullName: 'Asha Sharma');
-    expect(() => database.saveStudent(admissionNumber: 'ADM-001', fullName: 'Another Student'), throwsA(anything));
+    await expectLater(database.saveStudent(admissionNumber: 'ADM-001', fullName: 'Another Student'), throwsA(anything));
   });
 
   test('keeps institute data when student table is used', () async {
