@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../classes/providers/class_providers.dart';
 import '../providers/student_providers.dart';
 
 class StudentFormScreen extends ConsumerStatefulWidget {
@@ -19,6 +20,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
   final _name = TextEditingController();
   final _phone = TextEditingController();
   final _guardian = TextEditingController();
+  int? _classId;
   bool _saving = false;
   bool _loading = false;
 
@@ -48,6 +50,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
       _name.text = student.fullName;
       _phone.text = student.phone ?? '';
       _guardian.text = student.guardianName ?? '';
+      _classId = student.classId;
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -82,9 +85,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
       if (alreadyExists) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Admission number already exists'),
-            ),
+            const SnackBar(content: Text('Admission number already exists')),
           );
         }
         return;
@@ -96,6 +97,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
         fullName: _name.text.trim(),
         phone: _phone.text,
         guardianName: _guardian.text,
+        classId: _classId,
       );
       ref.invalidate(studentsProvider);
       if (mounted) {
@@ -184,6 +186,39 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
                           ? 'Maximum 120 characters'
                           : null,
                     ),
+                    const SizedBox(height: 12),
+                    ref.watch(allClassesProvider).when(
+                          loading: () => const LinearProgressIndicator(),
+                          error: (_, __) => const Text(
+                            'Class list unavailable. Student can remain unassigned.',
+                          ),
+                          data: (classes) => DropdownButtonFormField<int>(
+                            value: classes.any((record) => record.id == _classId)
+                                ? _classId
+                                : null,
+                            decoration: const InputDecoration(
+                              labelText: 'Class or batch (optional)',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: [
+                              const DropdownMenuItem<int>(
+                                value: null,
+                                child: Text('Unassigned'),
+                              ),
+                              ...classes.map(
+                                (record) => DropdownMenuItem<int>(
+                                  value: record.id,
+                                  child: Text(
+                                    '${record.name} • ${record.academicYear}${record.isActive ? '' : ' (inactive)'}',
+                                  ),
+                                ),
+                              ),
+                            ],
+                            onChanged: _saving
+                                ? null
+                                : (value) => setState(() => _classId = value),
+                          ),
+                        ),
                     const SizedBox(height: 24),
                     FilledButton(
                       onPressed: _saving ? null : _save,
