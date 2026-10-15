@@ -32,85 +32,38 @@ class DashboardScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 20),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Institute setup', style: textTheme.titleMedium),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Save or update institute details in the local database.',
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: () => context.push('/institute-setup'),
-                      icon: const Icon(Icons.business_outlined),
-                      label: Text(
-                        institute.valueOrNull == null
-                            ? 'Set up institute'
-                            : 'Edit institute details',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          _DashboardCard(
+            title: 'Institute setup',
+            description: 'Save or update institute details in the local database.',
+            buttonLabel: institute.valueOrNull == null
+                ? 'Set up institute'
+                : 'Edit institute details',
+            icon: Icons.business_outlined,
+            onPressed: () => context.push('/institute-setup'),
           ),
           const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Student management', style: textTheme.titleMedium),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Add student records and search by name or admission '
-                    'number. Records stay on this device.',
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: () => context.push('/students'),
-                      icon: const Icon(Icons.people_outline),
-                      label: const Text('Open students'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          _DashboardCard(
+            title: 'Student management',
+            description: 'Add student records and search by name or admission number. Records stay on this device.',
+            buttonLabel: 'Open students',
+            icon: Icons.people_outline,
+            onPressed: () => context.push('/students'),
           ),
           const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Class & batch management',
-                      style: textTheme.titleMedium),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Create classes or coaching batches by academic year, then assign students to them.',
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: () => context.push('/classes'),
-                      icon: const Icon(Icons.groups_outlined),
-                      label: const Text('Open classes & batches'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          _DashboardCard(
+            title: 'Class & batch management',
+            description: 'Create classes or coaching batches by academic year, then assign students to them.',
+            buttonLabel: 'Open classes & batches',
+            icon: Icons.groups_outlined,
+            onPressed: () => context.push('/classes'),
+          ),
+          const SizedBox(height: 12),
+          _DashboardCard(
+            title: 'Fee payments',
+            description: 'Create fee charges, record partial payments, and review paid amounts and outstanding balances.',
+            buttonLabel: 'Open fee payments',
+            icon: Icons.account_balance_wallet_outlined,
+            onPressed: () => context.push('/fees'),
           ),
           const SizedBox(height: 12),
           const Card(
@@ -122,9 +75,7 @@ class DashboardScreen extends ConsumerWidget {
                   Text('Local database'),
                   SizedBox(height: 6),
                   Text(
-                    'Institute and student details use Drift and SQLite. '
-                    'Other management modules will be added in later '
-                    'implementation steps.',
+                    'Institute, student, class, batch, fee charge and payment data use the local Drift/SQLite database. Core workflows are designed to work offline.',
                   ),
                 ],
               ),
@@ -134,4 +85,44 @@ class DashboardScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _DashboardCard extends StatelessWidget {
+  const _DashboardCard({
+    required this.title,
+    required this.description,
+    required this.buttonLabel,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final String title;
+  final String description;
+  final String buttonLabel;
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 6),
+              Text(description),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: onPressed,
+                  icon: Icon(icon),
+                  label: Text(buttonLabel),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
 }
