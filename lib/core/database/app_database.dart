@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'tables/fee_charges.dart';
 import 'tables/batches.dart';
 import 'tables/classes.dart';
 import 'tables/institutes.dart';
@@ -9,13 +10,58 @@ import 'tables/student_assignments.dart';
 part 'app_database.g.dart';
 
 @DriftDatabase(
-    tables: [Institutes, Classes, Students, Batches, StudentAssignments])
+    tables: [Institutes, Classes, Students, Batches, StudentAssignments, FeeCharges])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
       : super(executor ?? driftDatabase(name: 'edumanage_offline'));
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
+
+  Future<void> _installFeeChargeGuards() async {
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS fee_charges_positive_amount_insert
+      BEFORE INSERT ON fee_charges
+      WHEN NEW.amount_paise <= 0
+      BEGIN SELECT RAISE(ABORT, 'fee charge amount must be positive'); END
+    ''');
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS fee_charges_positive_amount_update
+      BEFORE UPDATE OF amount_paise ON fee_charges
+      WHEN NEW.amount_paise <= 0
+      BEGIN SELECT RAISE(ABORT, 'fee charge amount must be positive'); END
+    ''');
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS fee_charges_valid_period_insert
+      BEFORE INSERT ON fee_charges
+      WHEN NEW.period_end <= NEW.period_start
+      BEGIN SELECT RAISE(ABORT, 'fee charge period end must be after start'); END
+    ''');
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS fee_charges_valid_period_update
+      BEFORE UPDATE OF period_start, period_end ON fee_charges
+      WHEN NEW.period_end <= NEW.period_start
+      BEGIN SELECT RAISE(ABORT, 'fee charge period end must be after start'); END
+    ''');
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS fee_charges_assignment_student_insert
+      BEFORE INSERT ON fee_charges
+      WHEN NOT EXISTS (
+        SELECT 1 FROM student_assignments a
+        WHERE a.id = NEW.assignment_id AND a.student_id = NEW.student_id
+      )
+      BEGIN SELECT RAISE(ABORT, 'fee charge assignment must belong to student'); END
+    ''');
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS fee_charges_assignment_student_update
+      BEFORE UPDATE OF assignment_id, student_id ON fee_charges
+      WHEN NOT EXISTS (
+        SELECT 1 FROM student_assignments a
+        WHERE a.id = NEW.assignment_id AND a.student_id = NEW.student_id
+      )
+      BEGIN SELECT RAISE(ABORT, 'fee charge assignment must belong to student'); END
+    ''');
+  }
 
   Future<void> _installBatchFeeGuards() async {
     await customStatement('''
@@ -151,6 +197,7 @@ class AppDatabase extends _$AppDatabase {
           await _installBatchFeeGuards();
           await _installIntegrityGuards();
           await _installAssignmentGuards();
+          await _installFeeChargeGuards();
         },
         onUpgrade: (m, from, to) async {
           if (from < 2) await m.createTable(students);
@@ -172,8 +219,53 @@ class AppDatabase extends _$AppDatabase {
             ''');
             await _installAssignmentGuards();
           }
+          if (from < 8) {
+            await m.createTable(feeCharges);
+            await _installFeeChargeGuards();
+          }
         },
       );
+
+  /// Creates a fee charge tied to the student's historical assignment.
+  /// Period end is exclusive; amounts are stored as integer paise.
+  Future<int> createFeeCharge({
+    required int studentId,
+    required int assignmentId,
+    required String title,
+    required int amountPaise,
+    required DateTime periodStart,
+    required DateTime periodEnd,
+    required DateTime dueDate,
+  }) async {
+    final normalizedTitle = title.trim();
+    if (normalizedTitle.isEmpty || normalizedTitle.length > 120) {
+      throw ArgumentError.value(title, 'title', 'Must be 1 to 120 characters');
+    }
+    if (amountPaise <= 0) {
+      throw ArgumentError.value(amountPaise, 'amountPaise', 'Must be positive');
+    }
+    if (!periodEnd.isAfter(periodStart)) {
+      throw ArgumentError('Fee period end must be after period start');
+    }
+    return into(feeCharges).insert(FeeChargesCompanion.insert(
+      studentId: studentId,
+      assignmentId: assignmentId,
+      title: normalizedTitle,
+      amountPaise: amountPaise,
+      periodStart: periodStart,
+      periodEnd: periodEnd,
+      dueDate: dueDate,
+    ));
+  }
+
+  Future<List<FeeCharge>> getFeeChargesForStudent(int studentId) =>
+      (select(feeCharges)
+            ..where((row) => row.studentId.equals(studentId))
+            ..orderBy([
+              (row) => OrderingTerm.desc(row.periodStart),
+              (row) => OrderingTerm.desc(row.id),
+            ]))
+          .get();
 
   Future<Institute?> getInstitute() =>
       (select(institutes)..limit(1)).getSingleOrNull();
