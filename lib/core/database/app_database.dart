@@ -22,7 +22,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'edumanage_offline'));
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   Future<void> _installFeeChargeGuards() async {
     await customStatement('''
@@ -196,6 +196,47 @@ class AppDatabase extends _$AppDatabase {
     """);
   }
 
+  Future<void> _installFeePaymentTable() async {
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS fee_payments (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        fee_charge_id INTEGER NOT NULL
+          REFERENCES fee_charges(id) ON DELETE RESTRICT,
+        amount_paise INTEGER NOT NULL CHECK (amount_paise > 0),
+        method TEXT NOT NULL CHECK (
+          method IN ('cash', 'upi', 'bank_transfer', 'card', 'cheque', 'other')
+        ),
+        reference TEXT,
+        idempotency_key TEXT NOT NULL UNIQUE
+          CHECK (length(trim(idempotency_key)) BETWEEN 1 AND 120),
+        received_at INTEGER NOT NULL,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+    // Enforce the relationship explicitly because some SQLite executors used
+    // by the app and tests do not enable PRAGMA foreign_keys.
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS fee_payments_charge_exists_insert
+      BEFORE INSERT ON fee_payments
+      WHEN NOT EXISTS (
+        SELECT 1 FROM fee_charges c WHERE c.id = NEW.fee_charge_id
+      )
+      BEGIN SELECT RAISE(ABORT, 'payment fee charge does not exist'); END
+    ''');
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS fee_payments_charge_exists_update
+      BEFORE UPDATE OF fee_charge_id ON fee_payments
+      WHEN NOT EXISTS (
+        SELECT 1 FROM fee_charges c WHERE c.id = NEW.fee_charge_id
+      )
+      BEGIN SELECT RAISE(ABORT, 'payment fee charge does not exist'); END
+    ''');
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS fee_payments_charge_received
+      ON fee_payments(fee_charge_id, received_at DESC, id DESC)
+    ''');
+  }
+
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
@@ -204,6 +245,7 @@ class AppDatabase extends _$AppDatabase {
           await _installIntegrityGuards();
           await _installAssignmentGuards();
           await _installFeeChargeGuards();
+          await _installFeePaymentTable();
         },
         onUpgrade: (m, from, to) async {
           if (from < 2) await m.createTable(students);
@@ -229,6 +271,7 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(feeCharges);
             await _installFeeChargeGuards();
           }
+          if (from < 9) await _installFeePaymentTable();
         },
       );
 
@@ -272,6 +315,121 @@ class AppDatabase extends _$AppDatabase {
               (row) => OrderingTerm.desc(row.id),
             ]))
           .get();
+
+  /// Records a payment once per idempotency key. Replays with the same
+  /// payload return the original record; reusing a key for different data fails.
+  Future<FeePaymentRecord> recordFeePayment({
+    required int feeChargeId,
+    required int amountPaise,
+    required String method,
+    required String idempotencyKey,
+    DateTime? receivedAt,
+    String? reference,
+  }) async {
+    if (feeChargeId <= 0) {
+      throw ArgumentError.value(feeChargeId, 'feeChargeId', 'Must be positive');
+    }
+    if (amountPaise <= 0) {
+      throw ArgumentError.value(amountPaise, 'amountPaise', 'Must be positive');
+    }
+    const allowedMethods = {
+      'cash',
+      'upi',
+      'bank_transfer',
+      'card',
+      'cheque',
+      'other',
+    };
+    final normalizedMethod = method.trim().toLowerCase();
+    if (!allowedMethods.contains(normalizedMethod)) {
+      throw ArgumentError.value(method, 'method', 'Unsupported payment method');
+    }
+    final normalizedKey = idempotencyKey.trim();
+    if (normalizedKey.isEmpty || normalizedKey.length > 120) {
+      throw ArgumentError.value(
+        idempotencyKey,
+        'idempotencyKey',
+        'Must be 1 to 120 characters',
+      );
+    }
+    final normalizedReference =
+        reference == null || reference.trim().isEmpty ? null : reference.trim();
+    if (normalizedReference != null && normalizedReference.length > 120) {
+      throw ArgumentError.value(
+        reference,
+        'reference',
+        'Must be at most 120 characters',
+      );
+    }
+    final requestedReceivedAtMillis = receivedAt?.millisecondsSinceEpoch;
+    final paymentDate = receivedAt ?? DateTime.now();
+    final receivedAtMillis = paymentDate.millisecondsSinceEpoch;
+
+    return transaction(() async {
+      final existingRows = await customSelect(
+        'SELECT * FROM fee_payments WHERE idempotency_key = ?',
+        variables: [Variable.withString(normalizedKey)],
+      ).get();
+      if (existingRows.isNotEmpty) {
+        final existing = FeePaymentRecord.fromRow(existingRows.single);
+        final matches = existing.feeChargeId == feeChargeId &&
+            existing.amountPaise == amountPaise &&
+            existing.method == normalizedMethod &&
+            existing.reference == normalizedReference &&
+            (requestedReceivedAtMillis == null ||
+                existing.receivedAt.millisecondsSinceEpoch ==
+                    requestedReceivedAtMillis);
+        if (!matches) {
+          throw StateError(
+            'Idempotency key was already used for a different payment',
+          );
+        }
+        return existing;
+      }
+
+      await customStatement(
+        '''INSERT INTO fee_payments
+          (fee_charge_id, amount_paise, method, reference, idempotency_key,
+           received_at, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?)''',
+        [
+          feeChargeId,
+          amountPaise,
+          normalizedMethod,
+          normalizedReference,
+          normalizedKey,
+          receivedAtMillis,
+          DateTime.now().millisecondsSinceEpoch,
+        ],
+      );
+      final insertedRows = await customSelect(
+        'SELECT * FROM fee_payments WHERE idempotency_key = ?',
+        variables: [Variable.withString(normalizedKey)],
+      ).get();
+      return FeePaymentRecord.fromRow(insertedRows.single);
+    });
+  }
+
+  Future<List<FeePaymentRecord>> getFeePaymentsForCharge(
+    int feeChargeId,
+  ) async {
+    final rows = await customSelect(
+      '''SELECT * FROM fee_payments
+         WHERE fee_charge_id = ?
+         ORDER BY received_at DESC, id DESC''',
+      variables: [Variable.withInt(feeChargeId)],
+    ).get();
+    return rows.map(FeePaymentRecord.fromRow).toList(growable: false);
+  }
+
+  Future<int> getTotalPaidForCharge(int feeChargeId) async {
+    final rows = await customSelect(
+      '''SELECT COALESCE(SUM(amount_paise), 0) AS total_paid
+         FROM fee_payments WHERE fee_charge_id = ?''',
+      variables: [Variable.withInt(feeChargeId)],
+    ).get();
+    return rows.single.read<int>('total_paid');
+  }
 
   Future<Institute?> getInstitute() =>
       (select(institutes)..limit(1)).getSingleOrNull();
@@ -690,4 +848,43 @@ class AppDatabase extends _$AppDatabase {
       ),
     );
   }
+}
+
+
+/// Immutable payment record returned by the fee payment database APIs.
+class FeePaymentRecord {
+  const FeePaymentRecord({
+    required this.id,
+    required this.feeChargeId,
+    required this.amountPaise,
+    required this.method,
+    required this.reference,
+    required this.idempotencyKey,
+    required this.receivedAt,
+    required this.createdAt,
+  });
+
+  final int id;
+  final int feeChargeId;
+  final int amountPaise;
+  final String method;
+  final String? reference;
+  final String idempotencyKey;
+  final DateTime receivedAt;
+  final DateTime createdAt;
+
+  factory FeePaymentRecord.fromRow(QueryRow row) => FeePaymentRecord(
+        id: row.read<int>('id'),
+        feeChargeId: row.read<int>('fee_charge_id'),
+        amountPaise: row.read<int>('amount_paise'),
+        method: row.read<String>('method'),
+        reference: row.readNullable<String>('reference'),
+        idempotencyKey: row.read<String>('idempotency_key'),
+        receivedAt: DateTime.fromMillisecondsSinceEpoch(
+          row.read<int>('received_at'),
+        ),
+        createdAt: DateTime.fromMillisecondsSinceEpoch(
+          row.read<int>('created_at'),
+        ),
+      );
 }
