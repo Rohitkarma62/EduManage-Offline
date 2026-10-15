@@ -64,7 +64,9 @@ class _StudentFeesScreenState extends ConsumerState<StudentFeesScreen> {
   Future<_FeeData> _load() async {
     final db = ref.read(appDatabaseProvider);
     final student = await db.getStudent(widget.studentId);
-    if (student == null) throw StateError('Student record not found.');
+    if (student == null) {
+      throw StateError('Student record not found.');
+    }
     final assignment = await db.getCurrentStudentAssignment(widget.studentId);
     final charges = await db.getFeeChargesForStudent(widget.studentId);
     final summaries = <_ChargeSummary>[];
@@ -91,7 +93,9 @@ class _StudentFeesScreenState extends ConsumerState<StudentFeesScreen> {
       context: context,
       builder: (_) => const _ChargeDialog(),
     );
-    if (input == null || !mounted) return;
+    if (input == null || !mounted) {
+      return;
+    }
     try {
       await ref.read(appDatabaseProvider).createFeeCharge(
         studentId: data.student.id,
@@ -119,12 +123,16 @@ class _StudentFeesScreenState extends ConsumerState<StudentFeesScreen> {
 
   Future<void> _addPayment(_ChargeSummary summary) async {
     final balance = summary.charge.amountPaise - summary.paid;
-    if (balance <= 0) return;
+    if (balance <= 0) {
+      return;
+    }
     final input = await showDialog<_PaymentInput>(
       context: context,
       builder: (_) => _PaymentDialog(balance: balance),
     );
-    if (input == null || !mounted) return;
+    if (input == null || !mounted) {
+      return;
+    }
     try {
       await ref.read(appDatabaseProvider).recordFeePayment(
         feeChargeId: summary.charge.id,
@@ -287,7 +295,9 @@ class _ChargeDialogState extends State<_ChargeDialog> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
-    if (value == null) return;
+    if (value == null) {
+      return;
+    }
     setState(() {
       if (which == 'start') { _start = value; }
       if (which == 'end') { _end = value; }
@@ -314,8 +324,12 @@ class _ChargeDialogState extends State<_ChargeDialog> {
             decoration: const InputDecoration(labelText: 'Amount (₹)'),
             validator: (value) {
               final amount = double.tryParse(value?.trim() ?? '');
-              if (amount == null || !amount.isFinite || amount <= 0) return 'Enter an amount greater than zero';
-              if (amount > 99999999) return 'Amount is too large';
+              if (amount == null || !amount.isFinite || amount <= 0) {
+                return 'Enter an amount greater than zero';
+              }
+              if (amount > 99999999) {
+                return 'Amount is too large';
+              }
               return null;
             },
           ),
@@ -331,7 +345,9 @@ class _ChargeDialogState extends State<_ChargeDialog> {
       TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
       FilledButton(
         onPressed: () {
-          if (!_key.currentState!.validate() || !_end.isAfter(_start)) return;
+          if (!_key.currentState!.validate() || !_end.isAfter(_start)) {
+            return;
+          }
           Navigator.pop(context, _ChargeInput(
             _title.text.trim(),
             (double.parse(_amount.text.trim()) * 100).round(),
@@ -380,8 +396,12 @@ class _PaymentDialogState extends State<_PaymentDialog> {
             decoration: const InputDecoration(labelText: 'Amount received (₹)'),
             validator: (value) {
               final amount = double.tryParse(value?.trim() ?? '');
-              if (amount == null || !amount.isFinite || amount <= 0) return 'Enter an amount greater than zero';
-              if ((amount * 100).round() > widget.balance) return 'Cannot exceed outstanding balance';
+              if (amount == null || !amount.isFinite || amount <= 0) {
+                return 'Enter an amount greater than zero';
+              }
+              if ((amount * 100).round() > widget.balance) {
+                return 'Cannot exceed outstanding balance';
+              }
               return null;
             },
           ),
@@ -412,7 +432,9 @@ class _PaymentDialogState extends State<_PaymentDialog> {
       TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
       FilledButton(
         onPressed: () {
-          if (!_key.currentState!.validate()) return;
+          if (!_key.currentState!.validate()) {
+            return;
+          }
           Navigator.pop(context, _PaymentInput(
             (double.parse(_amount.text.trim()) * 100).round(),
             _methodValue,
