@@ -850,7 +850,6 @@ class AppDatabase extends _$AppDatabase {
   }
 }
 
-
 /// Immutable payment record returned by the fee payment database APIs.
 class FeePaymentRecord {
   const FeePaymentRecord({
