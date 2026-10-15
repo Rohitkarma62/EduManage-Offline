@@ -369,13 +369,13 @@ class AppDatabase extends _$AppDatabase {
            received_at, created_at)
           VALUES (?, ?, ?, ?, ?, ?, ?)''',
         [
-          Variable.withInt(feeChargeId),
-          Variable.withInt(amountPaise),
-          Variable.withString(normalizedMethod),
-          Variable<String>(normalizedReference),
-          Variable.withString(normalizedKey),
-          Variable.withInt(receivedAtMillis),
-          Variable.withInt(DateTime.now().millisecondsSinceEpoch),
+          feeChargeId,
+          amountPaise,
+          normalizedMethod,
+          normalizedReference,
+          normalizedKey,
+          receivedAtMillis,
+          DateTime.now().millisecondsSinceEpoch,
         ],
       );
       final insertedRows = await customSelect(
