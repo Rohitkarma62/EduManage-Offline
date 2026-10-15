@@ -11,6 +11,7 @@
 - Class-scoped batch create/edit, subject, timing, teacher, monthly fee stored as integer paise, and archive/restore.
 - Fee charge creation tied to a student's current historical assignment.
 - Fee payment entry with partial payments, supported payment methods, optional reference, duplicate-safe database idempotency, payment history, and paid/balance summaries.
+- Offline PDF receipts for recorded payments, including institute/student details, fee period, payment method/reference, receipt number, and current outstanding balance; receipts can be printed or shared.
 - Database and widget tests; CI must pass formatting, analysis, tests, Drift code generation, and Android debug APK build before merge.
 
 ## Institute setup and persistence
@@ -49,13 +50,13 @@
 
 - Current UI supports fee charge creation, payment recording, partial payment history, and outstanding balance display.
 - Payment amounts are stored as integer paise; the UI locks payment submission while a dialog/write is active, and the database re-checks the outstanding balance transactionally to reject overpayments.
-- Receipt/PDF generation, refunds/reversals, payment allocation across multiple charges, discounts/credits, and fee reminders are not implemented yet.
+- Refunds/reversals, payment allocation across multiple charges, discounts/credits, and fee reminders are not implemented yet.
 
 ## Not implemented yet
 
 - Attendance workflows.
 - Staff, salary, expenses, exams, results, and certificates.
-- Offline PDF generation workflows and app-managed files.
+- General-purpose app-managed file storage and backup/restore of generated documents.
 - Backup/restore and signed offline licensing.
 - One-year license expiry, activation-time policy, and clock rollback handling.
 - Entitlement guards and finalized role permissions.
