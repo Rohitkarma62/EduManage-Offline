@@ -207,6 +207,24 @@ class AppDatabase extends _$AppDatabase {
         created_at INTEGER NOT NULL
       )
     ''');
+    // Enforce the relationship explicitly because some SQLite executors used
+    // by the app and tests do not enable PRAGMA foreign_keys.
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS fee_payments_charge_exists_insert
+      BEFORE INSERT ON fee_payments
+      WHEN NOT EXISTS (
+        SELECT 1 FROM fee_charges c WHERE c.id = NEW.fee_charge_id
+      )
+      BEGIN SELECT RAISE(ABORT, 'payment fee charge does not exist'); END
+    ''');
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS fee_payments_charge_exists_update
+      BEFORE UPDATE OF fee_charge_id ON fee_payments
+      WHEN NOT EXISTS (
+        SELECT 1 FROM fee_charges c WHERE c.id = NEW.fee_charge_id
+      )
+      BEGIN SELECT RAISE(ABORT, 'payment fee charge does not exist'); END
+    ''');
     await customStatement('''
       CREATE INDEX IF NOT EXISTS fee_payments_charge_received
       ON fee_payments(fee_charge_id, received_at DESC, id DESC)
