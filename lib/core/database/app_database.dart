@@ -337,6 +337,7 @@ class AppDatabase extends _$AppDatabase {
         'Must be at most 120 characters',
       );
     }
+    final requestedReceivedAtMillis = receivedAt?.millisecondsSinceEpoch;
     final paymentDate = receivedAt ?? DateTime.now();
     final receivedAtMillis = paymentDate.millisecondsSinceEpoch;
 
@@ -351,7 +352,9 @@ class AppDatabase extends _$AppDatabase {
             existing.amountPaise == amountPaise &&
             existing.method == normalizedMethod &&
             existing.reference == normalizedReference &&
-            existing.receivedAt.millisecondsSinceEpoch == receivedAtMillis;
+            (requestedReceivedAtMillis == null ||
+                existing.receivedAt.millisecondsSinceEpoch ==
+                    requestedReceivedAtMillis);
         if (!matches) {
           throw StateError(
             'Idempotency key was already used for a different payment',
