@@ -17,7 +17,7 @@ class FeePaymentsScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Fee payments')),
       body: students.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Could not load students: ' + error.toString())),
+        error: (error, _) => Center(child: Text('Could not load students: $error')),
         data: (records) {
           final active = records.where((student) => student.isActive).toList();
           if (active.isEmpty) {
@@ -32,9 +32,9 @@ class FeePaymentsScreen extends ConsumerWidget {
               return ListTile(
                 leading: const CircleAvatar(child: Icon(Icons.account_balance_wallet_outlined)),
                 title: Text(student.fullName),
-                subtitle: Text('Admission no. ' + student.admissionNumber),
+                subtitle: Text('Admission no. ${student.admissionNumber}'),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => context.push('/fees/' + student.id.toString()),
+                onTap: () => context.push('/fees/${student.id}'),
               );
             },
           );
@@ -111,7 +111,7 @@ class _StudentFeesScreenState extends ConsumerState<StudentFeesScreen> {
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not create fee charge: ' + error.toString())),
+          SnackBar(content: Text('Could not create fee charge: $error')),
         );
       }
     }
@@ -143,7 +143,7 @@ class _StudentFeesScreenState extends ConsumerState<StudentFeesScreen> {
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not record payment: ' + error.toString())),
+          SnackBar(content: Text('Could not record payment: $error')),
         );
       }
     }
@@ -159,7 +159,7 @@ class _StudentFeesScreenState extends ConsumerState<StudentFeesScreen> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError || !snapshot.hasData) {
-          return Center(child: Text('Could not load fees: ' + snapshot.error.toString()));
+          return Center(child: Text('Could not load fees: ${snapshot.error}'));
         }
         final data = snapshot.data!;
         final total = data.charges.fold<int>(0, (sum, item) => sum + item.charge.amountPaise);
@@ -173,7 +173,7 @@ class _StudentFeesScreenState extends ConsumerState<StudentFeesScreen> {
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(data.student.fullName, style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 4),
-                  Text('Admission no. ' + data.student.admissionNumber),
+                  Text('Admission no. ${data.student.admissionNumber}'),
                   const SizedBox(height: 16),
                   Row(children: [
                     _Summary(label: 'Total fees', amount: total),
@@ -211,13 +211,13 @@ class _StudentFeesScreenState extends ConsumerState<StudentFeesScreen> {
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(item.charge.title, style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 4),
-                    Text(_date(item.charge.periodStart) + ' – ' + _date(item.charge.periodEnd) + ' (end exclusive)'),
-                    Text('Due ' + _date(item.charge.dueDate)),
+                    Text('${_date(item.charge.periodStart)} – ${_date(item.charge.periodEnd)} (end exclusive)'),
+                    Text('Due ${_date(item.charge.dueDate)}'),
                     const SizedBox(height: 10),
-                    Text('Fee: ' + _money(item.charge.amountPaise)),
-                    Text('Paid: ' + _money(item.paid)),
+                    Text('Fee: ${_money(item.charge.amountPaise)}'),
+                    Text('Paid: ${_money(item.paid)}'),
                     Text(
-                      'Balance: ' + _money(balance),
+                      'Balance: ${_money(balance)}',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         color: balance > 0 ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.primary,
@@ -241,8 +241,8 @@ class _StudentFeesScreenState extends ConsumerState<StudentFeesScreen> {
                         leading: const Icon(Icons.receipt_long_outlined),
                         title: Text(_money(payment.amountPaise)),
                         subtitle: Text(
-                          _method(payment.method) + ' • ' + _date(payment.receivedAt) +
-                          (payment.reference == null ? '' : ' • Ref: ' + payment.reference!),
+                          '${_method(payment.method)} • ${_date(payment.receivedAt)}'
+                          '${payment.reference == null ? '' : ' • Ref: ${payment.reference}'}',
                         ),
                       )),
                     ],
@@ -289,9 +289,9 @@ class _ChargeDialogState extends State<_ChargeDialog> {
     );
     if (value == null) return;
     setState(() {
-      if (which == 'start') _start = value;
-      if (which == 'end') _end = value;
-      if (which == 'due') _due = value;
+      if (which == 'start') { _start = value; }
+      if (which == 'end') { _end = value; }
+      if (which == 'due') { _due = value; }
     });
   }
 
@@ -371,7 +371,7 @@ class _PaymentDialogState extends State<_PaymentDialog> {
       key: _key,
       child: SingleChildScrollView(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Align(alignment: Alignment.centerLeft, child: Text('Outstanding: ' + _money(widget.balance))),
+          Align(alignment: Alignment.centerLeft, child: Text('Outstanding: ${_money(widget.balance)}')),
           const SizedBox(height: 12),
           TextFormField(
             controller: _amount,
@@ -387,7 +387,7 @@ class _PaymentDialogState extends State<_PaymentDialog> {
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
-            value: _methodValue,
+            initialValue: _methodValue,
             decoration: const InputDecoration(labelText: 'Payment method'),
             items: const [
               DropdownMenuItem(value: 'cash', child: Text('Cash')),
@@ -397,7 +397,7 @@ class _PaymentDialogState extends State<_PaymentDialog> {
               DropdownMenuItem(value: 'cheque', child: Text('Cheque')),
               DropdownMenuItem(value: 'other', child: Text('Other')),
             ],
-            onChanged: (value) { if (value != null) setState(() => _methodValue = value); },
+            onChanged: (value) { if (value != null) { setState(() => _methodValue = value); } },
           ),
           const SizedBox(height: 12),
           TextFormField(
@@ -484,10 +484,9 @@ class _PaymentInput {
   final String reference;
 }
 
-String _money(int paise) => '₹' + (paise / 100).toStringAsFixed(2);
+String _money(int paise) => '₹${(paise / 100).toStringAsFixed(2)}';
 String _date(DateTime value) =>
-    value.day.toString().padLeft(2, '0') + '/' +
-    value.month.toString().padLeft(2, '0') + '/' + value.year.toString();
+    '${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year}';
 String _method(String value) => switch (value) {
   'cash' => 'Cash',
   'upi' => 'UPI',
