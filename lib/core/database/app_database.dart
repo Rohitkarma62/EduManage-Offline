@@ -9,8 +9,14 @@ import 'tables/student_assignments.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(
-    tables: [Institutes, Classes, Students, Batches, StudentAssignments, FeeCharges])
+@DriftDatabase(tables: [
+  Institutes,
+  Classes,
+  Students,
+  Batches,
+  StudentAssignments,
+  FeeCharges
+])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
       : super(executor ?? driftDatabase(name: 'edumanage_offline'));

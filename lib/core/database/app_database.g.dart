@@ -2225,6 +2225,474 @@ class StudentAssignmentsCompanion extends UpdateCompanion<StudentAssignment> {
   }
 }
 
+class $FeeChargesTable extends FeeCharges
+    with TableInfo<$FeeChargesTable, FeeCharge> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FeeChargesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _studentIdMeta =
+      const VerificationMeta('studentId');
+  @override
+  late final GeneratedColumn<int> studentId = GeneratedColumn<int>(
+      'student_id', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _assignmentIdMeta =
+      const VerificationMeta('assignmentId');
+  @override
+  late final GeneratedColumn<int> assignmentId = GeneratedColumn<int>(
+      'assignment_id', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 120),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _amountPaiseMeta =
+      const VerificationMeta('amountPaise');
+  @override
+  late final GeneratedColumn<int> amountPaise = GeneratedColumn<int>(
+      'amount_paise', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _periodStartMeta =
+      const VerificationMeta('periodStart');
+  @override
+  late final GeneratedColumn<DateTime> periodStart = GeneratedColumn<DateTime>(
+      'period_start', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _periodEndMeta =
+      const VerificationMeta('periodEnd');
+  @override
+  late final GeneratedColumn<DateTime> periodEnd = GeneratedColumn<DateTime>(
+      'period_end', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _dueDateMeta =
+      const VerificationMeta('dueDate');
+  @override
+  late final GeneratedColumn<DateTime> dueDate = GeneratedColumn<DateTime>(
+      'due_date', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        studentId,
+        assignmentId,
+        title,
+        amountPaise,
+        periodStart,
+        periodEnd,
+        dueDate,
+        createdAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fee_charges';
+  @override
+  VerificationContext validateIntegrity(Insertable<FeeCharge> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('student_id')) {
+      context.handle(_studentIdMeta,
+          studentId.isAcceptableOrUnknown(data['student_id']!, _studentIdMeta));
+    } else if (isInserting) {
+      context.missing(_studentIdMeta);
+    }
+    if (data.containsKey('assignment_id')) {
+      context.handle(
+          _assignmentIdMeta,
+          assignmentId.isAcceptableOrUnknown(
+              data['assignment_id']!, _assignmentIdMeta));
+    } else if (isInserting) {
+      context.missing(_assignmentIdMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('amount_paise')) {
+      context.handle(
+          _amountPaiseMeta,
+          amountPaise.isAcceptableOrUnknown(
+              data['amount_paise']!, _amountPaiseMeta));
+    } else if (isInserting) {
+      context.missing(_amountPaiseMeta);
+    }
+    if (data.containsKey('period_start')) {
+      context.handle(
+          _periodStartMeta,
+          periodStart.isAcceptableOrUnknown(
+              data['period_start']!, _periodStartMeta));
+    } else if (isInserting) {
+      context.missing(_periodStartMeta);
+    }
+    if (data.containsKey('period_end')) {
+      context.handle(_periodEndMeta,
+          periodEnd.isAcceptableOrUnknown(data['period_end']!, _periodEndMeta));
+    } else if (isInserting) {
+      context.missing(_periodEndMeta);
+    }
+    if (data.containsKey('due_date')) {
+      context.handle(_dueDateMeta,
+          dueDate.isAcceptableOrUnknown(data['due_date']!, _dueDateMeta));
+    } else if (isInserting) {
+      context.missing(_dueDateMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FeeCharge map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FeeCharge(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      studentId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}student_id'])!,
+      assignmentId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}assignment_id'])!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      amountPaise: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}amount_paise'])!,
+      periodStart: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}period_start'])!,
+      periodEnd: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}period_end'])!,
+      dueDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}due_date'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $FeeChargesTable createAlias(String alias) {
+    return $FeeChargesTable(attachedDatabase, alias);
+  }
+}
+
+class FeeCharge extends DataClass implements Insertable<FeeCharge> {
+  final int id;
+  final int studentId;
+  final int assignmentId;
+  final String title;
+  final int amountPaise;
+  final DateTime periodStart;
+  final DateTime periodEnd;
+  final DateTime dueDate;
+  final DateTime createdAt;
+  const FeeCharge(
+      {required this.id,
+      required this.studentId,
+      required this.assignmentId,
+      required this.title,
+      required this.amountPaise,
+      required this.periodStart,
+      required this.periodEnd,
+      required this.dueDate,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['student_id'] = Variable<int>(studentId);
+    map['assignment_id'] = Variable<int>(assignmentId);
+    map['title'] = Variable<String>(title);
+    map['amount_paise'] = Variable<int>(amountPaise);
+    map['period_start'] = Variable<DateTime>(periodStart);
+    map['period_end'] = Variable<DateTime>(periodEnd);
+    map['due_date'] = Variable<DateTime>(dueDate);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  FeeChargesCompanion toCompanion(bool nullToAbsent) {
+    return FeeChargesCompanion(
+      id: Value(id),
+      studentId: Value(studentId),
+      assignmentId: Value(assignmentId),
+      title: Value(title),
+      amountPaise: Value(amountPaise),
+      periodStart: Value(periodStart),
+      periodEnd: Value(periodEnd),
+      dueDate: Value(dueDate),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory FeeCharge.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FeeCharge(
+      id: serializer.fromJson<int>(json['id']),
+      studentId: serializer.fromJson<int>(json['studentId']),
+      assignmentId: serializer.fromJson<int>(json['assignmentId']),
+      title: serializer.fromJson<String>(json['title']),
+      amountPaise: serializer.fromJson<int>(json['amountPaise']),
+      periodStart: serializer.fromJson<DateTime>(json['periodStart']),
+      periodEnd: serializer.fromJson<DateTime>(json['periodEnd']),
+      dueDate: serializer.fromJson<DateTime>(json['dueDate']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'studentId': serializer.toJson<int>(studentId),
+      'assignmentId': serializer.toJson<int>(assignmentId),
+      'title': serializer.toJson<String>(title),
+      'amountPaise': serializer.toJson<int>(amountPaise),
+      'periodStart': serializer.toJson<DateTime>(periodStart),
+      'periodEnd': serializer.toJson<DateTime>(periodEnd),
+      'dueDate': serializer.toJson<DateTime>(dueDate),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  FeeCharge copyWith(
+          {int? id,
+          int? studentId,
+          int? assignmentId,
+          String? title,
+          int? amountPaise,
+          DateTime? periodStart,
+          DateTime? periodEnd,
+          DateTime? dueDate,
+          DateTime? createdAt}) =>
+      FeeCharge(
+        id: id ?? this.id,
+        studentId: studentId ?? this.studentId,
+        assignmentId: assignmentId ?? this.assignmentId,
+        title: title ?? this.title,
+        amountPaise: amountPaise ?? this.amountPaise,
+        periodStart: periodStart ?? this.periodStart,
+        periodEnd: periodEnd ?? this.periodEnd,
+        dueDate: dueDate ?? this.dueDate,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  FeeCharge copyWithCompanion(FeeChargesCompanion data) {
+    return FeeCharge(
+      id: data.id.present ? data.id.value : this.id,
+      studentId: data.studentId.present ? data.studentId.value : this.studentId,
+      assignmentId: data.assignmentId.present
+          ? data.assignmentId.value
+          : this.assignmentId,
+      title: data.title.present ? data.title.value : this.title,
+      amountPaise:
+          data.amountPaise.present ? data.amountPaise.value : this.amountPaise,
+      periodStart:
+          data.periodStart.present ? data.periodStart.value : this.periodStart,
+      periodEnd: data.periodEnd.present ? data.periodEnd.value : this.periodEnd,
+      dueDate: data.dueDate.present ? data.dueDate.value : this.dueDate,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FeeCharge(')
+          ..write('id: $id, ')
+          ..write('studentId: $studentId, ')
+          ..write('assignmentId: $assignmentId, ')
+          ..write('title: $title, ')
+          ..write('amountPaise: $amountPaise, ')
+          ..write('periodStart: $periodStart, ')
+          ..write('periodEnd: $periodEnd, ')
+          ..write('dueDate: $dueDate, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, studentId, assignmentId, title,
+      amountPaise, periodStart, periodEnd, dueDate, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FeeCharge &&
+          other.id == this.id &&
+          other.studentId == this.studentId &&
+          other.assignmentId == this.assignmentId &&
+          other.title == this.title &&
+          other.amountPaise == this.amountPaise &&
+          other.periodStart == this.periodStart &&
+          other.periodEnd == this.periodEnd &&
+          other.dueDate == this.dueDate &&
+          other.createdAt == this.createdAt);
+}
+
+class FeeChargesCompanion extends UpdateCompanion<FeeCharge> {
+  final Value<int> id;
+  final Value<int> studentId;
+  final Value<int> assignmentId;
+  final Value<String> title;
+  final Value<int> amountPaise;
+  final Value<DateTime> periodStart;
+  final Value<DateTime> periodEnd;
+  final Value<DateTime> dueDate;
+  final Value<DateTime> createdAt;
+  const FeeChargesCompanion({
+    this.id = const Value.absent(),
+    this.studentId = const Value.absent(),
+    this.assignmentId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.amountPaise = const Value.absent(),
+    this.periodStart = const Value.absent(),
+    this.periodEnd = const Value.absent(),
+    this.dueDate = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  FeeChargesCompanion.insert({
+    this.id = const Value.absent(),
+    required int studentId,
+    required int assignmentId,
+    required String title,
+    required int amountPaise,
+    required DateTime periodStart,
+    required DateTime periodEnd,
+    required DateTime dueDate,
+    this.createdAt = const Value.absent(),
+  })  : studentId = Value(studentId),
+        assignmentId = Value(assignmentId),
+        title = Value(title),
+        amountPaise = Value(amountPaise),
+        periodStart = Value(periodStart),
+        periodEnd = Value(periodEnd),
+        dueDate = Value(dueDate);
+  static Insertable<FeeCharge> custom({
+    Expression<int>? id,
+    Expression<int>? studentId,
+    Expression<int>? assignmentId,
+    Expression<String>? title,
+    Expression<int>? amountPaise,
+    Expression<DateTime>? periodStart,
+    Expression<DateTime>? periodEnd,
+    Expression<DateTime>? dueDate,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (studentId != null) 'student_id': studentId,
+      if (assignmentId != null) 'assignment_id': assignmentId,
+      if (title != null) 'title': title,
+      if (amountPaise != null) 'amount_paise': amountPaise,
+      if (periodStart != null) 'period_start': periodStart,
+      if (periodEnd != null) 'period_end': periodEnd,
+      if (dueDate != null) 'due_date': dueDate,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  FeeChargesCompanion copyWith(
+      {Value<int>? id,
+      Value<int>? studentId,
+      Value<int>? assignmentId,
+      Value<String>? title,
+      Value<int>? amountPaise,
+      Value<DateTime>? periodStart,
+      Value<DateTime>? periodEnd,
+      Value<DateTime>? dueDate,
+      Value<DateTime>? createdAt}) {
+    return FeeChargesCompanion(
+      id: id ?? this.id,
+      studentId: studentId ?? this.studentId,
+      assignmentId: assignmentId ?? this.assignmentId,
+      title: title ?? this.title,
+      amountPaise: amountPaise ?? this.amountPaise,
+      periodStart: periodStart ?? this.periodStart,
+      periodEnd: periodEnd ?? this.periodEnd,
+      dueDate: dueDate ?? this.dueDate,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (studentId.present) {
+      map['student_id'] = Variable<int>(studentId.value);
+    }
+    if (assignmentId.present) {
+      map['assignment_id'] = Variable<int>(assignmentId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (amountPaise.present) {
+      map['amount_paise'] = Variable<int>(amountPaise.value);
+    }
+    if (periodStart.present) {
+      map['period_start'] = Variable<DateTime>(periodStart.value);
+    }
+    if (periodEnd.present) {
+      map['period_end'] = Variable<DateTime>(periodEnd.value);
+    }
+    if (dueDate.present) {
+      map['due_date'] = Variable<DateTime>(dueDate.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FeeChargesCompanion(')
+          ..write('id: $id, ')
+          ..write('studentId: $studentId, ')
+          ..write('assignmentId: $assignmentId, ')
+          ..write('title: $title, ')
+          ..write('amountPaise: $amountPaise, ')
+          ..write('periodStart: $periodStart, ')
+          ..write('periodEnd: $periodEnd, ')
+          ..write('dueDate: $dueDate, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2234,12 +2702,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $BatchesTable batches = $BatchesTable(this);
   late final $StudentAssignmentsTable studentAssignments =
       $StudentAssignmentsTable(this);
+  late final $FeeChargesTable feeCharges = $FeeChargesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [institutes, classes, students, batches, studentAssignments];
+      [institutes, classes, students, batches, studentAssignments, feeCharges];
 }
 
 typedef $$InstitutesTableCreateCompanionBuilder = InstitutesCompanion Function({
@@ -3304,6 +3773,226 @@ typedef $$StudentAssignmentsTableProcessedTableManager = ProcessedTableManager<
     ),
     StudentAssignment,
     PrefetchHooks Function()>;
+typedef $$FeeChargesTableCreateCompanionBuilder = FeeChargesCompanion Function({
+  Value<int> id,
+  required int studentId,
+  required int assignmentId,
+  required String title,
+  required int amountPaise,
+  required DateTime periodStart,
+  required DateTime periodEnd,
+  required DateTime dueDate,
+  Value<DateTime> createdAt,
+});
+typedef $$FeeChargesTableUpdateCompanionBuilder = FeeChargesCompanion Function({
+  Value<int> id,
+  Value<int> studentId,
+  Value<int> assignmentId,
+  Value<String> title,
+  Value<int> amountPaise,
+  Value<DateTime> periodStart,
+  Value<DateTime> periodEnd,
+  Value<DateTime> dueDate,
+  Value<DateTime> createdAt,
+});
+
+class $$FeeChargesTableFilterComposer
+    extends Composer<_$AppDatabase, $FeeChargesTable> {
+  $$FeeChargesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get studentId => $composableBuilder(
+      column: $table.studentId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get assignmentId => $composableBuilder(
+      column: $table.assignmentId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get amountPaise => $composableBuilder(
+      column: $table.amountPaise, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get periodStart => $composableBuilder(
+      column: $table.periodStart, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get periodEnd => $composableBuilder(
+      column: $table.periodEnd, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dueDate => $composableBuilder(
+      column: $table.dueDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$FeeChargesTableOrderingComposer
+    extends Composer<_$AppDatabase, $FeeChargesTable> {
+  $$FeeChargesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get studentId => $composableBuilder(
+      column: $table.studentId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get assignmentId => $composableBuilder(
+      column: $table.assignmentId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get amountPaise => $composableBuilder(
+      column: $table.amountPaise, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get periodStart => $composableBuilder(
+      column: $table.periodStart, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get periodEnd => $composableBuilder(
+      column: $table.periodEnd, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dueDate => $composableBuilder(
+      column: $table.dueDate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$FeeChargesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FeeChargesTable> {
+  $$FeeChargesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get studentId =>
+      $composableBuilder(column: $table.studentId, builder: (column) => column);
+
+  GeneratedColumn<int> get assignmentId => $composableBuilder(
+      column: $table.assignmentId, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<int> get amountPaise => $composableBuilder(
+      column: $table.amountPaise, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get periodStart => $composableBuilder(
+      column: $table.periodStart, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get periodEnd =>
+      $composableBuilder(column: $table.periodEnd, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dueDate =>
+      $composableBuilder(column: $table.dueDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$FeeChargesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $FeeChargesTable,
+    FeeCharge,
+    $$FeeChargesTableFilterComposer,
+    $$FeeChargesTableOrderingComposer,
+    $$FeeChargesTableAnnotationComposer,
+    $$FeeChargesTableCreateCompanionBuilder,
+    $$FeeChargesTableUpdateCompanionBuilder,
+    (FeeCharge, BaseReferences<_$AppDatabase, $FeeChargesTable, FeeCharge>),
+    FeeCharge,
+    PrefetchHooks Function()> {
+  $$FeeChargesTableTableManager(_$AppDatabase db, $FeeChargesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FeeChargesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FeeChargesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FeeChargesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<int> studentId = const Value.absent(),
+            Value<int> assignmentId = const Value.absent(),
+            Value<String> title = const Value.absent(),
+            Value<int> amountPaise = const Value.absent(),
+            Value<DateTime> periodStart = const Value.absent(),
+            Value<DateTime> periodEnd = const Value.absent(),
+            Value<DateTime> dueDate = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              FeeChargesCompanion(
+            id: id,
+            studentId: studentId,
+            assignmentId: assignmentId,
+            title: title,
+            amountPaise: amountPaise,
+            periodStart: periodStart,
+            periodEnd: periodEnd,
+            dueDate: dueDate,
+            createdAt: createdAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required int studentId,
+            required int assignmentId,
+            required String title,
+            required int amountPaise,
+            required DateTime periodStart,
+            required DateTime periodEnd,
+            required DateTime dueDate,
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              FeeChargesCompanion.insert(
+            id: id,
+            studentId: studentId,
+            assignmentId: assignmentId,
+            title: title,
+            amountPaise: amountPaise,
+            periodStart: periodStart,
+            periodEnd: periodEnd,
+            dueDate: dueDate,
+            createdAt: createdAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$FeeChargesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $FeeChargesTable,
+    FeeCharge,
+    $$FeeChargesTableFilterComposer,
+    $$FeeChargesTableOrderingComposer,
+    $$FeeChargesTableAnnotationComposer,
+    $$FeeChargesTableCreateCompanionBuilder,
+    $$FeeChargesTableUpdateCompanionBuilder,
+    (FeeCharge, BaseReferences<_$AppDatabase, $FeeChargesTable, FeeCharge>),
+    FeeCharge,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3318,4 +4007,6 @@ class $AppDatabaseManager {
       $$BatchesTableTableManager(_db, _db.batches);
   $$StudentAssignmentsTableTableManager get studentAssignments =>
       $$StudentAssignmentsTableTableManager(_db, _db.studentAssignments);
+  $$FeeChargesTableTableManager get feeCharges =>
+      $$FeeChargesTableTableManager(_db, _db.feeCharges);
 }
