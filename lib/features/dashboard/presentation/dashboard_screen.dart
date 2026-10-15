@@ -34,7 +34,8 @@ class DashboardScreen extends ConsumerWidget {
           const SizedBox(height: 20),
           _DashboardCard(
             title: 'Institute setup',
-            description: 'Save or update institute details in the local database.',
+            description:
+                'Save or update institute details in the local database.',
             buttonLabel: institute.valueOrNull == null
                 ? 'Set up institute'
                 : 'Edit institute details',
@@ -44,7 +45,8 @@ class DashboardScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           _DashboardCard(
             title: 'Student management',
-            description: 'Add student records and search by name or admission number. Records stay on this device.',
+            description:
+                'Add student records and search by name or admission number. Records stay on this device.',
             buttonLabel: 'Open students',
             icon: Icons.people_outline,
             onPressed: () => context.push('/students'),
@@ -52,7 +54,8 @@ class DashboardScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           _DashboardCard(
             title: 'Class & batch management',
-            description: 'Create classes or coaching batches by academic year, then assign students to them.',
+            description:
+                'Create classes or coaching batches by academic year, then assign students to them.',
             buttonLabel: 'Open classes & batches',
             icon: Icons.groups_outlined,
             onPressed: () => context.push('/classes'),
@@ -60,7 +63,8 @@ class DashboardScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           _DashboardCard(
             title: 'Fee payments',
-            description: 'Create fee charges, record partial payments, and review paid amounts and outstanding balances.',
+            description:
+                'Create fee charges, record partial payments, and review paid amounts and outstanding balances.',
             buttonLabel: 'Open fee payments',
             icon: Icons.account_balance_wallet_outlined,
             onPressed: () => context.push('/fees'),
