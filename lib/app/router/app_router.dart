@@ -4,6 +4,7 @@ import '../../features/classes/presentation/batches_screen.dart';
 import '../../features/classes/presentation/class_form_screen.dart';
 import '../../features/classes/presentation/classes_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
+import '../../features/fees/presentation/fee_payments_screen.dart';
 import '../../features/institute/presentation/institute_setup_screen.dart';
 import '../../features/students/presentation/student_assignment_history_screen.dart';
 import '../../features/students/presentation/student_form_screen.dart';
@@ -73,6 +74,18 @@ final GoRouter appRouter = GoRouter(routes: <RouteBase>[
     path: '/students/:id/transfer',
     name: 'student-transfer',
     builder: (context, state) => StudentTransferScreen(
+      studentId: int.parse(state.pathParameters['id']!),
+    ),
+  ),
+  GoRoute(
+    path: '/fees',
+    name: 'fee-payments',
+    builder: (context, state) => const FeePaymentsScreen(),
+  ),
+  GoRoute(
+    path: '/fees/:id',
+    name: 'student-fees',
+    builder: (context, state) => StudentFeesScreen(
       studentId: int.parse(state.pathParameters['id']!),
     ),
   ),
