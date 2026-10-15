@@ -163,7 +163,7 @@ void main() {
     expect(await database.getTotalPaidForCharge(feeChargeId), 125000);
   });
 
-  test('database foreign key rejects payments for missing charges', async () {
+  test('database foreign key rejects payments for missing charges', () async {
     await expectLater(
       database.recordFeePayment(
         feeChargeId: 999999,
