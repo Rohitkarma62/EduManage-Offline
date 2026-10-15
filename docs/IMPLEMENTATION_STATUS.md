@@ -48,7 +48,7 @@
 ## Fee workflow scope and follow-ups
 
 - Current UI supports fee charge creation, payment recording, partial payment history, and outstanding balance display.
-- Payment amounts are stored as integer paise; UI prevents entering an amount above the displayed outstanding balance.
+- Payment amounts are stored as integer paise; the UI locks payment submission while a dialog/write is active, and the database re-checks the outstanding balance transactionally to reject overpayments.
 - Receipt/PDF generation, refunds/reversals, payment allocation across multiple charges, discounts/credits, and fee reminders are not implemented yet.
 
 ## Not implemented yet

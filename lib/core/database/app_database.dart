@@ -387,6 +387,26 @@ class AppDatabase extends _$AppDatabase {
         return existing;
       }
 
+      // Re-check the charge balance inside the same transaction as the
+      // insert. UI validation alone can be stale if two submissions race.
+      final chargeRows = await customSelect(
+        'SELECT amount_paise FROM fee_charges WHERE id = ?',
+        variables: [Variable.withInt(feeChargeId)],
+      ).get();
+      if (chargeRows.isEmpty) {
+        throw StateError('Fee charge does not exist');
+      }
+      final chargeAmount = chargeRows.single.read<int>('amount_paise');
+      final paidRows = await customSelect(
+        'SELECT COALESCE(SUM(amount_paise), 0) AS total_paid '
+        'FROM fee_payments WHERE fee_charge_id = ?',
+        variables: [Variable.withInt(feeChargeId)],
+      ).get();
+      final totalPaid = paidRows.single.read<int>('total_paid');
+      if (amountPaise > chargeAmount - totalPaid) {
+        throw StateError('Payment exceeds the outstanding fee balance');
+      }
+
       await customStatement(
         '''INSERT INTO fee_payments
           (fee_charge_id, amount_paise, method, reference, idempotency_key,

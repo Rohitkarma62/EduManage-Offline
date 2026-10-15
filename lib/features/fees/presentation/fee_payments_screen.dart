@@ -127,19 +127,29 @@ class _StudentFeesScreenState extends ConsumerState<StudentFeesScreen> {
     }
   }
 
+  bool _isRecordingPayment = false;
+
   Future<void> _addPayment(_ChargeSummary summary) async {
+    if (_isRecordingPayment) {
+      return;
+    }
     final balance = summary.charge.amountPaise - summary.paid;
     if (balance <= 0) {
       return;
     }
-    final input = await showDialog<_PaymentInput>(
-      context: context,
-      builder: (_) => _PaymentDialog(balance: balance),
-    );
-    if (input == null || !mounted) {
-      return;
-    }
+
+    // Lock before opening the dialog so rapid taps cannot open parallel dialogs
+    // or submit separate payments while the first database write is pending.
+    setState(() => _isRecordingPayment = true);
     try {
+      final input = await showDialog<_PaymentInput>(
+        context: context,
+        builder: (_) => _PaymentDialog(balance: balance),
+      );
+      if (input == null || !mounted) {
+        return;
+      }
+
       await ref.read(appDatabaseProvider).recordFeePayment(
             feeChargeId: summary.charge.id,
             amountPaise: input.amountPaise,
@@ -159,6 +169,10 @@ class _StudentFeesScreenState extends ConsumerState<StudentFeesScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Could not record payment: $error')),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isRecordingPayment = false);
       }
     }
   }

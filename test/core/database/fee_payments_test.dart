@@ -124,6 +124,45 @@ void main() {
     expect(await database.getFeePaymentsForCharge(feeChargeId), isEmpty);
   });
 
+  test('rejects a payment that exceeds the remaining charge balance', () async {
+    await database.recordFeePayment(
+      feeChargeId: feeChargeId,
+      amountPaise: 100000,
+      method: 'cash',
+      idempotencyKey: 'almost-full-payment',
+    );
+
+    await expectLater(
+      database.recordFeePayment(
+        feeChargeId: feeChargeId,
+        amountPaise: 25001,
+        method: 'upi',
+        idempotencyKey: 'over-balance-payment',
+      ),
+      throwsStateError,
+    );
+
+    expect(await database.getTotalPaidForCharge(feeChargeId), 100000);
+    expect(await database.getFeePaymentsForCharge(feeChargeId), hasLength(1));
+  });
+
+  test('allows a payment exactly equal to the remaining balance', () async {
+    await database.recordFeePayment(
+      feeChargeId: feeChargeId,
+      amountPaise: 100000,
+      method: 'cash',
+      idempotencyKey: 'first-partial-payment',
+    );
+    await database.recordFeePayment(
+      feeChargeId: feeChargeId,
+      amountPaise: 25000,
+      method: 'upi',
+      idempotencyKey: 'final-payment',
+    );
+
+    expect(await database.getTotalPaidForCharge(feeChargeId), 125000);
+  });
+
   test('database foreign key rejects payments for missing charges', () async {
     await expectLater(
       database.recordFeePayment(
