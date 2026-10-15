@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 /// The immutable data needed to create a printable fee payment receipt.
@@ -61,7 +62,7 @@ Future<Uint8List> buildFeePaymentReceiptPdf(FeePaymentReceiptData data) async {
 
   document.addPage(
     pw.Page(
-      pageFormat: const PdfPageFormat(595, 842),
+      pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.all(36),
       build: (context) => pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.stretch,
