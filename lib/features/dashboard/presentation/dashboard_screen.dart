@@ -71,6 +71,15 @@ class DashboardScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           _DashboardCard(
+            title: 'Attendance reports',
+            description:
+                'Review student-wise attendance percentages with class, batch, and date filters.',
+            buttonLabel: 'Open attendance reports',
+            icon: Icons.analytics_outlined,
+            onPressed: () => context.push('/attendance/reports'),
+          ),
+          const SizedBox(height: 12),
+          _DashboardCard(
             title: 'Fee payments',
             description:
                 'Create fee charges, record partial payments, and review paid amounts and outstanding balances.',
