@@ -23,8 +23,9 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
     _searchController.addListener(() => setState(() {}));
   }
 
-  Future<List<QueryRow>> _loadStaff() =>
-      ref.read(appDatabaseProvider).getStaffRecords(includeInactive: _showInactive);
+  Future<List<QueryRow>> _loadStaff() => ref
+      .read(appDatabaseProvider)
+      .getStaffRecords(includeInactive: _showInactive);
 
   void _reload() {
     setState(() => _staffFuture = _loadStaff());
@@ -64,7 +65,8 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
         context: context,
         builder: (dialogContext) => StatefulBuilder(
           builder: (context, setDialogState) => AlertDialog(
-            title: Text(record == null ? 'Add staff member' : 'Edit staff member'),
+            title:
+                Text(record == null ? 'Add staff member' : 'Edit staff member'),
             content: SizedBox(
               width: 440,
               child: Form(
@@ -78,7 +80,8 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
                         autofocus: true,
                         maxLength: 100,
                         textCapitalization: TextCapitalization.words,
-                        decoration: const InputDecoration(labelText: 'Full name *'),
+                        decoration:
+                            const InputDecoration(labelText: 'Full name *'),
                         validator: (value) {
                           final text = value?.trim() ?? '';
                           if (text.isEmpty) {
@@ -113,13 +116,15 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
                         controller: phone,
                         maxLength: 30,
                         keyboardType: TextInputType.phone,
-                        decoration: const InputDecoration(labelText: 'Phone (optional)'),
+                        decoration: const InputDecoration(
+                            labelText: 'Phone (optional)'),
                       ),
                       TextFormField(
                         controller: email,
                         maxLength: 120,
                         keyboardType: TextInputType.emailAddress,
-                        decoration: const InputDecoration(labelText: 'Email (optional)'),
+                        decoration: const InputDecoration(
+                            labelText: 'Email (optional)'),
                         validator: (value) {
                           final text = value?.trim() ?? '';
                           if (text.isNotEmpty && !text.contains('@')) {
@@ -130,16 +135,20 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
                       ),
                       TextFormField(
                         controller: salary,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         decoration: const InputDecoration(
                           labelText: 'Monthly salary (₹)',
                           helperText: 'Optional. Enter 0 if not set.',
                         ),
                         validator: (value) {
-                          final amount = double.tryParse((value ?? '').trim().isEmpty
-                              ? '0'
-                              : value!.trim());
-                          if (amount == null || !amount.isFinite || amount < 0) {
+                          final amount = double.tryParse(
+                              (value ?? '').trim().isEmpty
+                                  ? '0'
+                                  : value!.trim());
+                          if (amount == null ||
+                              !amount.isFinite ||
+                              amount < 0) {
                             return 'Enter a valid non-negative amount';
                           }
                           if (amount > 100000000) {
@@ -155,7 +164,8 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
             ),
             actions: [
               TextButton(
-                onPressed: saving ? null : () => Navigator.of(dialogContext).pop(),
+                onPressed:
+                    saving ? null : () => Navigator.of(dialogContext).pop(),
                 child: const Text('Cancel'),
               ),
               FilledButton(
@@ -168,7 +178,9 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
                         setDialogState(() => saving = true);
                         try {
                           final parsedSalary = double.tryParse(
-                                salary.text.trim().isEmpty ? '0' : salary.text.trim(),
+                                salary.text.trim().isEmpty
+                                    ? '0'
+                                    : salary.text.trim(),
                               ) ??
                               0;
                           await ref.read(appDatabaseProvider).saveStaff(
@@ -177,7 +189,8 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
                                 role: role.text,
                                 phone: phone.text,
                                 email: email.text,
-                                monthlySalaryPaise: (parsedSalary * 100).round(),
+                                monthlySalaryPaise:
+                                    (parsedSalary * 100).round(),
                               );
                           if (dialogContext.mounted) {
                             Navigator.of(dialogContext).pop();
@@ -196,7 +209,9 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
                           setDialogState(() => saving = false);
                           if (dialogContext.mounted) {
                             ScaffoldMessenger.of(dialogContext).showSnackBar(
-                              SnackBar(content: Text('Could not save staff member: $error')),
+                              SnackBar(
+                                  content: Text(
+                                      'Could not save staff member: $error')),
                             );
                           }
                         }
@@ -225,7 +240,10 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
       _reload();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(active ? 'Staff member reactivated' : 'Staff member deactivated')),
+          SnackBar(
+              content: Text(active
+                  ? 'Staff member reactivated'
+                  : 'Staff member deactivated')),
         );
       }
     } catch (error) {
@@ -300,7 +318,8 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
                       row.read<String?>('phone') ?? '',
                       row.read<String?>('email') ?? '',
                     ];
-                    return values.any((value) => value.toLowerCase().contains(query));
+                    return values
+                        .any((value) => value.toLowerCase().contains(query));
                   }).toList();
                   if (records.isEmpty) {
                     return Center(
@@ -332,7 +351,9 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
                       ].join(' • ');
                       return ListTile(
                         leading: CircleAvatar(
-                          child: Icon(active ? Icons.person_outline : Icons.person_off_outlined),
+                          child: Icon(active
+                              ? Icons.person_outline
+                              : Icons.person_off_outlined),
                         ),
                         title: Text(record.read<String>('full_name')),
                         subtitle: Text(
@@ -351,7 +372,8 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
                             }
                           },
                           itemBuilder: (context) => [
-                            const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                            const PopupMenuItem(
+                                value: 'edit', child: Text('Edit')),
                             PopupMenuItem(
                               value: active ? 'deactivate' : 'activate',
                               child: Text(active ? 'Deactivate' : 'Reactivate'),

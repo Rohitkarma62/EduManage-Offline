@@ -296,19 +296,27 @@ class AppDatabase extends _$AppDatabase {
     final normalizedPhone = phone?.trim();
     final normalizedEmail = email?.trim();
     if (name.isEmpty || name.length > 100) {
-      throw ArgumentError.value(fullName, 'fullName', 'Must be 1 to 100 characters');
+      throw ArgumentError.value(
+          fullName, 'fullName', 'Must be 1 to 100 characters');
     }
     if (normalizedRole.isEmpty || normalizedRole.length > 80) {
       throw ArgumentError.value(role, 'role', 'Must be 1 to 80 characters');
     }
-    if (normalizedPhone != null && normalizedPhone.isNotEmpty && normalizedPhone.length > 30) {
-      throw ArgumentError.value(phone, 'phone', 'Must be at most 30 characters');
+    if (normalizedPhone != null &&
+        normalizedPhone.isNotEmpty &&
+        normalizedPhone.length > 30) {
+      throw ArgumentError.value(
+          phone, 'phone', 'Must be at most 30 characters');
     }
-    if (normalizedEmail != null && normalizedEmail.isNotEmpty && normalizedEmail.length > 120) {
-      throw ArgumentError.value(email, 'email', 'Must be at most 120 characters');
+    if (normalizedEmail != null &&
+        normalizedEmail.isNotEmpty &&
+        normalizedEmail.length > 120) {
+      throw ArgumentError.value(
+          email, 'email', 'Must be at most 120 characters');
     }
     if (monthlySalaryPaise < 0) {
-      throw ArgumentError.value(monthlySalaryPaise, 'monthlySalaryPaise', 'Must be non-negative');
+      throw ArgumentError.value(
+          monthlySalaryPaise, 'monthlySalaryPaise', 'Must be non-negative');
     }
     final now = DateTime.now().millisecondsSinceEpoch;
     if (id == null) {
@@ -317,26 +325,42 @@ class AppDatabase extends _$AppDatabase {
           (full_name, role, phone, email, monthly_salary_paise, is_active, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, 1, ?, ?)
       ''', [
-        name, normalizedRole,
-        normalizedPhone == null || normalizedPhone.isEmpty ? null : normalizedPhone,
-        normalizedEmail == null || normalizedEmail.isEmpty ? null : normalizedEmail,
-        monthlySalaryPaise, now, now,
+        name,
+        normalizedRole,
+        normalizedPhone == null || normalizedPhone.isEmpty
+            ? null
+            : normalizedPhone,
+        normalizedEmail == null || normalizedEmail.isEmpty
+            ? null
+            : normalizedEmail,
+        monthlySalaryPaise,
+        now,
+        now,
       ]);
-      final row = await customSelect('SELECT last_insert_rowid() AS id').getSingle();
+      final row =
+          await customSelect('SELECT last_insert_rowid() AS id').getSingle();
       return row.read<int>('id');
     }
     final existing = await customSelect(
-      'SELECT id FROM staff WHERE id = ?', variables: [Variable.withInt(id)],
+      'SELECT id FROM staff WHERE id = ?',
+      variables: [Variable.withInt(id)],
     ).get();
     if (existing.isEmpty) throw StateError('Staff record does not exist');
     await customStatement('''
       UPDATE staff SET full_name = ?, role = ?, phone = ?, email = ?,
         monthly_salary_paise = ?, updated_at = ? WHERE id = ?
     ''', [
-      name, normalizedRole,
-      normalizedPhone == null || normalizedPhone.isEmpty ? null : normalizedPhone,
-      normalizedEmail == null || normalizedEmail.isEmpty ? null : normalizedEmail,
-      monthlySalaryPaise, now, id,
+      name,
+      normalizedRole,
+      normalizedPhone == null || normalizedPhone.isEmpty
+          ? null
+          : normalizedPhone,
+      normalizedEmail == null || normalizedEmail.isEmpty
+          ? null
+          : normalizedEmail,
+      monthlySalaryPaise,
+      now,
+      id,
     ]);
     return id;
   }
