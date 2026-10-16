@@ -13,6 +13,7 @@ import '../../features/students/presentation/student_form_screen.dart';
 import '../../features/students/presentation/student_transfer_screen.dart';
 import '../../features/students/presentation/students_screen.dart';
 import '../../features/staff/presentation/staff_screen.dart';
+import '../../features/staff/presentation/staff_salary_payments_screen.dart';
 
 final GoRouter appRouter = GoRouter(routes: <RouteBase>[
   GoRoute(
@@ -84,6 +85,11 @@ final GoRouter appRouter = GoRouter(routes: <RouteBase>[
     path: '/staff',
     name: 'staff',
     builder: (context, state) => const StaffScreen(),
+  ),
+  GoRoute(
+    path: '/staff/salary-payments',
+    name: 'staff-salary-payments',
+    builder: (context, state) => const StaffSalaryPaymentsScreen(),
   ),
   GoRoute(
     path: '/attendance',
