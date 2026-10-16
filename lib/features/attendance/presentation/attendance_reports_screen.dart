@@ -26,23 +26,25 @@ class _AttendanceReportsScreenState
     _reportFuture = _loadReport();
   }
 
-  String _dateKey(DateTime date) =>
-      '${date.year.toString().padLeft(4, '0')}-'
+  String _dateKey(DateTime date) => '${date.year.toString().padLeft(4, '0')}-'
       '${date.month.toString().padLeft(2, '0')}-'
       '${date.day.toString().padLeft(2, '0')}';
 
-  String _dateLabel(DateTime date) =>
-      '${date.day.toString().padLeft(2, '0')}/'
+  String _dateLabel(DateTime date) => '${date.day.toString().padLeft(2, '0')}/'
       '${date.month.toString().padLeft(2, '0')}/${date.year}';
 
   Future<_ReportData> _loadReport() async {
     final db = ref.read(appDatabaseProvider);
-    final classes = await db.customSelect(
-      'SELECT id, name, academic_year FROM classes ORDER BY name COLLATE NOCASE',
-    ).get();
-    final batches = await db.customSelect(
-      'SELECT id, class_id, name FROM batches ORDER BY name COLLATE NOCASE',
-    ).get();
+    final classes = await db
+        .customSelect(
+          'SELECT id, name, academic_year FROM classes ORDER BY name COLLATE NOCASE',
+        )
+        .get();
+    final batches = await db
+        .customSelect(
+          'SELECT id, class_id, name FROM batches ORDER BY name COLLATE NOCASE',
+        )
+        .get();
 
     final conditions = <String>[
       'ar.attendance_date >= ?',
@@ -278,7 +280,8 @@ class _AttendanceReportsScreenState
                 child: ListTile(
                   leading: const Icon(Icons.percent),
                   title: const Text('Overall attendance'),
-                  subtitle: const Text('Present ÷ (Present + Absent), excluding leave'),
+                  subtitle: const Text(
+                      'Present ÷ (Present + Absent), excluding leave'),
                   trailing: Text(
                     '${percentage.toStringAsFixed(1)}%',
                     style: Theme.of(context).textTheme.titleLarge,
@@ -299,8 +302,7 @@ class _AttendanceReportsScreenState
                   ),
                 )
               else
-                for (final row in data.rows)
-                  _StudentReportTile(row: row),
+                for (final row in data.rows) _StudentReportTile(row: row),
             ],
           );
         },
