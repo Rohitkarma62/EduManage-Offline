@@ -18,8 +18,9 @@ pluginManagement {
 
 plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
-    // Flutter stable requires Android Gradle Plugin 8.11.1 or newer.
-    id("com.android.application") version "8.11.1" apply false
+    id("com.android.application") version "9.0.1" apply false
+    // Keep a compatible Kotlin Gradle Plugin version on the build classpath.
+    // AGP 9 provides built-in Kotlin, so this plugin is not applied to the app.
     id("org.jetbrains.kotlin.android") version "2.2.20" apply false
 }
 
