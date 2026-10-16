@@ -179,7 +179,6 @@ class _StudentFeesScreenState extends ConsumerState<StudentFeesScreen> {
     }
   }
 
-
   Future<void> _showReceiptActions(
     _FeeData data,
     _ChargeSummary summary,
@@ -362,7 +361,8 @@ class _StudentFeesScreenState extends ConsumerState<StudentFeesScreen> {
                                     ),
                                     trailing: IconButton(
                                       tooltip: 'Receipt PDF',
-                                      icon: const Icon(Icons.picture_as_pdf_outlined),
+                                      icon: const Icon(
+                                          Icons.picture_as_pdf_outlined),
                                       onPressed: () => _showReceiptActions(
                                         data,
                                         item,
