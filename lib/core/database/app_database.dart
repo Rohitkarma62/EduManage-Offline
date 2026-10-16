@@ -127,7 +127,7 @@ class AppDatabase extends _$AppDatabase {
     if (row == null) throw StateError('Staff member does not exist');
     final expected = row.read<int>('expected');
     final paid = row.read<int>('paid');
-    return {'expectedPaise': expected, 'paidPaise': paid, 'pendingPaise': (expected - paid).clamp(0, expected)};
+    return {'expectedPaise': expected, 'paidPaise': paid, 'pendingPaise': (expected - paid).clamp(0, expected).toInt()};
   }
 
   Future<void> _installFeeChargeGuards() async {
