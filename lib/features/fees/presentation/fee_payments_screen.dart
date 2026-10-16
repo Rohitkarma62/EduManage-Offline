@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:printing/printing.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
+import '../fee_payment_receipt.dart';
 import '../../students/providers/student_providers.dart';
 
 class FeePaymentsScreen extends ConsumerWidget {
@@ -177,6 +179,73 @@ class _StudentFeesScreenState extends ConsumerState<StudentFeesScreen> {
     }
   }
 
+
+  Future<void> _showReceiptActions(
+    _FeeData data,
+    _ChargeSummary summary,
+    FeePaymentRecord payment,
+  ) async {
+    final action = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Payment receipt'),
+        content: Text('Receipt for payment #${payment.id}'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, 'share'),
+            child: const Text('Share PDF'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(dialogContext, 'print'),
+            icon: const Icon(Icons.print_outlined),
+            label: const Text('Print'),
+          ),
+        ],
+      ),
+    );
+    if (action == null || !mounted) return;
+
+    try {
+      final institute = await ref.read(appDatabaseProvider).getInstitute();
+      final bytes = await buildFeePaymentReceiptPdf(
+        FeePaymentReceiptData(
+          instituteName: institute?.name ?? 'Educational Institute',
+          academicYear: institute?.academicYear ?? '',
+          phone: institute?.phone,
+          studentName: data.student.fullName,
+          admissionNumber: data.student.admissionNumber,
+          chargeTitle: summary.charge.title,
+          periodStart: summary.charge.periodStart,
+          periodEnd: summary.charge.periodEnd,
+          dueDate: summary.charge.dueDate,
+          paymentId: payment.id,
+          amountPaise: payment.amountPaise,
+          method: payment.method,
+          reference: payment.reference,
+          receivedAt: payment.receivedAt,
+          chargeAmountPaise: summary.charge.amountPaise,
+          totalPaidPaise: summary.paid,
+        ),
+      );
+      final filename = 'fee_receipt_${payment.id}.pdf';
+      if (action == 'share') {
+        await Printing.sharePdf(bytes: bytes, filename: filename);
+      } else {
+        await Printing.layoutPdf(onLayout: (_) async => bytes);
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not create receipt: $error')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: const Text('Student fees')),
@@ -290,6 +359,15 @@ class _StudentFeesScreenState extends ConsumerState<StudentFeesScreen> {
                                     subtitle: Text(
                                       '${_method(payment.method)} • ${_date(payment.receivedAt)}'
                                       '${payment.reference == null ? '' : ' • Ref: ${payment.reference}'}',
+                                    ),
+                                    trailing: IconButton(
+                                      tooltip: 'Receipt PDF',
+                                      icon: const Icon(Icons.picture_as_pdf_outlined),
+                                      onPressed: () => _showReceiptActions(
+                                        data,
+                                        item,
+                                        payment,
+                                      ),
                                     ),
                                   )),
                             ],
