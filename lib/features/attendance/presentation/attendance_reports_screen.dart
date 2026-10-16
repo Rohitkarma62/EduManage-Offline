@@ -85,10 +85,6 @@ class _AttendanceReportsScreenState
     return _ReportData(classes: classes, batches: batches, rows: reportRows);
   }
 
-  void _refresh() {
-    setState(() => _reportFuture = _loadReport());
-  }
-
   Future<void> _pickDate({required bool start}) async {
     final picked = await showDatePicker(
       context: context,
@@ -192,7 +188,7 @@ class _AttendanceReportsScreenState
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<int?>(
-                        value: _classId,
+                        initialValue: _classId,
                         decoration: const InputDecoration(
                           labelText: 'Class',
                           border: OutlineInputBorder(),
@@ -214,7 +210,7 @@ class _AttendanceReportsScreenState
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<int?>(
-                        value: _batchId,
+                        initialValue: _batchId,
                         decoration: const InputDecoration(
                           labelText: 'Batch',
                           border: OutlineInputBorder(),
