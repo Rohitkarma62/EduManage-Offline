@@ -12,6 +12,7 @@
 - Fee charge creation tied to a student's current historical assignment.
 - Fee payment entry with partial payments, supported payment methods, optional reference, duplicate-safe database idempotency, payment history, and paid/balance summaries.
 - Offline PDF receipts for recorded payments, including institute/student details, fee period, payment method/reference, receipt number, and current outstanding balance; receipts can be printed or shared.
+- Daily attendance entry for active students with Present/Absent/Leave statuses, date navigation, local persistence, and daily counts.
 - Database and widget tests; CI must pass formatting, analysis, tests, Drift code generation, and Android debug APK build before merge.
 
 ## Institute setup and persistence
@@ -54,7 +55,7 @@
 
 ## Not implemented yet
 
-- Attendance workflows.
+- Attendance reports by class/batch and date range, plus attendance percentage summaries.
 - Staff, salary, expenses, exams, results, and certificates.
 - General-purpose app-managed file storage and backup/restore of generated documents.
 - Backup/restore and signed offline licensing.
