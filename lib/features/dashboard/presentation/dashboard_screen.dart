@@ -62,6 +62,15 @@ class DashboardScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           _DashboardCard(
+            title: 'Attendance',
+            description:
+                'Mark daily student attendance and review present, absent, and leave counts.',
+            buttonLabel: 'Open attendance',
+            icon: Icons.fact_check_outlined,
+            onPressed: () => context.push('/attendance'),
+          ),
+          const SizedBox(height: 12),
+          _DashboardCard(
             title: 'Fee payments',
             description:
                 'Create fee charges, record partial payments, and review paid amounts and outstanding balances.',
