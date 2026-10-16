@@ -39,9 +39,9 @@ jobs:
           flutter --version
           java -version
 
-      - name: Generate missing Flutter Android platform files
-        run: flutter create --platforms=android --org com.example .
-
+      # Use the checked-in Android Gradle configuration. Running
+      # "flutter create" here generates competing Groovy Gradle files,
+      # which shadow the project's Kotlin DSL migration files.
       - name: Resolve and lock dependencies
         run: flutter pub get
 
