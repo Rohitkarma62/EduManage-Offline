@@ -5,6 +5,7 @@ import '../../features/classes/presentation/class_form_screen.dart';
 import '../../features/classes/presentation/classes_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/attendance/presentation/attendance_screen.dart';
+import '../../features/attendance/presentation/attendance_reports_screen.dart';
 import '../../features/fees/presentation/fee_payments_screen.dart';
 import '../../features/institute/presentation/institute_setup_screen.dart';
 import '../../features/students/presentation/student_assignment_history_screen.dart';
@@ -82,6 +83,11 @@ final GoRouter appRouter = GoRouter(routes: <RouteBase>[
     path: '/attendance',
     name: 'attendance',
     builder: (context, state) => const AttendanceScreen(),
+  ),
+  GoRoute(
+    path: '/attendance/reports',
+    name: 'attendance-reports',
+    builder: (context, state) => const AttendanceReportsScreen(),
   ),
   GoRoute(
     path: '/fees',
