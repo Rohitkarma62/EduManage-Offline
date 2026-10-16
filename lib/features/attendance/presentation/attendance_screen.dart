@@ -24,9 +24,8 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
   }
 
   Future<List<QueryRow>> _loadRecords() async {
-    final records = await ref
-        .read(appDatabaseProvider)
-        .getAttendanceForDate(_selectedDate);
+    final records =
+        await ref.read(appDatabaseProvider).getAttendanceForDate(_selectedDate);
     if (mounted) {
       setState(() {
         _statuses = {
@@ -86,7 +85,8 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final present = _statuses.values.where((value) => value == 'present').length;
+    final present =
+        _statuses.values.where((value) => value == 'present').length;
     final absent = _statuses.values.where((value) => value == 'absent').length;
     final leave = _statuses.values.where((value) => value == 'leave').length;
 
@@ -141,7 +141,8 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   children: [
                     _CountTile(label: 'Present', count: present),
@@ -160,8 +161,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                     : ListView.separated(
                         padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                         itemCount: records.length,
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: 8),
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
                         itemBuilder: (context, index) {
                           final row = records[index];
                           final id = row.read<int>('student_id');
@@ -174,12 +174,14 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                                 children: [
                                   Text(
                                     row.read<String>('full_name'),
-                                    style: Theme.of(context).textTheme.titleMedium,
+                                    style:
+                                        Theme.of(context).textTheme.titleMedium,
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     'Admission no. ${row.read<String>('admission_number')}',
-                                    style: Theme.of(context).textTheme.bodySmall,
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
                                   ),
                                   const SizedBox(height: 10),
                                   Wrap(

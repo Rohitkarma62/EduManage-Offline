@@ -287,7 +287,8 @@ class AppDatabase extends _$AppDatabase {
   ) async {
     const allowed = {'present', 'absent', 'leave'};
     if (statuses.values.any((status) => !allowed.contains(status))) {
-      throw ArgumentError('Attendance status must be present, absent, or leave.');
+      throw ArgumentError(
+          'Attendance status must be present, absent, or leave.');
     }
     final dateKey = _attendanceDateKey(date);
     final now = DateTime.now().millisecondsSinceEpoch;
