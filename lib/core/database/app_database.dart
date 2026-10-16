@@ -22,7 +22,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'edumanage_offline'));
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   Future<void> _installFeeChargeGuards() async {
     await customStatement('''
@@ -237,6 +237,94 @@ class AppDatabase extends _$AppDatabase {
     ''');
   }
 
+  Future<void> _installAttendanceTable() async {
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS attendance_records (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE RESTRICT,
+        attendance_date TEXT NOT NULL CHECK (
+          length(attendance_date) = 10
+          AND attendance_date GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+        ),
+        status TEXT NOT NULL CHECK (status IN ('present', 'absent', 'leave')),
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        UNIQUE(student_id, attendance_date)
+      )
+    ''');
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS attendance_records_date_status
+      ON attendance_records(attendance_date, status, student_id)
+    ''');
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS attendance_student_exists_insert
+      BEFORE INSERT ON attendance_records
+      WHEN NOT EXISTS (SELECT 1 FROM students s WHERE s.id = NEW.student_id)
+      BEGIN SELECT RAISE(ABORT, 'attendance student does not exist'); END
+    ''');
+  }
+
+  String _attendanceDateKey(DateTime date) =>
+      '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+  Future<List<QueryRow>> getAttendanceForDate(DateTime date) {
+    final key = _attendanceDateKey(date);
+    return customSelect('''
+      SELECT s.id AS student_id, s.full_name AS full_name,
+             s.admission_number AS admission_number,
+             ar.status AS attendance_status
+      FROM students s
+      LEFT JOIN attendance_records ar
+        ON ar.student_id = s.id AND ar.attendance_date = ?
+      WHERE s.is_active = 1
+      ORDER BY s.full_name COLLATE NOCASE, s.id
+    ''', variables: [Variable.withString(key)]).get();
+  }
+
+  Future<void> saveAttendanceForDate(
+    DateTime date,
+    Map<int, String> statuses,
+  ) async {
+    const allowed = {'present', 'absent', 'leave'};
+    if (statuses.values.any((status) => !allowed.contains(status))) {
+      throw ArgumentError('Attendance status must be present, absent, or leave.');
+    }
+    final dateKey = _attendanceDateKey(date);
+    final now = DateTime.now().millisecondsSinceEpoch;
+    await transaction(() async {
+      for (final entry in statuses.entries) {
+        await customStatement('''
+          INSERT INTO attendance_records
+            (student_id, attendance_date, status, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?)
+          ON CONFLICT(student_id, attendance_date) DO UPDATE SET
+            status = excluded.status, updated_at = excluded.updated_at
+        ''', [entry.key, dateKey, entry.value, now, now]);
+      }
+    });
+  }
+
+  Future<Map<String, int>> getAttendanceSummary(DateTime date) async {
+    final key = _attendanceDateKey(date);
+    final row = await customSelect('''
+      SELECT
+        SUM(CASE WHEN ar.status = 'present' THEN 1 ELSE 0 END) AS present_count,
+        SUM(CASE WHEN ar.status = 'absent' THEN 1 ELSE 0 END) AS absent_count,
+        SUM(CASE WHEN ar.status = 'leave' THEN 1 ELSE 0 END) AS leave_count,
+        SUM(CASE WHEN ar.status IS NULL THEN 1 ELSE 0 END) AS unmarked_count
+      FROM students s
+      LEFT JOIN attendance_records ar
+        ON ar.student_id = s.id AND ar.attendance_date = ?
+      WHERE s.is_active = 1
+    ''', variables: [Variable.withString(key)]).getSingle();
+    return {
+      'present': row.read<int?>('present_count') ?? 0,
+      'absent': row.read<int?>('absent_count') ?? 0,
+      'leave': row.read<int?>('leave_count') ?? 0,
+      'unmarked': row.read<int?>('unmarked_count') ?? 0,
+    };
+  }
+
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
@@ -246,6 +334,7 @@ class AppDatabase extends _$AppDatabase {
           await _installAssignmentGuards();
           await _installFeeChargeGuards();
           await _installFeePaymentTable();
+          await _installAttendanceTable();
         },
         onUpgrade: (m, from, to) async {
           if (from < 2) await m.createTable(students);
@@ -272,6 +361,7 @@ class AppDatabase extends _$AppDatabase {
             await _installFeeChargeGuards();
           }
           if (from < 9) await _installFeePaymentTable();
+          if (from < 10) await _installAttendanceTable();
         },
       );
 
