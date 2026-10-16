@@ -21,7 +21,7 @@ plugins {
     id("com.android.application") version "9.0.1" apply false
     // Keep a compatible Kotlin Gradle Plugin version on the build classpath.
     // AGP 9 provides built-in Kotlin, so this plugin is not applied to the app.
-    id("org.jetbrains.kotlin.android") version "2.2.20" apply false
+    id("org.jetbrains.kotlin.android") version "2.3.20" apply false
 }
 
 include(":app")
