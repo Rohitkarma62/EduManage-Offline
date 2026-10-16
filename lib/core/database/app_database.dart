@@ -22,7 +22,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'edumanage_offline'));
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   Future<void> _installFeeChargeGuards() async {
     await customStatement('''
@@ -237,6 +237,117 @@ class AppDatabase extends _$AppDatabase {
     ''');
   }
 
+  Future<void> _installStaffTable() async {
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS staff (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        full_name TEXT NOT NULL CHECK (length(trim(full_name)) BETWEEN 1 AND 100),
+        role TEXT NOT NULL CHECK (length(trim(role)) BETWEEN 1 AND 80),
+        phone TEXT,
+        email TEXT,
+        monthly_salary_paise INTEGER NOT NULL DEFAULT 0 CHECK (monthly_salary_paise >= 0),
+        is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      )
+    ''');
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS staff_active_name
+      ON staff(is_active, full_name COLLATE NOCASE)
+    ''');
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS staff_valid_insert
+      BEFORE INSERT ON staff
+      WHEN length(trim(NEW.full_name)) NOT BETWEEN 1 AND 100
+        OR length(trim(NEW.role)) NOT BETWEEN 1 AND 80
+        OR NEW.monthly_salary_paise < 0
+      BEGIN SELECT RAISE(ABORT, 'invalid staff details'); END
+    ''');
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS staff_valid_update
+      BEFORE UPDATE OF full_name, role, monthly_salary_paise ON staff
+      WHEN length(trim(NEW.full_name)) NOT BETWEEN 1 AND 100
+        OR length(trim(NEW.role)) NOT BETWEEN 1 AND 80
+        OR NEW.monthly_salary_paise < 0
+      BEGIN SELECT RAISE(ABORT, 'invalid staff details'); END
+    ''');
+  }
+
+  Future<List<QueryRow>> getStaffRecords({bool includeInactive = false}) {
+    return customSelect('''
+      SELECT id, full_name, role, phone, email, monthly_salary_paise,
+             is_active, created_at, updated_at
+      FROM staff
+      ${includeInactive ? '' : 'WHERE is_active = 1'}
+      ORDER BY is_active DESC, full_name COLLATE NOCASE, id
+    ''').get();
+  }
+
+  Future<int> saveStaff({
+    int? id,
+    required String fullName,
+    required String role,
+    String? phone,
+    String? email,
+    int monthlySalaryPaise = 0,
+  }) async {
+    final name = fullName.trim();
+    final normalizedRole = role.trim();
+    final normalizedPhone = phone?.trim();
+    final normalizedEmail = email?.trim();
+    if (name.isEmpty || name.length > 100) {
+      throw ArgumentError.value(fullName, 'fullName', 'Must be 1 to 100 characters');
+    }
+    if (normalizedRole.isEmpty || normalizedRole.length > 80) {
+      throw ArgumentError.value(role, 'role', 'Must be 1 to 80 characters');
+    }
+    if (normalizedPhone != null && normalizedPhone.isNotEmpty && normalizedPhone.length > 30) {
+      throw ArgumentError.value(phone, 'phone', 'Must be at most 30 characters');
+    }
+    if (normalizedEmail != null && normalizedEmail.isNotEmpty && normalizedEmail.length > 120) {
+      throw ArgumentError.value(email, 'email', 'Must be at most 120 characters');
+    }
+    if (monthlySalaryPaise < 0) {
+      throw ArgumentError.value(monthlySalaryPaise, 'monthlySalaryPaise', 'Must be non-negative');
+    }
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (id == null) {
+      await customStatement('''
+        INSERT INTO staff
+          (full_name, role, phone, email, monthly_salary_paise, is_active, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, 1, ?, ?)
+      ''', [
+        name, normalizedRole,
+        normalizedPhone == null || normalizedPhone.isEmpty ? null : normalizedPhone,
+        normalizedEmail == null || normalizedEmail.isEmpty ? null : normalizedEmail,
+        monthlySalaryPaise, now, now,
+      ]);
+      final row = await customSelect('SELECT last_insert_rowid() AS id').getSingle();
+      return row.read<int>('id');
+    }
+    final existing = await customSelect(
+      'SELECT id FROM staff WHERE id = ?', variables: [Variable.withInt(id)],
+    ).get();
+    if (existing.isEmpty) throw StateError('Staff record does not exist');
+    await customStatement('''
+      UPDATE staff SET full_name = ?, role = ?, phone = ?, email = ?,
+        monthly_salary_paise = ?, updated_at = ? WHERE id = ?
+    ''', [
+      name, normalizedRole,
+      normalizedPhone == null || normalizedPhone.isEmpty ? null : normalizedPhone,
+      normalizedEmail == null || normalizedEmail.isEmpty ? null : normalizedEmail,
+      monthlySalaryPaise, now, id,
+    ]);
+    return id;
+  }
+
+  Future<void> setStaffActive(int id, {required bool isActive}) async {
+    await customStatement(
+      'UPDATE staff SET is_active = ?, updated_at = ? WHERE id = ?',
+      [isActive ? 1 : 0, DateTime.now().millisecondsSinceEpoch, id],
+    );
+  }
+
   Future<void> _installAttendanceTable() async {
     await customStatement('''
       CREATE TABLE IF NOT EXISTS attendance_records (
@@ -336,6 +447,7 @@ class AppDatabase extends _$AppDatabase {
           await _installFeeChargeGuards();
           await _installFeePaymentTable();
           await _installAttendanceTable();
+          await _installStaffTable();
         },
         onUpgrade: (m, from, to) async {
           if (from < 2) await m.createTable(students);
@@ -363,6 +475,7 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 9) await _installFeePaymentTable();
           if (from < 10) await _installAttendanceTable();
+          if (from < 11) await _installStaffTable();
         },
       );
 

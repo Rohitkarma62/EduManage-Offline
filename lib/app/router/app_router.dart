@@ -12,6 +12,7 @@ import '../../features/students/presentation/student_assignment_history_screen.d
 import '../../features/students/presentation/student_form_screen.dart';
 import '../../features/students/presentation/student_transfer_screen.dart';
 import '../../features/students/presentation/students_screen.dart';
+import '../../features/staff/presentation/staff_screen.dart';
 
 final GoRouter appRouter = GoRouter(routes: <RouteBase>[
   GoRoute(
@@ -78,6 +79,11 @@ final GoRouter appRouter = GoRouter(routes: <RouteBase>[
     builder: (context, state) => StudentTransferScreen(
       studentId: int.parse(state.pathParameters['id']!),
     ),
+  ),
+  GoRoute(
+    path: '/staff',
+    name: 'staff',
+    builder: (context, state) => const StaffScreen(),
   ),
   GoRoute(
     path: '/attendance',
