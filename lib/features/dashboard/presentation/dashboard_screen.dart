@@ -53,6 +53,15 @@ class DashboardScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           _DashboardCard(
+            title: 'Staff management',
+            description:
+                'Maintain staff profiles, roles, contact details, and monthly salary amounts offline.',
+            buttonLabel: 'Open staff',
+            icon: Icons.badge_outlined,
+            onPressed: () => context.push('/staff'),
+          ),
+          const SizedBox(height: 12),
+          _DashboardCard(
             title: 'Class & batch management',
             description:
                 'Create classes or coaching batches by academic year, then assign students to them.',
