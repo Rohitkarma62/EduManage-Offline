@@ -81,8 +81,12 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
                         decoration: const InputDecoration(labelText: 'Full name *'),
                         validator: (value) {
                           final text = value?.trim() ?? '';
-                          if (text.isEmpty) return 'Enter the staff member name';
-                          if (text.length > 100) return 'Maximum 100 characters';
+                          if (text.isEmpty) {
+                            return 'Enter the staff member name';
+                          }
+                          if (text.length > 100) {
+                            return 'Maximum 100 characters';
+                          }
                           return null;
                         },
                       ),
@@ -96,8 +100,12 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
                         ),
                         validator: (value) {
                           final text = value?.trim() ?? '';
-                          if (text.isEmpty) return 'Enter a role';
-                          if (text.length > 80) return 'Maximum 80 characters';
+                          if (text.isEmpty) {
+                            return 'Enter a role';
+                          }
+                          if (text.length > 80) {
+                            return 'Maximum 80 characters';
+                          }
                           return null;
                         },
                       ),
@@ -134,7 +142,9 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
                           if (amount == null || !amount.isFinite || amount < 0) {
                             return 'Enter a valid non-negative amount';
                           }
-                          if (amount > 100000000) return 'Amount is too large';
+                          if (amount > 100000000) {
+                            return 'Amount is too large';
+                          }
                           return null;
                         },
                       ),
@@ -152,7 +162,9 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
                 onPressed: saving
                     ? null
                     : () async {
-                        if (!formKey.currentState!.validate()) return;
+                        if (!formKey.currentState!.validate()) {
+                          return;
+                        }
                         setDialogState(() => saving = true);
                         try {
                           final parsedSalary = double.tryParse(
@@ -167,7 +179,9 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
                                 email: email.text,
                                 monthlySalaryPaise: (parsedSalary * 100).round(),
                               );
-                          if (dialogContext.mounted) Navigator.of(dialogContext).pop();
+                          if (dialogContext.mounted) {
+                            Navigator.of(dialogContext).pop();
+                          }
                           _reload();
                           if (mounted) {
                             ScaffoldMessenger.of(this.context).showSnackBar(
