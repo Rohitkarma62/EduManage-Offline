@@ -72,7 +72,7 @@ Future<Uint8List> buildFeePaymentReceiptPdf(FeePaymentReceiptData data) async {
               data.instituteName.trim().isEmpty
                   ? 'Educational Institute'
                   : data.instituteName,
-              style: pw.TextStyle(
+              style: const pw.TextStyle(
                 fontSize: 22,
                 fontWeight: pw.FontWeight.bold,
               ),
@@ -92,13 +92,13 @@ Future<Uint8List> buildFeePaymentReceiptPdf(FeePaymentReceiptData data) async {
           _receiptRow('Academic year', data.academicYear),
           pw.SizedBox(height: 12),
           pw.Text('STUDENT DETAILS',
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              style: const pw.TextStyle(fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 6),
           _receiptRow('Student', data.studentName),
           _receiptRow('Admission no.', data.admissionNumber),
           pw.SizedBox(height: 12),
           pw.Text('FEE DETAILS',
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              style: const pw.TextStyle(fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 6),
           _receiptRow('Fee', data.chargeTitle),
           _receiptRow(
@@ -108,7 +108,7 @@ Future<Uint8List> buildFeePaymentReceiptPdf(FeePaymentReceiptData data) async {
           _receiptRow('Due date', date(data.dueDate)),
           pw.SizedBox(height: 12),
           pw.Text('PAYMENT DETAILS',
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              style: const pw.TextStyle(fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 6),
           _receiptRow('Amount received', money(data.amountPaise)),
           _receiptRow('Payment method', method(data.method)),
@@ -123,14 +123,14 @@ Future<Uint8List> buildFeePaymentReceiptPdf(FeePaymentReceiptData data) async {
           pw.Center(
             child: pw.Text(
               'This receipt was generated offline by EduManage.',
-              style: pw.TextStyle(fontSize: 9),
+              style: const pw.TextStyle(fontSize: 9),
               textAlign: pw.TextAlign.center,
             ),
           ),
           pw.SizedBox(height: 5),
           pw.Center(
             child: pw.Text('Please retain this receipt for your records.',
-                style: pw.TextStyle(fontSize: 9)),
+                style: const pw.TextStyle(fontSize: 9)),
           ),
         ],
       ),
@@ -148,7 +148,7 @@ pw.Widget _receiptRow(String label, String value) => pw.Padding(
           pw.SizedBox(
             width: 155,
             child: pw.Text(label,
-                style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                style: const pw.TextStyle(fontWeight: pw.FontWeight.bold)),
           ),
           pw.Expanded(child: pw.Text(value)),
         ],
