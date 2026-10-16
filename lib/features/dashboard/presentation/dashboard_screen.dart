@@ -62,6 +62,15 @@ class DashboardScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           _DashboardCard(
+            title: 'Salary payment history',
+            description:
+                'Record staff salary payments and review payment history and monthly totals offline.',
+            buttonLabel: 'Open salary payments',
+            icon: Icons.payments_outlined,
+            onPressed: () => context.push('/staff/salary-payments'),
+          ),
+          const SizedBox(height: 12),
+          _DashboardCard(
             title: 'Class & batch management',
             description:
                 'Create classes or coaching batches by academic year, then assign students to them.',
