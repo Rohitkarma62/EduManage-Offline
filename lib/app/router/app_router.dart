@@ -9,7 +9,6 @@ import '../../features/attendance/presentation/attendance_reports_screen.dart';
 import '../../features/fees/presentation/fee_payments_screen.dart';
 import '../../features/expenses/presentation/expenses_screen.dart';
 import '../../features/exams/presentation/exams_screen.dart';
-import '../../features/exams/presentation/exams_screen.dart';
 import '../../features/institute/presentation/institute_setup_screen.dart';
 import '../../features/students/presentation/student_assignment_history_screen.dart';
 import '../../features/students/presentation/student_form_screen.dart';
