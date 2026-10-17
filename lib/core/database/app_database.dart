@@ -769,7 +769,9 @@ class AppDatabase extends _$AppDatabase {
       'SELECT id FROM classes WHERE id = ?',
       variables: [Variable.withInt(classId)],
     ).getSingleOrNull();
-    if (classRow == null) throw StateError('Class does not exist');
+    if (classRow == null) {
+      throw StateError('Class does not exist');
+    }
     final now = DateTime.now().millisecondsSinceEpoch;
     if (id == null) {
       await customStatement('''
@@ -783,7 +785,9 @@ class AppDatabase extends _$AppDatabase {
       'SELECT id FROM exams WHERE id = ?',
       variables: [Variable.withInt(id)],
     ).getSingleOrNull();
-    if (existing == null) throw StateError('Exam does not exist');
+    if (existing == null) {
+      throw StateError('Exam does not exist');
+    }
     final recorded = await customSelect(
       'SELECT COUNT(*) AS total FROM exam_results WHERE exam_id = ?',
       variables: [Variable.withInt(id)],
@@ -817,7 +821,9 @@ class AppDatabase extends _$AppDatabase {
       'SELECT class_id, exam_date FROM exams WHERE id = ?',
       variables: [Variable.withInt(examId)],
     ).getSingleOrNull();
-    if (exam == null) throw StateError('Exam does not exist');
+    if (exam == null) {
+      throw StateError('Exam does not exist');
+    }
     final classId = exam.read<int>('class_id');
     final examDate = exam.read<int>('exam_date');
     return customSelect('''
@@ -872,7 +878,9 @@ class AppDatabase extends _$AppDatabase {
       Variable.withInt(examDate),
       Variable.withInt(examDate),
     ]).getSingleOrNull();
-    if (assignment == null) throw StateError('Student was not assigned to this class on the exam date');
+    if (assignment == null) {
+      throw StateError('Student was not assigned to this class on the exam date');
+    }
     final now = DateTime.now().millisecondsSinceEpoch;
     await customStatement('''
       INSERT INTO exam_results (exam_id, student_id, marks_obtained, remarks, created_at, updated_at)
