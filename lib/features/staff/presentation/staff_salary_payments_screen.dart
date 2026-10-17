@@ -60,7 +60,7 @@ class _StaffSalaryPaymentsScreenState extends ConsumerState<StaffSalaryPaymentsS
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       DropdownButtonFormField<int>(
-                        value: staffId,
+                        initialValue: staffId,
                         isExpanded: true,
                         decoration: const InputDecoration(labelText: 'Staff member'),
                         items: staff.map((row) => DropdownMenuItem<int>(
@@ -68,7 +68,9 @@ class _StaffSalaryPaymentsScreenState extends ConsumerState<StaffSalaryPaymentsS
                           child: Text(row.read<String>('full_name')),
                         )).toList(),
                         onChanged: (value) {
-                          if (value != null) setDialogState(() => staffId = value);
+                          if (value != null) {
+                            setDialogState(() => staffId = value);
+                          }
                         },
                       ),
                       TextFormField(
@@ -84,13 +86,15 @@ class _StaffSalaryPaymentsScreenState extends ConsumerState<StaffSalaryPaymentsS
                         },
                       ),
                       DropdownButtonFormField<String>(
-                        value: method,
+                        initialValue: method,
                         decoration: const InputDecoration(labelText: 'Payment method'),
                         items: const ['Cash', 'Bank transfer', 'UPI', 'Cheque', 'Other']
                             .map((value) => DropdownMenuItem(value: value, child: Text(value)))
                             .toList(),
                         onChanged: (value) {
-                          if (value != null) setDialogState(() => method = value);
+                          if (value != null) {
+                            setDialogState(() => method = value);
+                          }
                         },
                       ),
                       ListTile(
@@ -105,7 +109,9 @@ class _StaffSalaryPaymentsScreenState extends ConsumerState<StaffSalaryPaymentsS
                             firstDate: DateTime(2000),
                             lastDate: DateTime.now(),
                           );
-                          if (selected != null) setDialogState(() => paidAt = selected);
+                          if (selected != null) {
+                            setDialogState(() => paidAt = selected);
+                          }
                         },
                       ),
                       TextFormField(controller: reference, maxLength: 120,
@@ -137,7 +143,7 @@ class _StaffSalaryPaymentsScreenState extends ConsumerState<StaffSalaryPaymentsS
                   } catch (error) {
                     if (dialogContext.mounted) {
                       ScaffoldMessenger.of(dialogContext).showSnackBar(
-                        SnackBar(content: Text('Could not record payment: ${error}')),
+                        SnackBar(content: Text('Could not record payment: $error')),
                       );
                     }
                   }
@@ -203,7 +209,7 @@ class _StaffSalaryPaymentsScreenState extends ConsumerState<StaffSalaryPaymentsS
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<int?>(
-                      value: _filterStaffId,
+                      initialValue: _filterStaffId,
                       isExpanded: true,
                       decoration: const InputDecoration(labelText: 'Filter by staff',
                         border: OutlineInputBorder()),
