@@ -17,6 +17,7 @@
 - Staff management with offline staff profiles, role/designation, optional phone and email, monthly salary amount, search, edit, and deactivate/reactivate.
 - Staff salary payment history with date, amount, method, optional reference/notes, staff filtering, and monthly paid totals.
 - Expense tracking with categories, descriptions, positive amounts stored in integer paise, payment method, expense date, optional reference, searchable-by-month database queries, and monthly spending summary.
+- Offline exams and results: class-linked exam records, subject/date/maximum marks, historical class roster lookup, per-student marks and remarks, and average/pass summaries.
 - Database and widget tests; CI must pass formatting, analysis, tests, Drift code generation, and Android debug APK build before merge.
 
 ## Institute setup and persistence
