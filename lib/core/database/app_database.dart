@@ -901,7 +901,9 @@ class AppDatabase extends _$AppDatabase {
       FROM exams e LEFT JOIN exam_results r ON r.exam_id = e.id
       WHERE e.id = ? GROUP BY e.id
     ''', variables: [Variable.withInt(examId)]).getSingleOrNull();
-    if (row == null) throw StateError('Exam does not exist');
+    if (row == null) {
+      throw StateError('Exam does not exist');
+    }
     return {
       'maxMarks': row.read<int>('max_marks'),
       'enteredCount': row.read<int>('entered_count'),
