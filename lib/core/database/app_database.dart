@@ -24,7 +24,6 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 12;
 
-
   Future<void> _installStaffSalaryPaymentsTable() async {
     await customStatement('''
       CREATE TABLE IF NOT EXISTS staff_salary_payments (
@@ -58,7 +57,8 @@ class AppDatabase extends _$AppDatabase {
       JOIN staff s ON s.id = p.staff_id
       ${staffId == null ? '' : 'WHERE p.staff_id = ?'}
       ORDER BY p.paid_at DESC, p.id DESC
-    ''', variables: staffId == null ? const [] : [Variable.withInt(staffId)]).get();
+    ''', variables: staffId == null ? const [] : [Variable.withInt(staffId)])
+        .get();
   }
 
   Future<int> recordStaffSalaryPayment({
@@ -70,14 +70,17 @@ class AppDatabase extends _$AppDatabase {
     String? notes,
   }) async {
     if (amountPaise <= 0) {
-      throw ArgumentError.value(amountPaise, 'amountPaise', 'Must be greater than zero');
+      throw ArgumentError.value(
+          amountPaise, 'amountPaise', 'Must be greater than zero');
     }
     const methods = {'Cash', 'Bank transfer', 'UPI', 'Cheque', 'Other'};
     if (!methods.contains(paymentMethod)) {
-      throw ArgumentError.value(paymentMethod, 'paymentMethod', 'Unsupported payment method');
+      throw ArgumentError.value(
+          paymentMethod, 'paymentMethod', 'Unsupported payment method');
     }
     if (paidAt.isAfter(DateTime.now().add(const Duration(minutes: 1)))) {
-      throw ArgumentError.value(paidAt, 'paidAt', 'Payment date cannot be in the future');
+      throw ArgumentError.value(
+          paidAt, 'paidAt', 'Payment date cannot be in the future');
     }
     final staff = await customSelect(
       'SELECT id FROM staff WHERE id = ? AND is_active = 1',
@@ -98,12 +101,16 @@ class AppDatabase extends _$AppDatabase {
         (staff_id, amount_paise, payment_method, reference, notes, paid_at, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     ''', [
-      staffId, amountPaise, paymentMethod,
+      staffId,
+      amountPaise,
+      paymentMethod,
       normalizedReference?.isEmpty == true ? null : normalizedReference,
       normalizedNotes?.isEmpty == true ? null : normalizedNotes,
-      paidAt.millisecondsSinceEpoch, now,
+      paidAt.millisecondsSinceEpoch,
+      now,
     ]);
-    final row = await customSelect('SELECT last_insert_rowid() AS id').getSingle();
+    final row =
+        await customSelect('SELECT last_insert_rowid() AS id').getSingle();
     return row.read<int>('id');
   }
 
@@ -127,7 +134,11 @@ class AppDatabase extends _$AppDatabase {
     if (row == null) throw StateError('Staff member does not exist');
     final expected = row.read<int>('expected');
     final paid = row.read<int>('paid');
-    return {'expectedPaise': expected, 'paidPaise': paid, 'pendingPaise': (expected - paid).clamp(0, expected).toInt()};
+    return {
+      'expectedPaise': expected,
+      'paidPaise': paid,
+      'pendingPaise': (expected - paid).clamp(0, expected).toInt()
+    };
   }
 
   Future<void> _installFeeChargeGuards() async {
