@@ -17,7 +17,7 @@
 - Staff management with offline staff profiles, role/designation, optional phone and email, monthly salary amount, search, edit, and deactivate/reactivate.
 - Staff salary payment history with date, amount, method, optional reference/notes, staff filtering, and monthly paid totals.
 - Expense tracking with categories, descriptions, positive amounts stored in integer paise, payment method, expense date, optional reference, searchable-by-month database queries, and monthly spending summary.
-- Offline exams and results: class-linked exam records, subject/date/maximum marks, historical class roster lookup, per-student marks and remarks, and average/pass summaries.
+- Offline exams and results: class-linked exam records, subject/date/maximum marks, historical class roster lookup, per-student marks and remarks, average/pass summaries, and printable A4 PDF result sheets.
 - Database and widget tests; CI must pass formatting, analysis, tests, Drift code generation, and Android debug APK build before merge.
 
 ## Institute setup and persistence
@@ -60,7 +60,7 @@
 
 ## Not implemented yet
 
-- Student certificates and printable/exportable exam result sheets.
+- Student certificates and individual student result certificates.
 - General-purpose app-managed file storage and backup/restore of generated documents.
 - Backup/restore and signed offline licensing.
 - One-year license expiry, activation-time policy, and clock rollback handling.
