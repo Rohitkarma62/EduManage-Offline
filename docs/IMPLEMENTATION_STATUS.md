@@ -60,7 +60,7 @@
 
 ## Not implemented yet
 
-- Exams, results, and certificates.
+- Student certificates and printable/exportable exam result sheets.
 - General-purpose app-managed file storage and backup/restore of generated documents.
 - Backup/restore and signed offline licensing.
 - One-year license expiry, activation-time policy, and clock rollback handling.
