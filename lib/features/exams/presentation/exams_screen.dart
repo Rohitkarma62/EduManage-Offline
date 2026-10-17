@@ -23,9 +23,11 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen> {
 
   Future<_ExamPageData> _load() async {
     final db = ref.read(appDatabaseProvider);
-    final classes = await db.customSelect(
-      'SELECT id, name, academic_year FROM classes ORDER BY academic_year DESC, name COLLATE NOCASE',
-    ).get();
+    final classes = await db
+        .customSelect(
+          'SELECT id, name, academic_year FROM classes ORDER BY academic_year DESC, name COLLATE NOCASE',
+        )
+        .get();
     final exams = await db.getExams();
     return _ExamPageData(classes, exams);
   }
@@ -83,7 +85,8 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Could not load exams: ${snapshot.error}'));
+            return Center(
+                child: Text('Could not load exams: ${snapshot.error}'));
           }
           final data = snapshot.data!;
           return Column(
@@ -101,9 +104,12 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Exam register', style: Theme.of(context).textTheme.titleMedium),
+                              Text('Exam register',
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium),
                               const SizedBox(height: 4),
-                              Text('${data.exams.length} exams saved on this device'),
+                              Text(
+                                  '${data.exams.length} exams saved on this device'),
                             ],
                           ),
                         ),
@@ -122,7 +128,8 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen> {
                     ? const Center(
                         child: Padding(
                           padding: EdgeInsets.all(24),
-                          child: Text('No exams yet. Add an exam to start entering student results.'),
+                          child: Text(
+                              'No exams yet. Add an exam to start entering student results.'),
                         ),
                       )
                     : ListView.separated(
@@ -133,7 +140,8 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen> {
                           final exam = data.exams[index];
                           return Card(
                             child: ListTile(
-                              leading: const CircleAvatar(child: Icon(Icons.assignment_outlined)),
+                              leading: const CircleAvatar(
+                                  child: Icon(Icons.assignment_outlined)),
                               title: Text(exam.read<String>('title')),
                               subtitle: Text(
                                 '${exam.read<String>('subject')} • ${exam.read<String>('class_name')}\n'
@@ -142,7 +150,8 @@ class _ExamsScreenState extends ConsumerState<ExamsScreen> {
                               ),
                               isThreeLine: true,
                               trailing: const Icon(Icons.chevron_right),
-                              onTap: () => context.push('/exams/${exam.read<int>('id')}/results'),
+                              onTap: () => context.push(
+                                  '/exams/${exam.read<int>('id')}/results'),
                             ),
                           );
                         },
@@ -209,15 +218,21 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Admission no. ${student.read<String>('admission_number')} • Maximum $maxMarks'),
+                Text(
+                    'Admission no. ${student.read<String>('admission_number')} • Maximum $maxMarks'),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: controller,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(labelText: 'Marks obtained', hintText: 'e.g. 42 or 42.5'),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                      labelText: 'Marks obtained', hintText: 'e.g. 42 or 42.5'),
                   validator: (value) {
                     final marks = double.tryParse((value ?? '').trim());
-                    if (marks == null || !marks.isFinite || marks < 0 || marks > maxMarks) {
+                    if (marks == null ||
+                        !marks.isFinite ||
+                        marks < 0 ||
+                        marks > maxMarks) {
                       return 'Enter a value from 0 to $maxMarks';
                     }
                     return null;
@@ -227,21 +242,26 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
                 TextFormField(
                   controller: remarksController,
                   maxLength: 240,
-                  decoration: const InputDecoration(labelText: 'Remarks (optional)'),
+                  decoration:
+                      const InputDecoration(labelText: 'Remarks (optional)'),
                 ),
               ],
             ),
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel')),
           FilledButton(
             onPressed: () {
               if (!formKey.currentState!.validate()) return;
-              Navigator.pop(dialogContext, _MarksInput(
-                double.parse(controller.text.trim()),
-                remarksController.text.trim(),
-              ));
+              Navigator.pop(
+                  dialogContext,
+                  _MarksInput(
+                    double.parse(controller.text.trim()),
+                    remarksController.text.trim(),
+                  ));
             },
             child: const Text('Save marks'),
           ),
@@ -287,7 +307,8 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Could not load results: ${snapshot.error}'));
+            return Center(
+                child: Text('Could not load results: ${snapshot.error}'));
           }
           final data = snapshot.data!;
           final maxMarks = data.exam.read<int>('max_marks');
@@ -301,17 +322,26 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(data.exam.read<String>('title'), style: Theme.of(context).textTheme.titleLarge),
+                      Text(data.exam.read<String>('title'),
+                          style: Theme.of(context).textTheme.titleLarge),
                       const SizedBox(height: 4),
-                      Text('${data.exam.read<String>('subject')} • ${data.exam.read<String>('class_name')} • Max $maxMarks marks'),
+                      Text(
+                          '${data.exam.read<String>('subject')} • ${data.exam.read<String>('class_name')} • Max $maxMarks marks'),
                       const SizedBox(height: 12),
                       Wrap(
                         spacing: 16,
                         runSpacing: 8,
                         children: [
-                          _Metric(label: 'Entered', value: '$entered/${data.students.length}'),
-                          _Metric(label: 'Average', value: '${data.summary['averageMarks']!.toStringAsFixed(1)}/$maxMarks'),
-                          _Metric(label: 'Pass (35%)', value: '${data.summary['passCount']}'),
+                          _Metric(
+                              label: 'Entered',
+                              value: '$entered/${data.students.length}'),
+                          _Metric(
+                              label: 'Average',
+                              value:
+                                  '${data.summary['averageMarks']!.toStringAsFixed(1)}/$maxMarks'),
+                          _Metric(
+                              label: 'Pass (35%)',
+                              value: '${data.summary['passCount']}'),
                         ],
                       ),
                     ],
@@ -320,7 +350,9 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
               ),
               Expanded(
                 child: data.students.isEmpty
-                    ? const Center(child: Text('No students were assigned to this class on the exam date.'))
+                    ? const Center(
+                        child: Text(
+                            'No students were assigned to this class on the exam date.'))
                     : ListView.separated(
                         padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                         itemCount: data.students.length,
@@ -328,17 +360,24 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
                         itemBuilder: (context, index) {
                           final student = data.students[index];
                           final marks = student.read<double?>('marks_obtained');
-                          final enteredMarks = marks == null ? 'Not entered' : '${marks.toStringAsFixed(2).replaceFirst(RegExp(r'\.0+$'), '')} / $maxMarks';
+                          final enteredMarks = marks == null
+                              ? 'Not entered'
+                              : '${marks.toStringAsFixed(2).replaceFirst(RegExp(r'\.0+$'), '')} / $maxMarks';
                           return Card(
                             child: ListTile(
                               title: Text(student.read<String>('full_name')),
-                              subtitle: Text('Admission no. ${student.read<String>('admission_number')} • $enteredMarks'),
+                              subtitle: Text(
+                                  'Admission no. ${student.read<String>('admission_number')} • $enteredMarks'),
                               trailing: IconButton(
                                 tooltip: 'Enter or edit marks',
-                                onPressed: _saving ? null : () => _editMarks(student, maxMarks),
+                                onPressed: _saving
+                                    ? null
+                                    : () => _editMarks(student, maxMarks),
                                 icon: const Icon(Icons.edit_outlined),
                               ),
-                              onTap: _saving ? null : () => _editMarks(student, maxMarks),
+                              onTap: _saving
+                                  ? null
+                                  : () => _editMarks(student, maxMarks),
                             ),
                           );
                         },
@@ -366,7 +405,8 @@ class _ResultsData {
 }
 
 class _ExamInput {
-  const _ExamInput(this.classId, this.title, this.subject, this.date, this.maxMarks);
+  const _ExamInput(
+      this.classId, this.title, this.subject, this.date, this.maxMarks);
   final int classId;
   final String title;
   final String subject;
@@ -422,25 +462,34 @@ class _ExamDialogState extends State<_ExamDialog> {
                 DropdownButtonFormField<int>(
                   initialValue: _classId,
                   decoration: const InputDecoration(labelText: 'Class'),
-                  items: widget.classes.map((row) => DropdownMenuItem<int>(
-                    value: row.read<int>('id'),
-                    child: Text('${row.read<String>('name')} • ${row.read<String>('academic_year')}'),
-                  )).toList(),
-                  onChanged: (value) { if (value != null) {
-                       setState(() => _classId = value);
-                     } },
+                  items: widget.classes
+                      .map((row) => DropdownMenuItem<int>(
+                            value: row.read<int>('id'),
+                            child: Text(
+                                '${row.read<String>('name')} • ${row.read<String>('academic_year')}'),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _classId = value);
+                    }
+                  },
                 ),
                 TextFormField(
                   controller: _title,
                   maxLength: 120,
-                  decoration: const InputDecoration(labelText: 'Exam name', hintText: 'Mid-term examination'),
-                  validator: (value) => (value ?? '').trim().isEmpty ? 'Enter an exam name' : null,
+                  decoration: const InputDecoration(
+                      labelText: 'Exam name', hintText: 'Mid-term examination'),
+                  validator: (value) => (value ?? '').trim().isEmpty
+                      ? 'Enter an exam name'
+                      : null,
                 ),
                 TextFormField(
                   controller: _subject,
                   maxLength: 80,
                   decoration: const InputDecoration(labelText: 'Subject'),
-                  validator: (value) => (value ?? '').trim().isEmpty ? 'Enter a subject' : null,
+                  validator: (value) =>
+                      (value ?? '').trim().isEmpty ? 'Enter a subject' : null,
                 ),
                 TextFormField(
                   controller: _maxMarks,
@@ -457,7 +506,8 @@ class _ExamDialogState extends State<_ExamDialog> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Exam date'),
-                  subtitle: Text('${_date.day.toString().padLeft(2, '0')}/${_date.month.toString().padLeft(2, '0')}/${_date.year}'),
+                  subtitle: Text(
+                      '${_date.day.toString().padLeft(2, '0')}/${_date.month.toString().padLeft(2, '0')}/${_date.year}'),
                   trailing: const Icon(Icons.calendar_month_outlined),
                   onTap: () async {
                     final picked = await showDatePicker(
@@ -476,14 +526,21 @@ class _ExamDialogState extends State<_ExamDialog> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
           FilledButton(
             onPressed: () {
               if (!_formKey.currentState!.validate()) return;
-              Navigator.pop(context, _ExamInput(
-                _classId, _title.text.trim(), _subject.text.trim(), _date,
-                int.parse(_maxMarks.text.trim()),
-              ));
+              Navigator.pop(
+                  context,
+                  _ExamInput(
+                    _classId,
+                    _title.text.trim(),
+                    _subject.text.trim(),
+                    _date,
+                    int.parse(_maxMarks.text.trim()),
+                  ));
             },
             child: const Text('Create exam'),
           ),

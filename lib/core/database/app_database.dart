@@ -760,10 +760,12 @@ class AppDatabase extends _$AppDatabase {
       throw ArgumentError.value(title, 'title', 'Must be 1 to 120 characters');
     }
     if (normalizedSubject.isEmpty || normalizedSubject.length > 80) {
-      throw ArgumentError.value(subject, 'subject', 'Must be 1 to 80 characters');
+      throw ArgumentError.value(
+          subject, 'subject', 'Must be 1 to 80 characters');
     }
     if (maxMarks <= 0 || maxMarks > 100000) {
-      throw ArgumentError.value(maxMarks, 'maxMarks', 'Must be between 1 and 100000');
+      throw ArgumentError.value(
+          maxMarks, 'maxMarks', 'Must be between 1 and 100000');
     }
     final classRow = await customSelect(
       'SELECT id FROM classes WHERE id = ?',
@@ -777,8 +779,17 @@ class AppDatabase extends _$AppDatabase {
       await customStatement('''
         INSERT INTO exams (class_id, title, subject, exam_date, max_marks, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, ?)
-      ''', [classId, normalizedTitle, normalizedSubject, examDate.millisecondsSinceEpoch, maxMarks, now, now]);
-      final row = await customSelect('SELECT last_insert_rowid() AS id').getSingle();
+      ''', [
+        classId,
+        normalizedTitle,
+        normalizedSubject,
+        examDate.millisecondsSinceEpoch,
+        maxMarks,
+        now,
+        now
+      ]);
+      final row =
+          await customSelect('SELECT last_insert_rowid() AS id').getSingle();
       return row.read<int>('id');
     }
     final existing = await customSelect(
@@ -792,16 +803,27 @@ class AppDatabase extends _$AppDatabase {
       'SELECT COUNT(*) AS total FROM exam_results WHERE exam_id = ?',
       variables: [Variable.withInt(id)],
     ).getSingle();
-    if (recorded.read<int>('total') > 0 && maxMarks != (await customSelect(
-      'SELECT max_marks FROM exams WHERE id = ?',
-      variables: [Variable.withInt(id)],
-    ).getSingle()).read<int>('max_marks')) {
+    if (recorded.read<int>('total') > 0 &&
+        maxMarks !=
+            (await customSelect(
+              'SELECT max_marks FROM exams WHERE id = ?',
+              variables: [Variable.withInt(id)],
+            ).getSingle())
+                .read<int>('max_marks')) {
       throw StateError('Maximum marks cannot change after results are entered');
     }
     await customStatement('''
       UPDATE exams SET class_id = ?, title = ?, subject = ?, exam_date = ?,
         max_marks = ?, updated_at = ? WHERE id = ?
-    ''', [classId, normalizedTitle, normalizedSubject, examDate.millisecondsSinceEpoch, maxMarks, now, id]);
+    ''', [
+      classId,
+      normalizedTitle,
+      normalizedSubject,
+      examDate.millisecondsSinceEpoch,
+      maxMarks,
+      now,
+      id
+    ]);
     return id;
   }
 
@@ -813,7 +835,8 @@ class AppDatabase extends _$AppDatabase {
       FROM exams e JOIN classes c ON c.id = e.class_id
       ${classId == null ? '' : 'WHERE e.class_id = ?'}
       ORDER BY e.exam_date DESC, e.id DESC
-    ''', variables: classId == null ? const [] : [Variable.withInt(classId)]).get();
+    ''', variables: classId == null ? const [] : [Variable.withInt(classId)])
+        .get();
   }
 
   Future<List<QueryRow>> getStudentsForExam(int examId) async {
@@ -852,11 +875,13 @@ class AppDatabase extends _$AppDatabase {
     String? remarks,
   }) async {
     if (!marksObtained.isFinite || marksObtained < 0) {
-      throw ArgumentError.value(marksObtained, 'marksObtained', 'Must be a finite non-negative value');
+      throw ArgumentError.value(marksObtained, 'marksObtained',
+          'Must be a finite non-negative value');
     }
     final normalizedRemarks = remarks?.trim();
     if ((normalizedRemarks?.length ?? 0) > 240) {
-      throw ArgumentError.value(remarks, 'remarks', 'Must be at most 240 characters');
+      throw ArgumentError.value(
+          remarks, 'remarks', 'Must be at most 240 characters');
     }
     final exam = await customSelect(
       'SELECT class_id, exam_date, max_marks FROM exams WHERE id = ?',
@@ -864,7 +889,8 @@ class AppDatabase extends _$AppDatabase {
     ).getSingleOrNull();
     if (exam == null) throw StateError('Exam does not exist');
     if (marksObtained > exam.read<int>('max_marks')) {
-      throw ArgumentError.value(marksObtained, 'marksObtained', 'Cannot exceed maximum marks');
+      throw ArgumentError.value(
+          marksObtained, 'marksObtained', 'Cannot exceed maximum marks');
     }
     final examDate = exam.read<int>('exam_date');
     final assignment = await customSelect('''
@@ -879,7 +905,8 @@ class AppDatabase extends _$AppDatabase {
       Variable.withInt(examDate),
     ]).getSingleOrNull();
     if (assignment == null) {
-      throw StateError('Student was not assigned to this class on the exam date');
+      throw StateError(
+          'Student was not assigned to this class on the exam date');
     }
     final now = DateTime.now().millisecondsSinceEpoch;
     await customStatement('''
@@ -890,9 +917,14 @@ class AppDatabase extends _$AppDatabase {
         remarks = excluded.remarks,
         updated_at = excluded.updated_at
     ''', [
-      examId, studentId, marksObtained,
-      normalizedRemarks == null || normalizedRemarks.isEmpty ? null : normalizedRemarks,
-      now, now,
+      examId,
+      studentId,
+      marksObtained,
+      normalizedRemarks == null || normalizedRemarks.isEmpty
+          ? null
+          : normalizedRemarks,
+      now,
+      now,
     ]);
     final row = await customSelect(
       'SELECT id FROM exam_results WHERE exam_id = ? AND student_id = ?',
