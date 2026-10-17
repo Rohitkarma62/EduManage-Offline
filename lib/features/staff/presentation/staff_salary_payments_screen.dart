@@ -128,7 +128,9 @@ class _StaffSalaryPaymentsScreenState extends ConsumerState<StaffSalaryPaymentsS
                 child: const Text('Cancel')),
               FilledButton(
                 onPressed: () async {
-                  if (!formKey.currentState!.validate()) return;
+                  if (!formKey.currentState!.validate()) {
+                    return;
+                  }
                   final rupees = double.parse(amount.text.trim());
                   try {
                     await ref.read(appDatabaseProvider).recordStaffSalaryPayment(
@@ -139,7 +141,9 @@ class _StaffSalaryPaymentsScreenState extends ConsumerState<StaffSalaryPaymentsS
                       reference: reference.text,
                       notes: notes.text,
                     );
-                    if (dialogContext.mounted) Navigator.of(dialogContext).pop(true);
+                    if (dialogContext.mounted) {
+                      Navigator.of(dialogContext).pop(true);
+                    }
                   } catch (error) {
                     if (dialogContext.mounted) {
                       ScaffoldMessenger.of(dialogContext).showSnackBar(
@@ -186,7 +190,9 @@ class _StaffSalaryPaymentsScreenState extends ConsumerState<StaffSalaryPaymentsS
     floatingActionButton: FloatingActionButton.extended(
       onPressed: () async {
         final staff = await _staffFuture;
-        if (mounted) await _addPayment(staff);
+        if (mounted) {
+          await _addPayment(staff);
+        }
       },
       icon: const Icon(Icons.payments_outlined),
       label: const Text('Record payment'),
