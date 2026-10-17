@@ -22,7 +22,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'edumanage_offline'));
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   Future<void> _installStaffSalaryPaymentsTable() async {
     await customStatement('''
@@ -695,6 +695,231 @@ class AppDatabase extends _$AppDatabase {
     };
   }
 
+  Future<void> _installExamsTables() async {
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS exams (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE RESTRICT,
+        title TEXT NOT NULL CHECK (length(trim(title)) BETWEEN 1 AND 120),
+        subject TEXT NOT NULL CHECK (length(trim(subject)) BETWEEN 1 AND 80),
+        exam_date INTEGER NOT NULL,
+        max_marks INTEGER NOT NULL CHECK (max_marks > 0 AND max_marks <= 100000),
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      )
+    ''');
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS exams_class_date
+      ON exams(class_id, exam_date DESC, id DESC)
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS exam_results (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        exam_id INTEGER NOT NULL REFERENCES exams(id) ON DELETE RESTRICT,
+        student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE RESTRICT,
+        marks_obtained REAL NOT NULL CHECK (marks_obtained >= 0),
+        remarks TEXT,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        UNIQUE(exam_id, student_id)
+      )
+    ''');
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS exam_results_exam_student
+      ON exam_results(exam_id, student_id)
+    ''');
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS exam_result_valid_insert
+      BEFORE INSERT ON exam_results
+      WHEN NEW.marks_obtained < 0 OR NEW.marks_obtained > (
+        SELECT max_marks FROM exams WHERE id = NEW.exam_id
+      )
+      BEGIN SELECT RAISE(ABORT, 'marks must be between zero and exam maximum'); END
+    ''');
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS exam_result_valid_update
+      BEFORE UPDATE OF exam_id, marks_obtained ON exam_results
+      WHEN NEW.marks_obtained < 0 OR NEW.marks_obtained > (
+        SELECT max_marks FROM exams WHERE id = NEW.exam_id
+      )
+      BEGIN SELECT RAISE(ABORT, 'marks must be between zero and exam maximum'); END
+    ''');
+  }
+
+  Future<int> saveExam({
+    int? id,
+    required int classId,
+    required String title,
+    required String subject,
+    required DateTime examDate,
+    required int maxMarks,
+  }) async {
+    final normalizedTitle = title.trim();
+    final normalizedSubject = subject.trim();
+    if (normalizedTitle.isEmpty || normalizedTitle.length > 120) {
+      throw ArgumentError.value(title, 'title', 'Must be 1 to 120 characters');
+    }
+    if (normalizedSubject.isEmpty || normalizedSubject.length > 80) {
+      throw ArgumentError.value(subject, 'subject', 'Must be 1 to 80 characters');
+    }
+    if (maxMarks <= 0 || maxMarks > 100000) {
+      throw ArgumentError.value(maxMarks, 'maxMarks', 'Must be between 1 and 100000');
+    }
+    final classRow = await customSelect(
+      'SELECT id FROM classes WHERE id = ?',
+      variables: [Variable.withInt(classId)],
+    ).getSingleOrNull();
+    if (classRow == null) {
+      throw StateError('Class does not exist');
+    }
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (id == null) {
+      await customStatement('''
+        INSERT INTO exams (class_id, title, subject, exam_date, max_marks, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      ''', [classId, normalizedTitle, normalizedSubject, examDate.millisecondsSinceEpoch, maxMarks, now, now]);
+      final row = await customSelect('SELECT last_insert_rowid() AS id').getSingle();
+      return row.read<int>('id');
+    }
+    final existing = await customSelect(
+      'SELECT id FROM exams WHERE id = ?',
+      variables: [Variable.withInt(id)],
+    ).getSingleOrNull();
+    if (existing == null) {
+      throw StateError('Exam does not exist');
+    }
+    final recorded = await customSelect(
+      'SELECT COUNT(*) AS total FROM exam_results WHERE exam_id = ?',
+      variables: [Variable.withInt(id)],
+    ).getSingle();
+    if (recorded.read<int>('total') > 0 && maxMarks != (await customSelect(
+      'SELECT max_marks FROM exams WHERE id = ?',
+      variables: [Variable.withInt(id)],
+    ).getSingle()).read<int>('max_marks')) {
+      throw StateError('Maximum marks cannot change after results are entered');
+    }
+    await customStatement('''
+      UPDATE exams SET class_id = ?, title = ?, subject = ?, exam_date = ?,
+        max_marks = ?, updated_at = ? WHERE id = ?
+    ''', [classId, normalizedTitle, normalizedSubject, examDate.millisecondsSinceEpoch, maxMarks, now, id]);
+    return id;
+  }
+
+  Future<List<QueryRow>> getExams({int? classId}) {
+    return customSelect('''
+      SELECT e.id, e.class_id, c.name AS class_name, e.title, e.subject,
+             e.exam_date, e.max_marks, e.created_at, e.updated_at,
+             (SELECT COUNT(*) FROM exam_results r WHERE r.exam_id = e.id) AS result_count
+      FROM exams e JOIN classes c ON c.id = e.class_id
+      ${classId == null ? '' : 'WHERE e.class_id = ?'}
+      ORDER BY e.exam_date DESC, e.id DESC
+    ''', variables: classId == null ? const [] : [Variable.withInt(classId)]).get();
+  }
+
+  Future<List<QueryRow>> getStudentsForExam(int examId) async {
+    final exam = await customSelect(
+      'SELECT class_id, exam_date FROM exams WHERE id = ?',
+      variables: [Variable.withInt(examId)],
+    ).getSingleOrNull();
+    if (exam == null) {
+      throw StateError('Exam does not exist');
+    }
+    final classId = exam.read<int>('class_id');
+    final examDate = exam.read<int>('exam_date');
+    return customSelect('''
+      SELECT s.id AS student_id, s.full_name, s.admission_number,
+             r.marks_obtained, r.remarks, r.id AS result_id
+      FROM student_assignments a
+      JOIN students s ON s.id = a.student_id
+      LEFT JOIN exam_results r ON r.exam_id = ? AND r.student_id = s.id
+      WHERE a.class_id = ?
+        AND a.effective_from <= ?
+        AND (a.effective_to IS NULL OR a.effective_to > ?)
+      GROUP BY s.id
+      ORDER BY s.full_name COLLATE NOCASE, s.id
+    ''', variables: [
+      Variable.withInt(examId),
+      Variable.withInt(classId),
+      Variable.withInt(examDate),
+      Variable.withInt(examDate),
+    ]).get();
+  }
+
+  Future<int> saveExamResult({
+    required int examId,
+    required int studentId,
+    required double marksObtained,
+    String? remarks,
+  }) async {
+    if (!marksObtained.isFinite || marksObtained < 0) {
+      throw ArgumentError.value(marksObtained, 'marksObtained', 'Must be a finite non-negative value');
+    }
+    final normalizedRemarks = remarks?.trim();
+    if ((normalizedRemarks?.length ?? 0) > 240) {
+      throw ArgumentError.value(remarks, 'remarks', 'Must be at most 240 characters');
+    }
+    final exam = await customSelect(
+      'SELECT class_id, exam_date, max_marks FROM exams WHERE id = ?',
+      variables: [Variable.withInt(examId)],
+    ).getSingleOrNull();
+    if (exam == null) throw StateError('Exam does not exist');
+    if (marksObtained > exam.read<int>('max_marks')) {
+      throw ArgumentError.value(marksObtained, 'marksObtained', 'Cannot exceed maximum marks');
+    }
+    final examDate = exam.read<int>('exam_date');
+    final assignment = await customSelect('''
+      SELECT id FROM student_assignments
+      WHERE student_id = ? AND class_id = ? AND effective_from <= ?
+        AND (effective_to IS NULL OR effective_to > ?)
+      LIMIT 1
+    ''', variables: [
+      Variable.withInt(studentId),
+      Variable.withInt(exam.read<int>('class_id')),
+      Variable.withInt(examDate),
+      Variable.withInt(examDate),
+    ]).getSingleOrNull();
+    if (assignment == null) {
+      throw StateError('Student was not assigned to this class on the exam date');
+    }
+    final now = DateTime.now().millisecondsSinceEpoch;
+    await customStatement('''
+      INSERT INTO exam_results (exam_id, student_id, marks_obtained, remarks, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(exam_id, student_id) DO UPDATE SET
+        marks_obtained = excluded.marks_obtained,
+        remarks = excluded.remarks,
+        updated_at = excluded.updated_at
+    ''', [
+      examId, studentId, marksObtained,
+      normalizedRemarks == null || normalizedRemarks.isEmpty ? null : normalizedRemarks,
+      now, now,
+    ]);
+    final row = await customSelect(
+      'SELECT id FROM exam_results WHERE exam_id = ? AND student_id = ?',
+      variables: [Variable.withInt(examId), Variable.withInt(studentId)],
+    ).getSingle();
+    return row.read<int>('id');
+  }
+
+  Future<Map<String, num>> getExamSummary(int examId) async {
+    final row = await customSelect('''
+      SELECT e.max_marks, COUNT(r.id) AS entered_count,
+             COALESCE(AVG(r.marks_obtained), 0) AS average_marks,
+             COALESCE(SUM(CASE WHEN r.marks_obtained >= e.max_marks * 0.35 THEN 1 ELSE 0 END), 0) AS pass_count
+      FROM exams e LEFT JOIN exam_results r ON r.exam_id = e.id
+      WHERE e.id = ? GROUP BY e.id
+    ''', variables: [Variable.withInt(examId)]).getSingleOrNull();
+    if (row == null) {
+      throw StateError('Exam does not exist');
+    }
+    return {
+      'maxMarks': row.read<int>('max_marks'),
+      'enteredCount': row.read<int>('entered_count'),
+      'averageMarks': row.read<double>('average_marks'),
+      'passCount': row.read<int>('pass_count'),
+    };
+  }
+
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
@@ -708,6 +933,7 @@ class AppDatabase extends _$AppDatabase {
           await _installStaffTable();
           await _installStaffSalaryPaymentsTable();
           await _installExpensesTable();
+          await _installExamsTables();
         },
         onUpgrade: (m, from, to) async {
           if (from < 2) await m.createTable(students);
@@ -738,6 +964,7 @@ class AppDatabase extends _$AppDatabase {
           if (from < 11) await _installStaffTable();
           if (from < 12) await _installStaffSalaryPaymentsTable();
           if (from < 13) await _installExpensesTable();
+          if (from < 14) await _installExamsTables();
         },
       );
 

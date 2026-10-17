@@ -107,6 +107,15 @@ class DashboardScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           _DashboardCard(
+            title: 'Exams & results',
+            description:
+                'Create class exams, enter student marks, and review result summaries offline.',
+            buttonLabel: 'Open exams & results',
+            icon: Icons.school_outlined,
+            onPressed: () => context.push('/exams'),
+          ),
+          const SizedBox(height: 12),
+          _DashboardCard(
             title: 'Fee payments',
             description:
                 'Create fee charges, record partial payments, and review paid amounts and outstanding balances.',
