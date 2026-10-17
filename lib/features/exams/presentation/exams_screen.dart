@@ -2,6 +2,8 @@ import 'package:drift/drift.dart' show QueryRow, Variable;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 import '../../../core/database/database_provider.dart';
 
@@ -197,6 +199,508 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
   }
 
   void _refresh() => setState(() => _future = _load());
+
+  Future<void> _printResultSheet(_ResultsData data) async {
+    try {
+      final db = ref.read(appDatabaseProvider);
+      final institute = await db.customSelect(
+        'SELECT name, academic_year, phone FROM institutes LIMIT 1',
+      ).getSingleOrNull();
+      final examTitle = data.exam.read<String>('title');
+      final maxMarks = data.exam.read<int>('max_marks');
+      final date = DateTime.fromMillisecondsSinceEpoch(
+        data.exam.read<int>('exam_date'),
+      );
+      final dateLabel =
+          '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+      final document = pw.Document();
+      document.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(28),
+          build: (context) => [
+            if (institute != null) ...[
+              pw.Center(
+                child: pw.Text(
+                  institute.read<String>('name'),
+                  style: pw.TextStyle(
+                    fontSize: 20,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+              ),
+              pw.SizedBox(height: 4),
+              pw.Center(
+                child: pw.Text(
+                  'Academic year: ${institute.read<String>('academic_year')}'
+                  '${institute.read<String?>('phone') == null ? '' : ' • ${institute.read<String>('phone')}'}',
+                  style: const pw.TextStyle(fontSize: 9),
+                ),
+              ),
+              pw.SizedBox(height: 12),
+            ],
+            pw.Center(
+              child: pw.Text(
+                'EXAM RESULT SHEET',
+                style: pw.TextStyle(
+                  fontSize: 16,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+            pw.SizedBox(height: 8),
+            pw.Text('Exam: $examTitle'),
+            pw.Text('Subject: ${data.exam.read<String>('subject')}'),
+            pw.Text('Class: ${data.exam.read<String>('class_name')}'),
+            pw.Text('Exam date: $dateLabel    Maximum marks: $maxMarks'),
+            pw.SizedBox(height: 14),
+            pw.TableHelper.fromTextArray(
+              headers: const [
+                'S.No.',
+                'Admission no.',
+                'Student name',
+                'Marks',
+                'Result',
+                'Remarks',
+              ],
+              data: [
+                for (var index = 0; index < data.students.length; index++)
+                  () {
+                    final student = data.students[index];
+                    final marks = student.read<double?>('marks_obtained');
+                    final passMark = maxMarks * 0.35;
+                    final result = marks == null
+                        ? 'Pending'
+                        : marks >= passMark
+                            ? 'Pass'
+                            : 'Needs review';
+                    return [
+                      '${index + 1}',
+                      student.read<String>('admission_number'),
+                      student.read<String>('full_name'),
+                      marks == null
+                          ? 'Not entered'
+                          : '${marks.toStringAsFixed(2).replaceFirst(RegExp(r'\\.0+(QueryRow student, int maxMarks) async {
+    if (_saving) return;
+    final existing = student.read<double?>('marks_obtained');
+    final controller = TextEditingController(
+      text: existing == null ? '' : existing.toString(),
+    );
+    final remarksController = TextEditingController(
+      text: student.read<String?>('remarks') ?? '',
+    );
+    final formKey = GlobalKey<FormState>();
+    final result = await showDialog<_MarksInput>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(student.read<String>('full_name')),
+        content: Form(
+          key: formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                    'Admission no. ${student.read<String>('admission_number')} • Maximum $maxMarks'),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: controller,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                      labelText: 'Marks obtained', hintText: 'e.g. 42 or 42.5'),
+                  validator: (value) {
+                    final marks = double.tryParse((value ?? '').trim());
+                    if (marks == null ||
+                        !marks.isFinite ||
+                        marks < 0 ||
+                        marks > maxMarks) {
+                      return 'Enter a value from 0 to $maxMarks';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: remarksController,
+                  maxLength: 240,
+                  decoration:
+                      const InputDecoration(labelText: 'Remarks (optional)'),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel')),
+          FilledButton(
+            onPressed: () {
+              if (!formKey.currentState!.validate()) return;
+              Navigator.pop(
+                  dialogContext,
+                  _MarksInput(
+                    double.parse(controller.text.trim()),
+                    remarksController.text.trim(),
+                  ));
+            },
+            child: const Text('Save marks'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    remarksController.dispose();
+    if (result == null || !mounted) return;
+    setState(() => _saving = true);
+    try {
+      await ref.read(appDatabaseProvider).saveExamResult(
+            examId: widget.examId,
+            studentId: student.read<int>('student_id'),
+            marksObtained: result.marks,
+            remarks: result.remarks,
+          );
+      _refresh();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Student result saved offline.')),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not save result: $error')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Enter results')),
+      body: FutureBuilder<_ResultsData>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(
+                child: Text('Could not load results: ${snapshot.error}'));
+          }
+          final data = snapshot.data!;
+          final maxMarks = data.exam.read<int>('max_marks');
+          final entered = data.summary['enteredCount']!.toInt();
+          return Column(
+            children: [
+              Card(
+                margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(data.exam.read<String>('title'),
+                          style: Theme.of(context).textTheme.titleLarge),
+                      const SizedBox(height: 4),
+                      Text(
+                          '${data.exam.read<String>('subject')} • ${data.exam.read<String>('class_name')} • Max $maxMarks marks'),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 16,
+                        runSpacing: 8,
+                        children: [
+                          _Metric(
+                              label: 'Entered',
+                              value: '$entered/${data.students.length}'),
+                          _Metric(
+                              label: 'Average',
+                              value:
+                                  '${data.summary['averageMarks']!.toStringAsFixed(1)}/$maxMarks'),
+                          _Metric(
+                              label: 'Pass (35%)',
+                              value: '${data.summary['passCount']}'),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _printResultSheet(data),
+                          icon: const Icon(Icons.picture_as_pdf_outlined),
+                          label: const Text('Print / export PDF'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: data.students.isEmpty
+                    ? const Center(
+                        child: Text(
+                            'No students were assigned to this class on the exam date.'))
+                    : ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                        itemCount: data.students.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 6),
+                        itemBuilder: (context, index) {
+                          final student = data.students[index];
+                          final marks = student.read<double?>('marks_obtained');
+                          final enteredMarks = marks == null
+                              ? 'Not entered'
+                              : '${marks.toStringAsFixed(2).replaceFirst(RegExp(r'\.0+$'), '')} / $maxMarks';
+                          return Card(
+                            child: ListTile(
+                              title: Text(student.read<String>('full_name')),
+                              subtitle: Text(
+                                  'Admission no. ${student.read<String>('admission_number')} • $enteredMarks'),
+                              trailing: IconButton(
+                                tooltip: 'Enter or edit marks',
+                                onPressed: _saving
+                                    ? null
+                                    : () => _editMarks(student, maxMarks),
+                                icon: const Icon(Icons.edit_outlined),
+                              ),
+                              onTap: _saving
+                                  ? null
+                                  : () => _editMarks(student, maxMarks),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ExamPageData {
+  const _ExamPageData(this.classes, this.exams);
+  final List<QueryRow> classes;
+  final List<QueryRow> exams;
+}
+
+class _ResultsData {
+  const _ResultsData(this.exam, this.students, this.summary);
+  final QueryRow exam;
+  final List<QueryRow> students;
+  final Map<String, num> summary;
+}
+
+class _ExamInput {
+  const _ExamInput(
+      this.classId, this.title, this.subject, this.date, this.maxMarks);
+  final int classId;
+  final String title;
+  final String subject;
+  final DateTime date;
+  final int maxMarks;
+}
+
+class _MarksInput {
+  const _MarksInput(this.marks, this.remarks);
+  final double marks;
+  final String remarks;
+}
+
+class _ExamDialog extends StatefulWidget {
+  const _ExamDialog({required this.classes});
+  final List<QueryRow> classes;
+
+  @override
+  State<_ExamDialog> createState() => _ExamDialogState();
+}
+
+class _ExamDialogState extends State<_ExamDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _title = TextEditingController();
+  final _subject = TextEditingController();
+  final _maxMarks = TextEditingController(text: '100');
+  late int _classId;
+  DateTime _date = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _classId = widget.classes.first.read<int>('id');
+  }
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _subject.dispose();
+    _maxMarks.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+        title: const Text('Create exam'),
+        content: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<int>(
+                  initialValue: _classId,
+                  decoration: const InputDecoration(labelText: 'Class'),
+                  items: widget.classes
+                      .map((row) => DropdownMenuItem<int>(
+                            value: row.read<int>('id'),
+                            child: Text(
+                                '${row.read<String>('name')} • ${row.read<String>('academic_year')}'),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _classId = value);
+                    }
+                  },
+                ),
+                TextFormField(
+                  controller: _title,
+                  maxLength: 120,
+                  decoration: const InputDecoration(
+                      labelText: 'Exam name', hintText: 'Mid-term examination'),
+                  validator: (value) => (value ?? '').trim().isEmpty
+                      ? 'Enter an exam name'
+                      : null,
+                ),
+                TextFormField(
+                  controller: _subject,
+                  maxLength: 80,
+                  decoration: const InputDecoration(labelText: 'Subject'),
+                  validator: (value) =>
+                      (value ?? '').trim().isEmpty ? 'Enter a subject' : null,
+                ),
+                TextFormField(
+                  controller: _maxMarks,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Maximum marks'),
+                  validator: (value) {
+                    final marks = int.tryParse((value ?? '').trim());
+                    return marks == null || marks < 1 || marks > 100000
+                        ? 'Enter a value from 1 to 100000'
+                        : null;
+                  },
+                ),
+                const SizedBox(height: 8),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Exam date'),
+                  subtitle: Text(
+                      '${_date.day.toString().padLeft(2, '0')}/${_date.month.toString().padLeft(2, '0')}/${_date.year}'),
+                  trailing: const Icon(Icons.calendar_month_outlined),
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: _date,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null && mounted) {
+                      setState(() => _date = picked);
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
+          FilledButton(
+            onPressed: () {
+              if (!_formKey.currentState!.validate()) return;
+              Navigator.pop(
+                  context,
+                  _ExamInput(
+                    _classId,
+                    _title.text.trim(),
+                    _subject.text.trim(),
+                    _date,
+                    int.parse(_maxMarks.text.trim()),
+                  ));
+            },
+            child: const Text('Create exam'),
+          ),
+        ],
+      );
+}
+
+class _Metric extends StatelessWidget {
+  const _Metric({required this.label, required this.value});
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: Theme.of(context).textTheme.labelMedium),
+          Text(value, style: Theme.of(context).textTheme.titleMedium),
+        ],
+      );
+}
+), '')}/$maxMarks',
+                      result,
+                      student.read<String?>('remarks') ?? '',
+                    ];
+                  }(),
+              ],
+              headerStyle: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                fontSize: 8,
+              ),
+              cellStyle: const pw.TextStyle(fontSize: 8),
+              cellAlignment: pw.Alignment.centerLeft,
+              headerDecoration: const pw.BoxDecoration(
+                color: PdfColors.grey300,
+              ),
+              border: pw.TableBorder.all(
+                color: PdfColors.grey500,
+                width: 0.5,
+              ),
+              cellPadding: const pw.EdgeInsets.all(5),
+            ),
+            pw.SizedBox(height: 16),
+            pw.Text(
+              'Results entered: ${data.summary['enteredCount']} / ${data.students.length}'
+              '    Average: ${data.summary['averageMarks']!.toStringAsFixed(1)}'
+              '    Pass count: ${data.summary['passCount']}',
+              style: const pw.TextStyle(fontSize: 9),
+            ),
+            pw.SizedBox(height: 32),
+            pw.Align(
+              alignment: pw.Alignment.centerRight,
+              child: pw.Text('Authorized signature: ____________________'),
+            ),
+          ],
+        ),
+      );
+      await Printing.layoutPdf(
+        name: 'exam-result-${data.exam.read<int>('id')}.pdf',
+        onLayout: (_) async => document.save(),
+      );
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not prepare result PDF: $error')),
+        );
+      }
+    }
+  }
 
   Future<void> _editMarks(QueryRow student, int maxMarks) async {
     if (_saving) return;
