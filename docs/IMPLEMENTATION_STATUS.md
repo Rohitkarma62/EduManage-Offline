@@ -15,6 +15,7 @@
 - Daily attendance entry for active students with Present/Absent/Leave statuses, date navigation, local persistence, and daily counts.
 - Attendance reports with date range, class and batch filters, overall counts, and student-wise attendance percentages. Assignment history is used to attribute each attendance record to the class/batch the student belonged to on that date.
 - Staff management with offline staff profiles, role/designation, optional phone and email, monthly salary amount, search, edit, and deactivate/reactivate.
+- Staff salary payment history with date, amount, method, optional reference/notes, staff filtering, and monthly paid totals.
 - Database and widget tests; CI must pass formatting, analysis, tests, Drift code generation, and Android debug APK build before merge.
 
 ## Institute setup and persistence
@@ -57,7 +58,7 @@
 
 ## Not implemented yet
 
-- Salary payment history, expense tracking, exams, results, and certificates.
+- Expense tracking, exams, results, and certificates.
 - General-purpose app-managed file storage and backup/restore of generated documents.
 - Backup/restore and signed offline licensing.
 - One-year license expiry, activation-time policy, and clock rollback handling.

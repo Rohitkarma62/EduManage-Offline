@@ -22,7 +22,113 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'edumanage_offline'));
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
+
+
+  Future<void> _installStaffSalaryPaymentsTable() async {
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS staff_salary_payments (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        staff_id INTEGER NOT NULL REFERENCES staff(id) ON DELETE RESTRICT,
+        amount_paise INTEGER NOT NULL CHECK (amount_paise > 0),
+        payment_method TEXT NOT NULL CHECK (payment_method IN ('Cash', 'Bank transfer', 'UPI', 'Cheque', 'Other')),
+        reference TEXT,
+        notes TEXT,
+        paid_at INTEGER NOT NULL,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS staff_salary_payments_staff_date
+      ON staff_salary_payments(staff_id, paid_at DESC, id DESC)
+    ''');
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS staff_salary_payment_positive_insert
+      BEFORE INSERT ON staff_salary_payments
+      WHEN NEW.amount_paise <= 0
+      BEGIN SELECT RAISE(ABORT, 'salary payment must be positive'); END
+    ''');
+  }
+
+  Future<List<QueryRow>> getStaffSalaryPayments({int? staffId}) {
+    return customSelect('''
+      SELECT p.id, p.staff_id, s.full_name AS staff_name, s.monthly_salary_paise,
+             p.amount_paise, p.payment_method, p.reference, p.notes, p.paid_at, p.created_at
+      FROM staff_salary_payments p
+      JOIN staff s ON s.id = p.staff_id
+      ${staffId == null ? '' : 'WHERE p.staff_id = ?'}
+      ORDER BY p.paid_at DESC, p.id DESC
+    ''', variables: staffId == null ? const [] : [Variable.withInt(staffId)]).get();
+  }
+
+  Future<int> recordStaffSalaryPayment({
+    required int staffId,
+    required int amountPaise,
+    required String paymentMethod,
+    required DateTime paidAt,
+    String? reference,
+    String? notes,
+  }) async {
+    if (amountPaise <= 0) {
+      throw ArgumentError.value(amountPaise, 'amountPaise', 'Must be greater than zero');
+    }
+    const methods = {'Cash', 'Bank transfer', 'UPI', 'Cheque', 'Other'};
+    if (!methods.contains(paymentMethod)) {
+      throw ArgumentError.value(paymentMethod, 'paymentMethod', 'Unsupported payment method');
+    }
+    if (paidAt.isAfter(DateTime.now().add(const Duration(minutes: 1)))) {
+      throw ArgumentError.value(paidAt, 'paidAt', 'Payment date cannot be in the future');
+    }
+    final staff = await customSelect(
+      'SELECT id FROM staff WHERE id = ? AND is_active = 1',
+      variables: [Variable.withInt(staffId)],
+    ).get();
+    if (staff.isEmpty) throw StateError('Active staff member does not exist');
+    final normalizedReference = reference?.trim();
+    final normalizedNotes = notes?.trim();
+    if ((normalizedReference?.length ?? 0) > 120) {
+      throw ArgumentError('Reference must be 120 characters or fewer');
+    }
+    if ((normalizedNotes?.length ?? 0) > 500) {
+      throw ArgumentError('Notes must be 500 characters or fewer');
+    }
+    final now = DateTime.now().millisecondsSinceEpoch;
+    await customStatement('''
+      INSERT INTO staff_salary_payments
+        (staff_id, amount_paise, payment_method, reference, notes, paid_at, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', [
+      staffId, amountPaise, paymentMethod,
+      normalizedReference?.isEmpty == true ? null : normalizedReference,
+      normalizedNotes?.isEmpty == true ? null : normalizedNotes,
+      paidAt.millisecondsSinceEpoch, now,
+    ]);
+    final row = await customSelect('SELECT last_insert_rowid() AS id').getSingle();
+    return row.read<int>('id');
+  }
+
+  Future<Map<String, int>> getStaffSalarySummary({
+    required int staffId,
+    required DateTime month,
+  }) async {
+    final start = DateTime(month.year, month.month);
+    final end = DateTime(month.year, month.month + 1);
+    final row = await customSelect('''
+      SELECT s.monthly_salary_paise AS expected,
+             COALESCE(SUM(CASE WHEN p.paid_at >= ? AND p.paid_at < ? THEN p.amount_paise ELSE 0 END), 0) AS paid
+      FROM staff s LEFT JOIN staff_salary_payments p ON p.staff_id = s.id
+      WHERE s.id = ?
+      GROUP BY s.id
+    ''', variables: [
+      Variable.withInt(start.millisecondsSinceEpoch),
+      Variable.withInt(end.millisecondsSinceEpoch),
+      Variable.withInt(staffId),
+    ]).getSingleOrNull();
+    if (row == null) throw StateError('Staff member does not exist');
+    final expected = row.read<int>('expected');
+    final paid = row.read<int>('paid');
+    return {'expectedPaise': expected, 'paidPaise': paid, 'pendingPaise': (expected - paid).clamp(0, expected).toInt()};
+  }
 
   Future<void> _installFeeChargeGuards() async {
     await customStatement('''
@@ -472,6 +578,7 @@ class AppDatabase extends _$AppDatabase {
           await _installFeePaymentTable();
           await _installAttendanceTable();
           await _installStaffTable();
+          await _installStaffSalaryPaymentsTable();
         },
         onUpgrade: (m, from, to) async {
           if (from < 2) await m.createTable(students);
@@ -500,6 +607,7 @@ class AppDatabase extends _$AppDatabase {
           if (from < 9) await _installFeePaymentTable();
           if (from < 10) await _installAttendanceTable();
           if (from < 11) await _installStaffTable();
+          if (from < 12) await _installStaffSalaryPaymentsTable();
         },
       );
 
