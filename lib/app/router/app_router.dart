@@ -121,18 +121,6 @@ final GoRouter appRouter = GoRouter(routes: <RouteBase>[
     ),
   ),
   GoRoute(
-    path: '/exams',
-    name: 'exams',
-    builder: (context, state) => const ExamsScreen(),
-  ),
-  GoRoute(
-    path: '/exams/:id/results',
-    name: 'exam-results',
-    builder: (context, state) => ExamResultsScreen(
-      examId: int.parse(state.pathParameters['id']!),
-    ),
-  ),
-  GoRoute(
     path: '/fees',
     name: 'fee-payments',
     builder: (context, state) => const FeePaymentsScreen(),
