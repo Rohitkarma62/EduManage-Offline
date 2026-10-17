@@ -98,8 +98,12 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                         ),
                         validator: (value) {
                           final text = value?.trim() ?? '';
-                          if (text.isEmpty) return 'Enter a description';
-                          if (text.length > 240) return 'Maximum 240 characters';
+                          if (text.isEmpty) {
+                            return 'Enter a description';
+                          }
+                          if (text.length > 240) {
+                            return 'Maximum 240 characters';
+                          }
                           return null;
                         },
                       ),
