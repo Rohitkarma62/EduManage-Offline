@@ -98,6 +98,15 @@ class DashboardScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           _DashboardCard(
+            title: 'Expense tracking',
+            description:
+                'Record institute expenses, review payment methods, and track monthly spending offline.',
+            buttonLabel: 'Open expenses',
+            icon: Icons.receipt_long_outlined,
+            onPressed: () => context.push('/expenses'),
+          ),
+          const SizedBox(height: 12),
+          _DashboardCard(
             title: 'Fee payments',
             description:
                 'Create fee charges, record partial payments, and review paid amounts and outstanding balances.',

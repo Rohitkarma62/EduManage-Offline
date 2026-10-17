@@ -22,7 +22,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'edumanage_offline'));
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   Future<void> _installStaffSalaryPaymentsTable() async {
     await customStatement('''
@@ -139,6 +139,111 @@ class AppDatabase extends _$AppDatabase {
       'paidPaise': paid,
       'pendingPaise': (expected - paid).clamp(0, expected).toInt()
     };
+  }
+
+  Future<void> _installExpensesTable() async {
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS expenses (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        category TEXT NOT NULL CHECK (length(trim(category)) BETWEEN 1 AND 80),
+        description TEXT NOT NULL CHECK (length(trim(description)) BETWEEN 1 AND 240),
+        amount_paise INTEGER NOT NULL CHECK (amount_paise > 0),
+        payment_method TEXT NOT NULL CHECK (payment_method IN ('Cash', 'Bank transfer', 'UPI', 'Cheque', 'Other')),
+        reference TEXT,
+        spent_at INTEGER NOT NULL,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS expenses_spent_at
+      ON expenses(spent_at DESC, id DESC)
+    ''');
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS expenses_category_date
+      ON expenses(category, spent_at DESC)
+    ''');
+  }
+
+  Future<int> recordExpense({
+    required String category,
+    required String description,
+    required int amountPaise,
+    required String paymentMethod,
+    required DateTime spentAt,
+    String? reference,
+  }) async {
+    final normalizedCategory = category.trim();
+    final normalizedDescription = description.trim();
+    final normalizedReference = reference?.trim();
+    if (normalizedCategory.isEmpty || normalizedCategory.length > 80) {
+      throw ArgumentError.value(category, 'category', 'Must be 1 to 80 characters');
+    }
+    if (normalizedDescription.isEmpty || normalizedDescription.length > 240) {
+      throw ArgumentError.value(description, 'description', 'Must be 1 to 240 characters');
+    }
+    if (amountPaise <= 0) {
+      throw ArgumentError.value(amountPaise, 'amountPaise', 'Must be positive');
+    }
+    const methods = {'Cash', 'Bank transfer', 'UPI', 'Cheque', 'Other'};
+    if (!methods.contains(paymentMethod)) {
+      throw ArgumentError.value(paymentMethod, 'paymentMethod', 'Unsupported payment method');
+    }
+    if (spentAt.isAfter(DateTime.now().add(const Duration(minutes: 1)))) {
+      throw ArgumentError.value(spentAt, 'spentAt', 'Expense date cannot be in the future');
+    }
+    if ((normalizedReference?.length ?? 0) > 120) {
+      throw ArgumentError.value(reference, 'reference', 'Must be at most 120 characters');
+    }
+    await customStatement('''
+      INSERT INTO expenses
+        (category, description, amount_paise, payment_method, reference, spent_at, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', [
+      normalizedCategory,
+      normalizedDescription,
+      amountPaise,
+      paymentMethod,
+      normalizedReference == null || normalizedReference.isEmpty ? null : normalizedReference,
+      spentAt.millisecondsSinceEpoch,
+      DateTime.now().millisecondsSinceEpoch,
+    ]);
+    final row = await customSelect('SELECT last_insert_rowid() AS id').getSingle();
+    return row.read<int>('id');
+  }
+
+  Future<List<QueryRow>> getExpenses({String? category, DateTime? month}) async {
+    final clauses = <String>[];
+    final variables = <Variable<Object>>[];
+    if (category != null && category.trim().isNotEmpty) {
+      clauses.add('category = ?');
+      variables.add(Variable.withString(category.trim()));
+    }
+    if (month != null) {
+      final start = DateTime(month.year, month.month);
+      final end = DateTime(month.year, month.month + 1);
+      clauses.add('spent_at >= ? AND spent_at < ?');
+      variables.add(Variable.withInt(start.millisecondsSinceEpoch));
+      variables.add(Variable.withInt(end.millisecondsSinceEpoch));
+    }
+    return customSelect('''
+      SELECT id, category, description, amount_paise, payment_method, reference, spent_at, created_at
+      FROM expenses
+      ${clauses.isEmpty ? '' : 'WHERE ${clauses.join(' AND ')}'}
+      ORDER BY spent_at DESC, id DESC
+    ''', variables: variables).get();
+  }
+
+  Future<Map<String, int>> getExpenseSummary({required DateTime month}) async {
+    final start = DateTime(month.year, month.month);
+    final end = DateTime(month.year, month.month + 1);
+    final row = await customSelect('''
+      SELECT COUNT(*) AS count, COALESCE(SUM(amount_paise), 0) AS total
+      FROM expenses WHERE spent_at >= ? AND spent_at < ?
+    ''', variables: [
+      Variable.withInt(start.millisecondsSinceEpoch),
+      Variable.withInt(end.millisecondsSinceEpoch),
+    ]).getSingle();
+    return {'count': row.read<int>('count'), 'totalPaise': row.read<int>('total')};
   }
 
   Future<void> _installFeeChargeGuards() async {
@@ -590,6 +695,7 @@ class AppDatabase extends _$AppDatabase {
           await _installAttendanceTable();
           await _installStaffTable();
           await _installStaffSalaryPaymentsTable();
+          await _installExpensesTable();
         },
         onUpgrade: (m, from, to) async {
           if (from < 2) await m.createTable(students);
@@ -619,6 +725,7 @@ class AppDatabase extends _$AppDatabase {
           if (from < 10) await _installAttendanceTable();
           if (from < 11) await _installStaffTable();
           if (from < 12) await _installStaffSalaryPaymentsTable();
+          if (from < 13) await _installExpensesTable();
         },
       );
 
