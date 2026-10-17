@@ -420,13 +420,15 @@ class _ExamDialogState extends State<_ExamDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<int>(
-                  value: _classId,
+                  initialValue: _classId,
                   decoration: const InputDecoration(labelText: 'Class'),
                   items: widget.classes.map((row) => DropdownMenuItem<int>(
                     value: row.read<int>('id'),
                     child: Text('${row.read<String>('name')} • ${row.read<String>('academic_year')}'),
                   )).toList(),
-                  onChanged: (value) { if (value != null) setState(() => _classId = value); },
+                  onChanged: (value) { if (value != null) {
+                       setState(() => _classId = value);
+                     } },
                 ),
                 TextFormField(
                   controller: _title,
@@ -464,7 +466,9 @@ class _ExamDialogState extends State<_ExamDialog> {
                       firstDate: DateTime(2000),
                       lastDate: DateTime(2100),
                     );
-                    if (picked != null && mounted) setState(() => _date = picked);
+                    if (picked != null && mounted) {
+                      setState(() => _date = picked);
+                    }
                   },
                 ),
               ],
