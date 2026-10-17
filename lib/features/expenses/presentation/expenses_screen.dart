@@ -72,7 +72,8 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                     children: [
                       DropdownButtonFormField<String>(
                         initialValue: category,
-                        decoration: const InputDecoration(labelText: 'Category'),
+                        decoration:
+                            const InputDecoration(labelText: 'Category'),
                         items: _categories
                             .map((value) => DropdownMenuItem(
                                   value: value,
@@ -109,11 +110,15 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                       ),
                       TextFormField(
                         controller: amount,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(labelText: 'Amount (₹) *'),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
+                        decoration:
+                            const InputDecoration(labelText: 'Amount (₹) *'),
                         validator: (value) {
                           final parsed = double.tryParse((value ?? '').trim());
-                          if (parsed == null || !parsed.isFinite || parsed <= 0) {
+                          if (parsed == null ||
+                              !parsed.isFinite ||
+                              parsed <= 0) {
                             return 'Enter an amount greater than zero';
                           }
                           if (parsed > 100000000) return 'Amount is too large';
@@ -122,7 +127,8 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                       ),
                       DropdownButtonFormField<String>(
                         initialValue: method,
-                        decoration: const InputDecoration(labelText: 'Payment method'),
+                        decoration:
+                            const InputDecoration(labelText: 'Payment method'),
                         items: _methods
                             .map((value) => DropdownMenuItem(
                                   value: value,
@@ -172,7 +178,9 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
             ),
             actions: [
               TextButton(
-                onPressed: saving ? null : () => Navigator.of(dialogContext).pop(false),
+                onPressed: saving
+                    ? null
+                    : () => Navigator.of(dialogContext).pop(false),
                 child: const Text('Cancel'),
               ),
               FilledButton(
@@ -198,7 +206,9 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                           setDialogState(() => saving = false);
                           if (dialogContext.mounted) {
                             ScaffoldMessenger.of(dialogContext).showSnackBar(
-                              SnackBar(content: Text('Could not save expense: $error')),
+                              SnackBar(
+                                  content:
+                                      Text('Could not save expense: $error')),
                             );
                           }
                         }
@@ -279,7 +289,8 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              Text('Expense history', style: Theme.of(context).textTheme.titleLarge),
+              Text('Expense history',
+                  style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 8),
               FutureBuilder<List<QueryRow>>(
                 future: _expensesFuture,
@@ -329,7 +340,8 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                             '${row.read<String>('category')} · $dateText · ${row.read<String>('payment_method')}'
                             '${reference == null || reference.isEmpty ? '' : '\nRef: $reference'}',
                           ),
-                          isThreeLine: reference != null && reference.isNotEmpty,
+                          isThreeLine:
+                              reference != null && reference.isNotEmpty,
                           trailing: Text(
                             _money(row.read<int>('amount_paise')),
                             style: Theme.of(context).textTheme.titleSmall,

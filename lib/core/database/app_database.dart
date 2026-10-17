@@ -176,23 +176,28 @@ class AppDatabase extends _$AppDatabase {
     final normalizedDescription = description.trim();
     final normalizedReference = reference?.trim();
     if (normalizedCategory.isEmpty || normalizedCategory.length > 80) {
-      throw ArgumentError.value(category, 'category', 'Must be 1 to 80 characters');
+      throw ArgumentError.value(
+          category, 'category', 'Must be 1 to 80 characters');
     }
     if (normalizedDescription.isEmpty || normalizedDescription.length > 240) {
-      throw ArgumentError.value(description, 'description', 'Must be 1 to 240 characters');
+      throw ArgumentError.value(
+          description, 'description', 'Must be 1 to 240 characters');
     }
     if (amountPaise <= 0) {
       throw ArgumentError.value(amountPaise, 'amountPaise', 'Must be positive');
     }
     const methods = {'Cash', 'Bank transfer', 'UPI', 'Cheque', 'Other'};
     if (!methods.contains(paymentMethod)) {
-      throw ArgumentError.value(paymentMethod, 'paymentMethod', 'Unsupported payment method');
+      throw ArgumentError.value(
+          paymentMethod, 'paymentMethod', 'Unsupported payment method');
     }
     if (spentAt.isAfter(DateTime.now().add(const Duration(minutes: 1)))) {
-      throw ArgumentError.value(spentAt, 'spentAt', 'Expense date cannot be in the future');
+      throw ArgumentError.value(
+          spentAt, 'spentAt', 'Expense date cannot be in the future');
     }
     if ((normalizedReference?.length ?? 0) > 120) {
-      throw ArgumentError.value(reference, 'reference', 'Must be at most 120 characters');
+      throw ArgumentError.value(
+          reference, 'reference', 'Must be at most 120 characters');
     }
     await customStatement('''
       INSERT INTO expenses
@@ -203,15 +208,19 @@ class AppDatabase extends _$AppDatabase {
       normalizedDescription,
       amountPaise,
       paymentMethod,
-      normalizedReference == null || normalizedReference.isEmpty ? null : normalizedReference,
+      normalizedReference == null || normalizedReference.isEmpty
+          ? null
+          : normalizedReference,
       spentAt.millisecondsSinceEpoch,
       DateTime.now().millisecondsSinceEpoch,
     ]);
-    final row = await customSelect('SELECT last_insert_rowid() AS id').getSingle();
+    final row =
+        await customSelect('SELECT last_insert_rowid() AS id').getSingle();
     return row.read<int>('id');
   }
 
-  Future<List<QueryRow>> getExpenses({String? category, DateTime? month}) async {
+  Future<List<QueryRow>> getExpenses(
+      {String? category, DateTime? month}) async {
     final clauses = <String>[];
     final variables = <Variable<Object>>[];
     if (category != null && category.trim().isNotEmpty) {
@@ -243,7 +252,10 @@ class AppDatabase extends _$AppDatabase {
       Variable.withInt(start.millisecondsSinceEpoch),
       Variable.withInt(end.millisecondsSinceEpoch),
     ]).getSingle();
-    return {'count': row.read<int>('count'), 'totalPaise': row.read<int>('total')};
+    return {
+      'count': row.read<int>('count'),
+      'totalPaise': row.read<int>('total')
+    };
   }
 
   Future<void> _installFeeChargeGuards() async {
