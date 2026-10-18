@@ -17,6 +17,11 @@ void main() {
     await tester.pumpAndSettle();
 
     final backupButton = find.text('Open backup & restore');
+    await tester.scrollUntilVisible(
+      backupButton,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.ensureVisible(backupButton);
     await tester.pumpAndSettle();
     await tester.tap(backupButton);
