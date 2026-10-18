@@ -816,7 +816,8 @@ class AppDatabase extends _$AppDatabase {
         );
       }
       if (maxMarks != existingExam.read<int>('max_marks')) {
-        throw StateError('Maximum marks cannot change after results are entered');
+        throw StateError(
+            'Maximum marks cannot change after results are entered');
       }
     }
     await customStatement('''
