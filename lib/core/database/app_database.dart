@@ -803,14 +803,21 @@ class AppDatabase extends _$AppDatabase {
       'SELECT COUNT(*) AS total FROM exam_results WHERE exam_id = ?',
       variables: [Variable.withInt(id)],
     ).getSingle();
-    if (recorded.read<int>('total') > 0 &&
-        maxMarks !=
-            (await customSelect(
-              'SELECT max_marks FROM exams WHERE id = ?',
-              variables: [Variable.withInt(id)],
-            ).getSingle())
-                .read<int>('max_marks')) {
-      throw StateError('Maximum marks cannot change after results are entered');
+    if (recorded.read<int>('total') > 0) {
+      final existingExam = await customSelect(
+        'SELECT class_id, exam_date, max_marks FROM exams WHERE id = ?',
+        variables: [Variable.withInt(id)],
+      ).getSingle();
+      if (classId != existingExam.read<int>('class_id') ||
+          examDate.millisecondsSinceEpoch !=
+              existingExam.read<int>('exam_date')) {
+        throw StateError(
+          'Class and exam date cannot change after results are entered',
+        );
+      }
+      if (maxMarks != existingExam.read<int>('max_marks')) {
+        throw StateError('Maximum marks cannot change after results are entered');
+      }
     }
     await customStatement('''
       UPDATE exams SET class_id = ?, title = ?, subject = ?, exam_date = ?,
