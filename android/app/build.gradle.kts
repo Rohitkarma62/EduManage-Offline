@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.edumanage_offline"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
