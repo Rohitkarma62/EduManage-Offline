@@ -15,12 +15,17 @@ subprojects {
 
 subprojects {
     project.evaluationDependsOn(":app")
+}
 
-    // Flutter plugins can inherit an older compileSdk from the Flutter toolchain.
-    // Configure Android library modules when their Android plugin is applied.
-    plugins.withId("com.android.library") {
-        extensions.configure<com.android.build.gradle.LibraryExtension> {
-            compileSdk = 36
+// Apply this after each plugin module has evaluated its own build script.
+// Otherwise the Flutter plugin can overwrite this value back to Flutter's
+// older default compileSdk (34) during its own configuration.
+gradle.projectsEvaluated {
+    subprojects.forEach { subproject ->
+        val androidLibrary =
+            subproject.extensions.findByType(com.android.build.gradle.LibraryExtension::class.java)
+        if (androidLibrary != null) {
+            androidLibrary.compileSdk = 36
         }
     }
 }
