@@ -2,6 +2,9 @@ import 'package:drift/drift.dart' show QueryRow, Variable;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 import '../../../core/database/database_provider.dart';
 
@@ -198,6 +201,128 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
 
   void _refresh() => setState(() => _future = _load());
 
+  Future<void> _printResultSheet(_ResultsData data) async {
+    try {
+      final db = ref.read(appDatabaseProvider);
+      final institute = await db.customSelect(
+        'SELECT name, academic_year, phone FROM institutes LIMIT 1',
+      ).getSingleOrNull();
+      final maxMarks = data.exam.read<int>('max_marks');
+      final examId = data.exam.read<int>('id');
+      final date = DateTime.fromMillisecondsSinceEpoch(
+        data.exam.read<int>('exam_date'),
+      );
+      final dateLabel =
+          '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+      final document = pw.Document();
+      document.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(28),
+          build: (context) => [
+            if (institute != null) ...[
+              pw.Center(
+                child: pw.Text(
+                  institute.read<String>('name'),
+                  style: const pw.TextStyle(
+                    fontSize: 20,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+              ),
+              pw.SizedBox(height: 4),
+              pw.Center(
+                child: pw.Text(
+                  'Academic year: ${institute.read<String>('academic_year')}${institute.read<String?>('phone') == null ? '' : ' • ${institute.read<String>('phone')}'}',
+                  style: const pw.TextStyle(fontSize: 9),
+                ),
+              ),
+              pw.SizedBox(height: 12),
+            ],
+            pw.Center(
+              child: pw.Text(
+                'EXAM RESULT SHEET',
+                style: const pw.TextStyle(
+                  fontSize: 16,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+            pw.SizedBox(height: 8),
+            pw.Text('Exam: ${data.exam.read<String>('title')}'),
+            pw.Text('Subject: ${data.exam.read<String>('subject')}'),
+            pw.Text('Class: ${data.exam.read<String>('class_name')}'),
+            pw.Text('Exam date: $dateLabel    Maximum marks: $maxMarks'),
+            pw.SizedBox(height: 14),
+            pw.TableHelper.fromTextArray(
+              headers: const [
+                'S.No.',
+                'Admission no.',
+                'Student name',
+                'Marks',
+                'Result',
+                'Remarks',
+              ],
+              data: [
+                for (var index = 0; index < data.students.length; index++)
+                  _resultPdfRow(data.students[index], index, maxMarks),
+              ],
+              headerStyle: const pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                fontSize: 8,
+              ),
+              cellStyle: const pw.TextStyle(fontSize: 8),
+              cellAlignment: pw.Alignment.centerLeft,
+              headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
+              border: pw.TableBorder.all(color: PdfColors.grey500, width: 0.5),
+              cellPadding: const pw.EdgeInsets.all(5),
+            ),
+            pw.SizedBox(height: 16),
+            pw.Text(
+              'Results entered: ${data.summary['enteredCount']} / ${data.students.length}    Average: ${data.summary['averageMarks']!.toStringAsFixed(1)}    Pass count: ${data.summary['passCount']}',
+              style: const pw.TextStyle(fontSize: 9),
+            ),
+            pw.SizedBox(height: 32),
+            pw.Align(
+              alignment: pw.Alignment.centerRight,
+              child: pw.Text('Authorized signature: ____________________'),
+            ),
+          ],
+        ),
+      );
+      await Printing.layoutPdf(
+        name: 'exam-result-$examId.pdf',
+        onLayout: (_) async => document.save(),
+      );
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not prepare result PDF: $error')),
+        );
+      }
+    }
+  }
+
+  List<String> _resultPdfRow(QueryRow student, int index, int maxMarks) {
+    final marks = student.read<double?>('marks_obtained');
+    final result = marks == null
+        ? 'Pending'
+        : marks >= maxMarks * 0.35
+            ? 'Pass'
+            : 'Needs review';
+    final formattedMarks = marks == null
+        ? 'Not entered'
+        : '${marks.toStringAsFixed(2).replaceFirst(RegExp(r'\.0+$'), '')}/$maxMarks';
+    return [
+      '${index + 1}',
+      student.read<String>('admission_number'),
+      student.read<String>('full_name'),
+      formattedMarks,
+      result,
+      student.read<String?>('remarks') ?? '',
+    ];
+  }
+
   Future<void> _editMarks(QueryRow student, int maxMarks) async {
     if (_saving) return;
     final existing = student.read<double?>('marks_obtained');
@@ -344,6 +469,15 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
                               value: '${data.summary['passCount']}'),
                         ],
                       ),
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _printResultSheet(data),
+                          icon: const Icon(Icons.picture_as_pdf_outlined),
+                          label: const Text('Print / export PDF'),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -362,7 +496,7 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
                           final marks = student.read<double?>('marks_obtained');
                           final enteredMarks = marks == null
                               ? 'Not entered'
-                              : '${marks.toStringAsFixed(2).replaceFirst(RegExp(r'\.0+$'), '')} / $maxMarks';
+        : '${marks.toStringAsFixed(2).replaceFirst(RegExp(r'\.0+$'), '')}/$maxMarks';
                           return Card(
                             child: ListTile(
                               title: Text(student.read<String>('full_name')),
