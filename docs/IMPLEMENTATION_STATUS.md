@@ -58,11 +58,15 @@
 - Payment amounts are stored as integer paise; the UI locks payment submission while a dialog/write is active, and the database re-checks the outstanding balance transactionally to reject overpayments.
 - Refunds/reversals, payment allocation across multiple charges, discounts/credits, and fee reminders are not implemented yet.
 
+## In progress
+
+- SQLite database backup/restore screen is implemented on `feature/backup-restore`; CI, review, and Android-device validation are pending.
+
 ## Not implemented yet
 
 - Student certificates and individual student result certificates.
 - General-purpose app-managed file storage and backup/restore of generated documents.
-- Backup/restore and signed offline licensing.
+- Signed offline licensing.
 - One-year license expiry, activation-time policy, and clock rollback handling.
 - Entitlement guards and finalized role permissions.
 - Production release signing and release APK.
