@@ -20,13 +20,15 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
   @override
   void initState() {
     super.initState();
-    _recordsFuture = _loadRecords();
+    _recordsFuture = _loadRecords(date: _selectedDate);
   }
 
-  Future<List<QueryRow>> _loadRecords() async {
-    final records =
-        await ref.read(appDatabaseProvider).getAttendanceForDate(_selectedDate);
-    if (mounted) {
+  Future<List<QueryRow>> _loadRecords({DateTime? date}) async {
+    final requestedDate = date ?? _selectedDate;
+    final records = await ref
+        .read(appDatabaseProvider)
+        .getAttendanceForDate(requestedDate);
+    if (mounted && _isSameDate(_selectedDate, requestedDate)) {
       setState(() {
         _statuses = {
           for (final row in records)
@@ -43,9 +45,14 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
     setState(() {
       _selectedDate = DateTime(date.year, date.month, date.day);
       _statuses = {};
-      _recordsFuture = _loadRecords();
+      _recordsFuture = _loadRecords(date: _selectedDate);
     });
   }
+
+  bool _isSameDate(DateTime first, DateTime second) =>
+      first.year == second.year &&
+      first.month == second.month &&
+      first.day == second.day;
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
@@ -66,7 +73,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
           .read(appDatabaseProvider)
           .saveAttendanceForDate(_selectedDate, _statuses);
       if (!mounted) return;
-      setState(() => _recordsFuture = _loadRecords());
+      setState(() => _recordsFuture = _loadRecords(date: _selectedDate));
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Attendance saved on this device.')),
       );
