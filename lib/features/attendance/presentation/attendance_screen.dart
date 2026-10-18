@@ -25,9 +25,8 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
 
   Future<List<QueryRow>> _loadRecords({DateTime? date}) async {
     final requestedDate = date ?? _selectedDate;
-    final records = await ref
-        .read(appDatabaseProvider)
-        .getAttendanceForDate(requestedDate);
+    final records =
+        await ref.read(appDatabaseProvider).getAttendanceForDate(requestedDate);
     if (mounted && _isSameDate(_selectedDate, requestedDate)) {
       setState(() {
         _statuses = {
