@@ -86,6 +86,58 @@ void main() {
     expect((await database.getExamSummary(examId))['enteredCount'], 0);
   });
 
+  test('prevents changing exam class or date after results are entered',
+      () async {
+    final examDate = DateTime(2026, 10, 10);
+    final examId = await database.saveExam(
+      classId: classId,
+      title: 'Final Exam',
+      subject: 'Mathematics',
+      examDate: examDate,
+      maxMarks: 100,
+    );
+    await database.saveExamResult(
+      examId: examId,
+      studentId: studentId,
+      marksObtained: 75,
+    );
+
+    final otherClassId = await database.saveClass(
+      name: 'Class 11',
+      academicYear: '2026-2027',
+    );
+
+    await expectLater(
+      database.saveExam(
+        id: examId,
+        classId: otherClassId,
+        title: 'Final Exam',
+        subject: 'Mathematics',
+        examDate: examDate,
+        maxMarks: 100,
+      ),
+      throwsStateError,
+    );
+    await expectLater(
+      database.saveExam(
+        id: examId,
+        classId: classId,
+        title: 'Final Exam',
+        subject: 'Mathematics',
+        examDate: examDate.add(const Duration(days: 1)),
+        maxMarks: 100,
+      ),
+      throwsStateError,
+    );
+
+    final saved = await database.getExams(classId: classId);
+    expect(saved, hasLength(1));
+    expect(saved.single.read<int>('exam_date'),
+        examDate.millisecondsSinceEpoch);
+    expect(await database.getStudentsForExam(examId), hasLength(1));
+    expect((await database.getExamSummary(examId))['enteredCount'], 1);
+  });
+
   test('rejects invalid exam maximum marks', () async {
     await expectLater(
       database.saveExam(
