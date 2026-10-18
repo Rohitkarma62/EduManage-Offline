@@ -5,6 +5,7 @@ import '../../features/classes/presentation/class_form_screen.dart';
 import '../../features/classes/presentation/classes_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/attendance/presentation/attendance_screen.dart';
+import '../../features/backup/presentation/backup_restore_screen.dart';
 import '../../features/attendance/presentation/attendance_reports_screen.dart';
 import '../../features/fees/presentation/fee_payments_screen.dart';
 import '../../features/expenses/presentation/expenses_screen.dart';
@@ -119,6 +120,11 @@ final GoRouter appRouter = GoRouter(routes: <RouteBase>[
     builder: (context, state) => ExamResultsScreen(
       examId: int.parse(state.pathParameters['id']!),
     ),
+  ),
+  GoRoute(
+    path: '/backup-restore',
+    name: 'backup-restore',
+    builder: (context, state) => const BackupRestoreScreen(),
   ),
   GoRoute(
     path: '/fees',
