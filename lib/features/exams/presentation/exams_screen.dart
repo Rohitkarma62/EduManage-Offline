@@ -224,7 +224,7 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
               pw.Center(
                 child: pw.Text(
                   institute.read<String>('name'),
-                  style: pw.TextStyle(
+                  style: const pw.TextStyle(
                     fontSize: 20,
                     fontWeight: pw.FontWeight.bold,
                   ),
@@ -242,7 +242,7 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
             pw.Center(
               child: pw.Text(
                 'EXAM RESULT SHEET',
-                style: pw.TextStyle(
+                style: const pw.TextStyle(
                   fontSize: 16,
                   fontWeight: pw.FontWeight.bold,
                 ),
@@ -267,7 +267,7 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
                 for (var index = 0; index < data.students.length; index++)
                   _resultPdfRow(data.students[index], index, maxMarks),
               ],
-              headerStyle: pw.TextStyle(
+              headerStyle: const pw.TextStyle(
                 fontWeight: pw.FontWeight.bold,
                 fontSize: 8,
               ),
