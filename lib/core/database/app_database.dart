@@ -1251,6 +1251,31 @@ class AppDatabase extends _$AppDatabase {
     required String academicYear,
     String? description,
   }) async {
+    final normalizedName = name.trim();
+    final normalizedAcademicYear = academicYear.trim();
+    final normalizedDescription = description?.trim();
+    if (normalizedName.isEmpty || normalizedName.length > 100) {
+      throw ArgumentError.value(
+        name,
+        'name',
+        'Must be 1 to 100 non-whitespace characters',
+      );
+    }
+    if (normalizedAcademicYear.length < 4 ||
+        normalizedAcademicYear.length > 20) {
+      throw ArgumentError.value(
+        academicYear,
+        'academicYear',
+        'Must be 4 to 20 characters',
+      );
+    }
+    if ((normalizedDescription?.length ?? 0) > 240) {
+      throw ArgumentError.value(
+        description,
+        'description',
+        'Must be at most 240 characters',
+      );
+    }
     if (await classExists(
       name: name,
       academicYear: academicYear,
@@ -1260,12 +1285,12 @@ class AppDatabase extends _$AppDatabase {
     }
     final now = DateTime.now();
     final values = ClassesCompanion(
-      name: Value(name.trim()),
-      academicYear: Value(academicYear.trim()),
+      name: Value(normalizedName),
+      academicYear: Value(normalizedAcademicYear),
       description: Value(
-        description == null || description.trim().isEmpty
+        normalizedDescription == null || normalizedDescription.isEmpty
             ? null
-            : description.trim(),
+            : normalizedDescription,
       ),
       updatedAt: Value(now),
     );
