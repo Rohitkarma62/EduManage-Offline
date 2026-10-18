@@ -13,21 +13,20 @@ subprojects {
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
 
+// Register SDK alignment before forcing evaluation of the app project.
+// The app evaluation can trigger evaluation of plugin projects as well.
 subprojects {
-    project.evaluationDependsOn(":app")
-}
-
-// Apply this after each plugin module has evaluated its own build script.
-// Otherwise the Flutter plugin can overwrite this value back to Flutter's
-// older default compileSdk (34) during its own configuration.
-gradle.projectsEvaluated {
-    subprojects.forEach { subproject ->
+    afterEvaluate {
         val androidLibrary =
-            subproject.extensions.findByType(com.android.build.gradle.LibraryExtension::class.java)
+            extensions.findByType(com.android.build.gradle.LibraryExtension::class.java)
         if (androidLibrary != null) {
             androidLibrary.compileSdk = 36
         }
     }
+}
+
+subprojects {
+    project.evaluationDependsOn(":app")
 }
 
 tasks.register<Delete>("clean") {
