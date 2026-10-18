@@ -153,6 +153,26 @@ void main() {
     );
     expect((await database.getStudent(studentId))?.classId, isNull);
   });
+  test('rejects blank or oversized class details', () async {
+    await expectLater(
+      database.saveClass(name: '   ', academicYear: '2026-2027'),
+      throwsArgumentError,
+    );
+    await expectLater(
+      database.saveClass(name: 'Valid Class', academicYear: '202'),
+      throwsArgumentError,
+    );
+    await expectLater(
+      database.saveClass(
+        name: 'Valid Class',
+        academicYear: '2026-2027',
+        description: 'x' * 241,
+      ),
+      throwsArgumentError,
+    );
+    expect(await database.searchClasses(''), isEmpty);
+  });
+
   test('class uniqueness ignores letter case and surrounding spaces', () async {
     final id = await database.saveClass(
       name: 'Class 10 A',
