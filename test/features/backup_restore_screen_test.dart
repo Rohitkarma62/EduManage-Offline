@@ -17,12 +17,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.scrollUntilVisible(
-      find.text('Open backup & restore'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.tap(find.text('Open backup & restore'));
+    final backupButton = find.text('Open backup & restore');
+    await tester.ensureVisible(backupButton);
+    await tester.pumpAndSettle();
+    await tester.tap(backupButton);
     await tester.pumpAndSettle();
 
     expect(find.text('Backup & restore'), findsOneWidget);
