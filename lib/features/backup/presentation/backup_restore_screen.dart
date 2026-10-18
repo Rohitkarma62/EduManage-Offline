@@ -142,6 +142,12 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
       await liveDatabase.customStatement('PRAGMA wal_checkpoint(TRUNCATE)');
       await liveDatabase.close();
       ref.invalidate(appDatabaseProvider);
+      // Remove SQLite sidecar files so stale WAL pages cannot be replayed
+      // against the restored database file.
+      for (final suffix in const ['-wal', '-shm']) {
+        final sidecar = File('${liveFile.path}$suffix');
+        if (await sidecar.exists()) await sidecar.delete();
+      }
       await temporaryFile.copy(liveFile.path);
       if (!mounted) return;
       _showMessage('Backup restored. Reopen the app to refresh all screens.');
