@@ -92,6 +92,59 @@ void main() {
     expect(await database.searchStudents('ADM-001'), hasLength(1));
   });
 
+  test('rejects invalid student fields before writing to the database', () async {
+    await expectLater(
+      database.saveStudent(admissionNumber: '   ', fullName: 'Asha Sharma'),
+      throwsArgumentError,
+    );
+    await expectLater(
+      database.saveStudent(
+        admissionNumber: 'ADM-001',
+        fullName: '   ',
+      ),
+      throwsArgumentError,
+    );
+    await expectLater(
+      database.saveStudent(
+        admissionNumber: 'ADM-001',
+        fullName: 'Asha Sharma',
+        phone: '123',
+      ),
+      throwsArgumentError,
+    );
+    expect(await database.searchStudents(''), isEmpty);
+  });
+
+  test('rejects invalid institute fields and normalizes valid values', () async {
+    await expectLater(
+      database.saveInstitute(name: '   ', academicYear: '2026-2027'),
+      throwsArgumentError,
+    );
+    await expectLater(
+      database.saveInstitute(name: 'North Star', academicYear: '26'),
+      throwsArgumentError,
+    );
+    await expectLater(
+      database.saveInstitute(
+        name: 'North Star',
+        academicYear: '2026-2027',
+        phone: '123',
+      ),
+      throwsArgumentError,
+    );
+    expect(await database.getInstitute(), isNull);
+
+    await database.saveInstitute(
+      name: '  North Star  ',
+      academicYear: ' 2026-2027 ',
+      phone: ' 9876543210 ',
+    );
+    final institute = await database.getInstitute();
+    expect(institute?.name, 'North Star');
+    expect(institute?.academicYear, '2026-2027');
+    expect(institute?.phone, '9876543210');
+  });
+
   test('keeps institute data when student table is used', () async {
     await database.saveInstitute(
       name: 'North Star',
