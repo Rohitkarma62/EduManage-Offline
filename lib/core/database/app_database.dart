@@ -1192,11 +1192,38 @@ class AppDatabase extends _$AppDatabase {
     required String academicYear,
     String? phone,
   }) async {
+    final normalizedName = name.trim();
+    final normalizedAcademicYear = academicYear.trim();
+    final normalizedPhone = phone?.trim();
+    if (normalizedName.isEmpty || normalizedName.length > 120) {
+      throw ArgumentError.value(name, 'name', 'Must be 1 to 120 characters');
+    }
+    if (normalizedAcademicYear.length < 4 ||
+        normalizedAcademicYear.length > 20) {
+      throw ArgumentError.value(
+        academicYear,
+        'academicYear',
+        'Must be 4 to 20 characters',
+      );
+    }
+    if (normalizedPhone != null &&
+        normalizedPhone.isNotEmpty &&
+        (normalizedPhone.length < 7 || normalizedPhone.length > 20)) {
+      throw ArgumentError.value(
+        phone,
+        'phone',
+        'Must be 7 to 20 characters when provided',
+      );
+    }
     final existing = await getInstitute();
     final values = InstitutesCompanion(
-      name: Value(name.trim()),
-      academicYear: Value(academicYear.trim()),
-      phone: Value(phone == null || phone.trim().isEmpty ? null : phone.trim()),
+      name: Value(normalizedName),
+      academicYear: Value(normalizedAcademicYear),
+      phone: Value(
+        normalizedPhone == null || normalizedPhone.isEmpty
+            ? null
+            : normalizedPhone,
+      ),
     );
     if (existing == null) {
       await into(institutes).insert(values);
@@ -1446,6 +1473,41 @@ class AppDatabase extends _$AppDatabase {
     String? guardianName,
     int? classId,
   }) async {
+    final normalizedAdmissionNumber = admissionNumber.trim().toUpperCase();
+    final normalizedFullName = fullName.trim();
+    final normalizedPhone = phone?.trim();
+    final normalizedGuardianName = guardianName?.trim();
+    if (normalizedAdmissionNumber.isEmpty ||
+        normalizedAdmissionNumber.length > 40) {
+      throw ArgumentError.value(
+        admissionNumber,
+        'admissionNumber',
+        'Must be 1 to 40 non-whitespace characters',
+      );
+    }
+    if (normalizedFullName.isEmpty || normalizedFullName.length > 120) {
+      throw ArgumentError.value(
+        fullName,
+        'fullName',
+        'Must be 1 to 120 non-whitespace characters',
+      );
+    }
+    if (normalizedPhone != null &&
+        normalizedPhone.isNotEmpty &&
+        (normalizedPhone.length < 7 || normalizedPhone.length > 20)) {
+      throw ArgumentError.value(
+        phone,
+        'phone',
+        'Must be 7 to 20 characters when provided',
+      );
+    }
+    if ((normalizedGuardianName?.length ?? 0) > 120) {
+      throw ArgumentError.value(
+        guardianName,
+        'guardianName',
+        'Must be at most 120 characters',
+      );
+    }
     final now = DateTime.now();
     return transaction(() async {
       final existing = id == null ? null : await getStudent(id);
@@ -1453,15 +1515,17 @@ class AppDatabase extends _$AppDatabase {
         throw StateError('Student does not exist');
       }
       final values = StudentsCompanion(
-        admissionNumber: Value(admissionNumber.trim().toUpperCase()),
-        fullName: Value(fullName.trim()),
+        admissionNumber: Value(normalizedAdmissionNumber),
+        fullName: Value(normalizedFullName),
         phone: Value(
-          phone == null || phone.trim().isEmpty ? null : phone.trim(),
+          normalizedPhone == null || normalizedPhone.isEmpty
+              ? null
+              : normalizedPhone,
         ),
         guardianName: Value(
-          guardianName == null || guardianName.trim().isEmpty
+          normalizedGuardianName == null || normalizedGuardianName.isEmpty
               ? null
-              : guardianName.trim(),
+              : normalizedGuardianName,
         ),
         // Assignment changes are written through the history ledger below.
         classId: Value(existing?.classId),
