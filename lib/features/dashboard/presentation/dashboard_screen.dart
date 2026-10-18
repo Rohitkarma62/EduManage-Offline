@@ -124,6 +124,15 @@ class DashboardScreen extends ConsumerWidget {
             onPressed: () => context.push('/fees'),
           ),
           const SizedBox(height: 12),
+          _DashboardCard(
+            title: 'Backup & restore',
+            description:
+                'Export a copy of local institute data or restore a previous backup.',
+            buttonLabel: 'Open backup & restore',
+            icon: Icons.backup_outlined,
+            onPressed: () => context.push('/backup-restore'),
+          ),
+          const SizedBox(height: 12),
           const Card(
             child: Padding(
               padding: EdgeInsets.all(16),
