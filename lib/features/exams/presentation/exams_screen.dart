@@ -204,9 +204,11 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
   Future<void> _printResultSheet(_ResultsData data) async {
     try {
       final db = ref.read(appDatabaseProvider);
-      final institute = await db.customSelect(
-        'SELECT name, academic_year, phone FROM institutes LIMIT 1',
-      ).getSingleOrNull();
+      final institute = await db
+          .customSelect(
+            'SELECT name, academic_year, phone FROM institutes LIMIT 1',
+          )
+          .getSingleOrNull();
       final maxMarks = data.exam.read<int>('max_marks');
       final examId = data.exam.read<int>('id');
       final date = DateTime.fromMillisecondsSinceEpoch(
@@ -273,7 +275,8 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
               ),
               cellStyle: const pw.TextStyle(fontSize: 8),
               cellAlignment: pw.Alignment.centerLeft,
-              headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
+              headerDecoration:
+                  const pw.BoxDecoration(color: PdfColors.grey300),
               border: pw.TableBorder.all(color: PdfColors.grey500, width: 0.5),
               cellPadding: const pw.EdgeInsets.all(5),
             ),
@@ -496,7 +499,7 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
                           final marks = student.read<double?>('marks_obtained');
                           final enteredMarks = marks == null
                               ? 'Not entered'
-        : '${marks.toStringAsFixed(2).replaceFirst(RegExp(r'\.0+$'), '')}/$maxMarks';
+                              : '${marks.toStringAsFixed(2).replaceFirst(RegExp(r'\.0+$'), '')}/$maxMarks';
                           return Card(
                             child: ListTile(
                               title: Text(student.read<String>('full_name')),
