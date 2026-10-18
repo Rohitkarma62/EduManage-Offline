@@ -312,7 +312,7 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
             : 'Needs review';
     final formattedMarks = marks == null
         ? 'Not entered'
-        : '${marks.toStringAsFixed(2).replaceFirst(RegExp(r'\\.0+$'), '')}/$maxMarks';
+        : '${marks.toStringAsFixed(2).replaceFirst(RegExp(r'\.0+$'), '')}/$maxMarks';
     return [
       '${index + 1}',
       student.read<String>('admission_number'),
@@ -496,7 +496,7 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
                           final marks = student.read<double?>('marks_obtained');
                           final enteredMarks = marks == null
                               ? 'Not entered'
-                              : '${marks.toStringAsFixed(2).replaceFirst(RegExp(r'\.0+$'), '')} / $maxMarks';
+        : '${marks.toStringAsFixed(2).replaceFirst(RegExp(r'\.0+$'), '')}/$maxMarks';
                           return Card(
                             child: ListTile(
                               title: Text(student.read<String>('full_name')),
