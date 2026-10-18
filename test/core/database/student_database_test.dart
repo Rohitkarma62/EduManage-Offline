@@ -166,7 +166,7 @@ void main() {
       database.saveClass(
         name: 'Valid Class',
         academicYear: '2026-2027',
-        description: 'x' * 241,
+        description: List.filled(241, 'x').join(),
       ),
       throwsArgumentError,
     );
