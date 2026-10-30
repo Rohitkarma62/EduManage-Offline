@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:edumanage_offline/core/backup/atomic_database_restorer.dart';
 import 'package:edumanage_offline/core/backup/backup_file_validator.dart';
 import 'package:edumanage_offline/core/database/database_provider.dart';
 import 'package:file_picker/file_picker.dart';
@@ -120,13 +121,11 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
       await liveDatabase.customStatement('PRAGMA wal_checkpoint(TRUNCATE)');
       await liveDatabase.close();
       ref.invalidate(appDatabaseProvider);
-      // Remove SQLite sidecar files so stale WAL pages cannot be replayed
-      // against the restored database file.
-      for (final suffix in const ['-wal', '-shm']) {
-        final sidecar = File('${liveFile.path}$suffix');
-        if (await sidecar.exists()) await sidecar.delete();
-      }
-      await temporaryFile.copy(liveFile.path);
+      await const AtomicDatabaseRestorer().restore(
+        stagedFile: temporaryFile,
+        liveFile: liveFile,
+        validateInstalled: BackupFileValidator.validateFile,
+      );
       if (!mounted) return;
       _showMessage('Backup restored. Reopen the app to refresh all screens.');
       context.go('/');
