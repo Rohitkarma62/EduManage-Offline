@@ -80,6 +80,38 @@ void main() {
       expect(await live.exists(), isFalse);
     });
 
+    test('removes stale WAL and SHM sidecars before replacement', () async {
+      final wal = File('${live.path}-wal');
+      final shm = File('${live.path}-shm');
+      await wal.writeAsString('stale wal');
+      await shm.writeAsString('stale shm');
+
+      await restorer.restore(
+        stagedFile: staged,
+        liveFile: live,
+        validateInstalled: (_) async {},
+      );
+
+      expect(await wal.exists(), isFalse);
+      expect(await shm.exists(), isFalse);
+      expect(await live.readAsString(), 'replacement database');
+    });
+
+    test('missing staged file leaves the live database untouched', () async {
+      await staged.delete();
+
+      await expectLater(
+        restorer.restore(
+          stagedFile: staged,
+          liveFile: live,
+          validateInstalled: (_) async {},
+        ),
+        throwsStateError,
+      );
+
+      expect(await live.readAsString(), 'original database');
+    });
+
     test('rejects staged files from a different directory', () async {
       final otherDirectory =
           await Directory.systemTemp.createTemp('edumanage-staged-');
