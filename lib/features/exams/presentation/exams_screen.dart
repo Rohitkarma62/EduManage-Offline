@@ -326,7 +326,6 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
     ];
   }
 
-
   Future<void> _printStudentResultCertificate(
     _ResultsData data,
     QueryRow student,
@@ -334,9 +333,12 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
     final marks = student.read<double?>('marks_obtained');
     if (marks == null) return;
     try {
-      final institute = await ref.read(appDatabaseProvider).customSelect(
-        'SELECT name, academic_year, phone FROM institutes LIMIT 1',
-      ).getSingleOrNull();
+      final institute = await ref
+          .read(appDatabaseProvider)
+          .customSelect(
+            'SELECT name, academic_year, phone FROM institutes LIMIT 1',
+          )
+          .getSingleOrNull();
       final exam = data.exam;
       final maxMarks = exam.read<int>('max_marks');
       final percentage = marks / maxMarks * 100;
@@ -356,6 +358,7 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
         if (percentage >= 35) return 'D';
         return 'Needs improvement';
       }
+
       final document = pw.Document();
       document.addPage(pw.Page(
         pageFormat: PdfPageFormat.a4,
@@ -421,15 +424,14 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
                   width: 0.6,
                 ),
                 children: [
+                  _certificateTableRow('Subject', exam.read<String>('subject')),
+                  _certificateTableRow('Marks obtained',
+                      '${marks.toStringAsFixed(2)}/$maxMarks'),
                   _certificateTableRow(
-                    'Subject', exam.read<String>('subject')),
-                  _certificateTableRow(
-                    'Marks obtained', '${marks.toStringAsFixed(2)}/$maxMarks'),
-                  _certificateTableRow(
-                    'Percentage', '${percentage.toStringAsFixed(2)}%'),
+                      'Percentage', '${percentage.toStringAsFixed(2)}%'),
                   _certificateTableRow('Grade', grade()),
                   _certificateTableRow(
-                    'Result', passed ? 'PASS' : 'NEEDS IMPROVEMENT'),
+                      'Result', passed ? 'PASS' : 'NEEDS IMPROVEMENT'),
                 ],
               ),
               if ((student.read<String?>('remarks') ?? '').trim().isNotEmpty)
@@ -465,7 +467,8 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not generate result certificate: $error')),
+          SnackBar(
+              content: Text('Could not generate result certificate: $error')),
         );
       }
     }
@@ -679,7 +682,8 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
                                               data,
                                               student,
                                             ),
-                                    icon: const Icon(Icons.picture_as_pdf_outlined),
+                                    icon: const Icon(
+                                        Icons.picture_as_pdf_outlined),
                                   ),
                                   IconButton(
                                     tooltip: 'Enter or edit marks',
