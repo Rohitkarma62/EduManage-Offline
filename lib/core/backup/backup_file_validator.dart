@@ -7,13 +7,26 @@ import 'package:edumanage_offline/core/database/app_database.dart';
 /// Validates a selected backup before the restore flow can touch live data.
 class BackupFileValidator {
   static const sqliteHeader = <int>[
-    0x53, 0x51, 0x4c, 0x69, 0x74, 0x65, 0x20, 0x66,
-    0x6f, 0x72, 0x6d, 0x61, 0x74, 0x20, 0x33, 0x00,
+    0x53,
+    0x51,
+    0x4c,
+    0x69,
+    0x74,
+    0x65,
+    0x20,
+    0x66,
+    0x6f,
+    0x72,
+    0x6d,
+    0x61,
+    0x74,
+    0x20,
+    0x33,
+    0x00,
   ];
 
   static void validateHeader(Uint8List bytes) {
-    if (bytes.length < 100 ||
-        !_hasSqliteHeader(bytes)) {
+    if (bytes.length < 100 || !_hasSqliteHeader(bytes)) {
       throw const FormatException('Selected file is not a SQLite database.');
     }
   }
@@ -46,9 +59,11 @@ class BackupFileValidator {
         );
       }
 
-      final tables = await candidate.customSelect(
-        "SELECT name FROM sqlite_master WHERE type = 'table'",
-      ).get();
+      final tables = await candidate
+          .customSelect(
+            "SELECT name FROM sqlite_master WHERE type = 'table'",
+          )
+          .get();
       final tableNames = tables.map((row) => row.read<String>('name')).toSet();
       const requiredTables = {
         'institutes',
