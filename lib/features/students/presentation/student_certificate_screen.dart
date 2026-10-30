@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:path_provider/path_provider.dart';
+
+import '../../../core/storage/document_storage.dart';
 
 import '../../../core/database/database_provider.dart';
 
@@ -157,10 +160,23 @@ class _StudentCertificateScreenState
           ),
         ),
       );
-      await Printing.layoutPdf(
-        name: 'student-certificate-${widget.studentId}.pdf',
-        onLayout: (_) async => document.save(),
+      final pdfBytes = await document.save();
+      final documentsDirectory = await getApplicationDocumentsDirectory();
+      final storedFile = await DocumentStorage(
+        baseDirectory: documentsDirectory,
+      ).savePdf(
+        bytes: pdfBytes,
+        title: '$_certificateType - $studentName',
       );
+      await Printing.layoutPdf(
+        name: storedFile.fileName,
+        onLayout: (_) async => pdfBytes,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Certificate saved in Documents: ${storedFile.fileName}')),
+        );
+      }
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
