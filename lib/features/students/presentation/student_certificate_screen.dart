@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' show Variable;
+import 'package:drift/drift.dart' show QueryRow, Variable;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdf/pdf.dart';
@@ -241,6 +241,6 @@ class _StudentCertificateScreenState
 class _CertificateData {
   const _CertificateData(this.student, this.institute);
 
-  final dynamic student;
-  final dynamic institute;
+  final QueryRow student;
+  final QueryRow? institute;
 }
