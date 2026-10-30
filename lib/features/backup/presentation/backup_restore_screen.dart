@@ -1,7 +1,6 @@
 import 'dart:io';
 
-import 'package:drift/native.dart';
-import 'package:edumanage_offline/core/database/app_database.dart';
+import 'package:edumanage_offline/core/backup/backup_file_validator.dart';
 import 'package:edumanage_offline/core/database/database_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -101,10 +100,10 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
       );
       if (selection == null) return;
       final bytes = selection.files.single.bytes;
-      if (bytes == null || bytes.length < 100) {
-        throw const FormatException(
-            'The selected backup is empty or unreadable.');
+      if (bytes == null) {
+        throw const FormatException('The selected backup could not be read.');
       }
+      BackupFileValidator.validateHeader(bytes);
 
       final directory = await getApplicationDocumentsDirectory();
       temporaryPath = p.join(
@@ -114,31 +113,7 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
       final temporaryFile = File(temporaryPath);
       await temporaryFile.writeAsBytes(bytes, flush: true);
 
-      // Opening the candidate through Drift checks SQLite integrity and applies
-      // supported schema migrations before the live database is replaced.
-      final candidate = AppDatabase(NativeDatabase(temporaryFile));
-      try {
-        final integrity =
-            await candidate.customSelect('PRAGMA integrity_check').getSingle();
-        if (integrity.read<String>('integrity_check') != 'ok') {
-          throw const FormatException('SQLite integrity check failed.');
-        }
-        final tables = await candidate
-            .customSelect(
-              "SELECT name FROM sqlite_master WHERE type = 'table'",
-            )
-            .get();
-        final tableNames =
-            tables.map((row) => row.read<String>('name')).toSet();
-        const requiredTables = {'institutes', 'students', 'classes', 'staff'};
-        if (!tableNames.containsAll(requiredTables)) {
-          throw const FormatException(
-            'This file is not a valid EduManage database backup.',
-          );
-        }
-      } finally {
-        await candidate.close();
-      }
+      await BackupFileValidator.validateFile(temporaryFile);
 
       final liveFile = await _databaseFile();
       final liveDatabase = ref.read(appDatabaseProvider);
