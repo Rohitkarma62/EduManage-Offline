@@ -174,7 +174,9 @@ class _StudentCertificateScreenState
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Certificate saved in Documents: ${storedFile.fileName}')),
+          SnackBar(
+              content: Text(
+                  'Certificate saved in Documents: ${storedFile.fileName}')),
         );
       }
     } catch (error) {

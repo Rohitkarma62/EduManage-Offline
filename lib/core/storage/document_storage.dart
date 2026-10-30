@@ -23,7 +23,8 @@ class StoredDocument {
 /// Stores generated PDFs without relying on user-visible external storage.
 class DocumentStorage {
   DocumentStorage({required Directory baseDirectory})
-      : _directory = Directory(p.join(baseDirectory.path, 'edumanage_documents'));
+      : _directory =
+            Directory(p.join(baseDirectory.path, 'edumanage_documents'));
 
   final Directory _directory;
 
@@ -31,8 +32,7 @@ class DocumentStorage {
     required Uint8List bytes,
     required String title,
   }) async {
-    if (bytes.length < 8 ||
-        String.fromCharCodes(bytes.take(5)) != '%PDF-') {
+    if (bytes.length < 8 || String.fromCharCodes(bytes.take(5)) != '%PDF-') {
       throw const FormatException('The document is not a valid PDF file.');
     }
     final normalizedTitle = title.trim();
@@ -78,7 +78,8 @@ class DocumentStorage {
   }
 
   Future<void> delete(StoredDocument document) async {
-    final expectedPath = p.normalize(p.absolute(p.join(_directory.path, document.fileName)));
+    final expectedPath =
+        p.normalize(p.absolute(p.join(_directory.path, document.fileName)));
     final actualPath = p.normalize(p.absolute(document.file.path));
     if (expectedPath != actualPath ||
         p.dirname(actualPath) != p.normalize(p.absolute(_directory.path))) {
