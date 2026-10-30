@@ -73,7 +73,7 @@ class _StudentCertificateScreenState
                 pw.Text(
                   instituteName.toUpperCase(),
                   textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(
+                  style: const pw.TextStyle(
                     fontSize: 22,
                     fontWeight: pw.FontWeight.bold,
                     color: PdfColors.blueGrey900,
@@ -93,7 +93,7 @@ class _StudentCertificateScreenState
                 pw.Text(
                   _certificateType.toUpperCase(),
                   textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(
+                  style: const pw.TextStyle(
                     fontSize: 19,
                     fontWeight: pw.FontWeight.bold,
                     letterSpacing: 1.5,
@@ -108,7 +108,7 @@ class _StudentCertificateScreenState
                 pw.Text(
                   studentName,
                   textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(
+                  style: const pw.TextStyle(
                     fontSize: 25,
                     fontWeight: pw.FontWeight.bold,
                     color: PdfColors.blueGrey900,
@@ -200,7 +200,7 @@ class _StudentCertificateScreenState
               ),
               const SizedBox(height: 20),
               DropdownButtonFormField<String>(
-                value: _certificateType,
+                initialValue: _certificateType,
                 decoration: const InputDecoration(
                   labelText: 'Certificate type',
                   border: OutlineInputBorder(),
