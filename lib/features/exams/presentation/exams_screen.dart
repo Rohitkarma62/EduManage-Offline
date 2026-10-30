@@ -345,8 +345,8 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
         exam.read<int>('exam_date'),
       );
       String dateLabel(DateTime value) =>
-          '\${value.day.toString().padLeft(2, '0')}/'
-          '\${value.month.toString().padLeft(2, '0')}/\${value.year}';
+          '${value.day.toString().padLeft(2, '0')}/'
+          '${value.month.toString().padLeft(2, '0')}/${value.year}';
       String grade() {
         if (percentage >= 90) return 'A+';
         if (percentage >= 80) return 'A';
@@ -380,7 +380,7 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
                 ),
               ),
               if (institute?.read<String?>('phone') != null)
-                pw.Text('Phone: \${institute!.read<String>('phone')}'),
+                pw.Text('Phone: ${institute!.read<String>('phone')}'),
               pw.SizedBox(height: 20),
               pw.Divider(thickness: 1.5),
               pw.SizedBox(height: 22),
@@ -403,14 +403,14 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
               ),
               pw.SizedBox(height: 8),
               pw.Text(
-                'Admission Number: \${student.read<String>('admission_number')}',
+                'Admission Number: ${student.read<String>('admission_number')}',
               ),
               pw.SizedBox(height: 22),
               pw.Text(
-                'has appeared in \${exam.read<String>('title')} '
-                '(\${exam.read<String>('subject')}) held on '
-                '\${dateLabel(examDate)} for academic session '
-                '\${institute?.read<String>('academic_year') ?? '____________'}.',
+                'has appeared in ${exam.read<String>('title')} '
+                '(${exam.read<String>('subject')}) held on '
+                '${dateLabel(examDate)} for academic session '
+                '${institute?.read<String>('academic_year') ?? '____________'}.',
                 textAlign: pw.TextAlign.center,
                 style: const pw.TextStyle(fontSize: 12, lineSpacing: 4),
               ),
@@ -424,9 +424,9 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
                   _certificateTableRow(
                     'Subject', exam.read<String>('subject')),
                   _certificateTableRow(
-                    'Marks obtained', '\${marks.toStringAsFixed(2)}/$maxMarks'),
+                    'Marks obtained', '${marks.toStringAsFixed(2)}/$maxMarks'),
                   _certificateTableRow(
-                    'Percentage', '\${percentage.toStringAsFixed(2)}%'),
+                    'Percentage', '${percentage.toStringAsFixed(2)}%'),
                   _certificateTableRow('Grade', grade()),
                   _certificateTableRow(
                     'Result', passed ? 'PASS' : 'NEEDS IMPROVEMENT'),
@@ -436,14 +436,14 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
                 pw.Padding(
                   padding: const pw.EdgeInsets.only(top: 16),
                   child: pw.Text(
-                    'Remarks: \${student.read<String>('remarks')}',
+                    'Remarks: ${student.read<String>('remarks')}',
                     textAlign: pw.TextAlign.center,
                   ),
                 ),
               pw.Spacer(),
               pw.Align(
                 alignment: pw.Alignment.centerLeft,
-                child: pw.Text('Date of issue: \${dateLabel(DateTime.now())}'),
+                child: pw.Text('Date of issue: ${dateLabel(DateTime.now())}'),
               ),
               pw.SizedBox(height: 28),
               pw.Align(
@@ -458,8 +458,8 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
         ),
       ));
       await Printing.layoutPdf(
-        name: 'result-certificate-\${student.read<int>('student_id')}-'
-            '\${exam.read<int>('id')}.pdf',
+        name: 'result-certificate-${student.read<int>('student_id')}-'
+            '${exam.read<int>('id')}.pdf',
         onLayout: (_) async => document.save(),
       );
     } catch (error) {
