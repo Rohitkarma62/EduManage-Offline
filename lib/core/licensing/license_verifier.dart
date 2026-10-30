@@ -138,10 +138,10 @@ class LicenseVerifier {
         );
       }
 
-      final trustedTime = lastTrustedTime != null &&
-              lastTrustedTime.isAfter(currentTime)
-          ? lastTrustedTime
-          : currentTime;
+      final trustedTime =
+          lastTrustedTime != null && lastTrustedTime.isAfter(currentTime)
+              ? lastTrustedTime
+              : currentTime;
       await _trustedTimeStore.writeLastTrustedTime(trustedTime);
 
       return LicenseVerification(
