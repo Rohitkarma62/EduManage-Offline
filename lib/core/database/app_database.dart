@@ -21,6 +21,12 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
       : super(executor ?? driftDatabase(name: 'edumanage_offline'));
 
+  Future<void>? _closeFuture;
+
+  /// Makes explicit shutdown and Riverpod disposal safe to call together.
+  @override
+  Future<void> close() => _closeFuture ??= super.close();
+
   @override
   int get schemaVersion => 14;
 
