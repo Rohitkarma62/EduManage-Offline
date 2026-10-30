@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:printing/printing.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
+import '../../../core/storage/document_storage.dart';
 import '../fee_payment_receipt.dart';
 import '../../students/providers/student_providers.dart';
 
@@ -230,11 +232,30 @@ class _StudentFeesScreenState extends ConsumerState<StudentFeesScreen> {
           totalPaidPaise: summary.paid,
         ),
       );
-      final filename = 'fee_receipt_${payment.id}.pdf';
+      final documentsDirectory = await getApplicationDocumentsDirectory();
+      final storedFile = await DocumentStorage(
+        baseDirectory: documentsDirectory,
+      ).savePdf(
+        bytes: bytes,
+        title: 'Fee receipt - ${data.student.fullName} - ${payment.id}',
+      );
       if (action == 'share') {
-        await Printing.sharePdf(bytes: bytes, filename: filename);
+        await Printing.sharePdf(
+          bytes: bytes,
+          filename: storedFile.fileName,
+        );
       } else {
-        await Printing.layoutPdf(onLayout: (_) async => bytes);
+        await Printing.layoutPdf(
+          name: storedFile.fileName,
+          onLayout: (_) async => bytes,
+        );
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Receipt saved in Documents: ${storedFile.fileName}'),
+          ),
+        );
       }
     } catch (error) {
       if (mounted) {
