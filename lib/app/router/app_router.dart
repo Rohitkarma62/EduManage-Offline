@@ -12,6 +12,7 @@ import '../../features/expenses/presentation/expenses_screen.dart';
 import '../../features/exams/presentation/exams_screen.dart';
 import '../../features/institute/presentation/institute_setup_screen.dart';
 import '../../features/students/presentation/student_assignment_history_screen.dart';
+import '../../features/students/presentation/student_certificate_screen.dart';
 import '../../features/students/presentation/student_form_screen.dart';
 import '../../features/students/presentation/student_transfer_screen.dart';
 import '../../features/students/presentation/students_screen.dart';
@@ -67,6 +68,13 @@ final GoRouter appRouter = GoRouter(routes: <RouteBase>[
     path: '/students/:id/edit',
     name: 'student-edit',
     builder: (context, state) => StudentFormScreen(
+      studentId: int.parse(state.pathParameters['id']!),
+    ),
+  ),
+  GoRoute(
+    path: '/students/:id/certificates',
+    name: 'student-certificates',
+    builder: (context, state) => StudentCertificateScreen(
       studentId: int.parse(state.pathParameters['id']!),
     ),
   ),
