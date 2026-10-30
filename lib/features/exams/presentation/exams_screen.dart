@@ -326,6 +326,167 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
     ];
   }
 
+
+  Future<void> _printStudentResultCertificate(
+    _ResultsData data,
+    QueryRow student,
+  ) async {
+    final marks = student.read<double?>('marks_obtained');
+    if (marks == null) return;
+    try {
+      final institute = await ref.read(appDatabaseProvider).customSelect(
+        'SELECT name, academic_year, phone FROM institutes LIMIT 1',
+      ).getSingleOrNull();
+      final exam = data.exam;
+      final maxMarks = exam.read<int>('max_marks');
+      final percentage = marks / maxMarks * 100;
+      final passed = percentage >= 35;
+      final examDate = DateTime.fromMillisecondsSinceEpoch(
+        exam.read<int>('exam_date'),
+      );
+      String dateLabel(DateTime value) =>
+          '${value.day.toString().padLeft(2, '0')}/'
+          '${value.month.toString().padLeft(2, '0')}/${value.year}';
+      String grade() {
+        if (percentage >= 90) return 'A+';
+        if (percentage >= 80) return 'A';
+        if (percentage >= 70) return 'B+';
+        if (percentage >= 60) return 'B';
+        if (percentage >= 50) return 'C';
+        if (percentage >= 35) return 'D';
+        return 'Needs improvement';
+      }
+      final document = pw.Document();
+      document.addPage(pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(42),
+        build: (_) => pw.Container(
+          padding: const pw.EdgeInsets.all(28),
+          decoration: pw.BoxDecoration(
+            border: pw.Border.all(color: PdfColors.blueGrey700, width: 2),
+          ),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
+            children: [
+              pw.SizedBox(height: 18),
+              pw.Text(
+                (institute?.read<String>('name') ?? 'Educational Institute')
+                    .toUpperCase(),
+                textAlign: pw.TextAlign.center,
+                style: const pw.TextStyle(
+                  fontSize: 22,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.blueGrey900,
+                ),
+              ),
+              if (institute?.read<String?>('phone') != null)
+                pw.Text('Phone: ${institute!.read<String>('phone')}'),
+              pw.SizedBox(height: 20),
+              pw.Divider(thickness: 1.5),
+              pw.SizedBox(height: 22),
+              pw.Text(
+                'STUDENT RESULT CERTIFICATE',
+                style: const pw.TextStyle(
+                  fontSize: 19,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              pw.SizedBox(height: 28),
+              pw.Text('This is to certify that'),
+              pw.SizedBox(height: 10),
+              pw.Text(
+                student.read<String>('full_name'),
+                style: const pw.TextStyle(
+                  fontSize: 24,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              pw.SizedBox(height: 8),
+              pw.Text(
+                'Admission Number: ${student.read<String>('admission_number')}',
+              ),
+              pw.SizedBox(height: 22),
+              pw.Text(
+                'has appeared in ${exam.read<String>('title')} '
+                '(${exam.read<String>('subject')}) held on '
+                '${dateLabel(examDate)} for academic session '
+                '${institute?.read<String>('academic_year') ?? '____________'}.',
+                textAlign: pw.TextAlign.center,
+                style: const pw.TextStyle(fontSize: 12, lineSpacing: 4),
+              ),
+              pw.SizedBox(height: 24),
+              pw.Table(
+                border: pw.TableBorder.all(
+                  color: PdfColors.grey600,
+                  width: 0.6,
+                ),
+                children: [
+                  _certificateTableRow(
+                    'Subject', exam.read<String>('subject')),
+                  _certificateTableRow(
+                    'Marks obtained', '${marks.toStringAsFixed(2)}/$maxMarks'),
+                  _certificateTableRow(
+                    'Percentage', '${percentage.toStringAsFixed(2)}%'),
+                  _certificateTableRow('Grade', grade()),
+                  _certificateTableRow(
+                    'Result', passed ? 'PASS' : 'NEEDS IMPROVEMENT'),
+                ],
+              ),
+              if ((student.read<String?>('remarks') ?? '').trim().isNotEmpty)
+                pw.Padding(
+                  padding: const pw.EdgeInsets.only(top: 16),
+                  child: pw.Text(
+                    'Remarks: ${student.read<String>('remarks')}',
+                    textAlign: pw.TextAlign.center,
+                  ),
+                ),
+              pw.Spacer(),
+              pw.Align(
+                alignment: pw.Alignment.centerLeft,
+                child: pw.Text('Date of issue: ${dateLabel(DateTime.now())}'),
+              ),
+              pw.SizedBox(height: 28),
+              pw.Align(
+                alignment: pw.Alignment.centerRight,
+                child: pw.Column(children: [
+                  pw.SizedBox(width: 155, child: pw.Divider()),
+                  pw.Text('Authorized Signature'),
+                ]),
+              ),
+            ],
+          ),
+        ),
+      ));
+      await Printing.layoutPdf(
+        name: 'result-certificate-${student.read<int>('student_id')}-'
+            '${exam.read<int>('id')}.pdf',
+        onLayout: (_) async => document.save(),
+      );
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not generate result certificate: $error')),
+        );
+      }
+    }
+  }
+
+  pw.TableRow _certificateTableRow(String label, String value) => pw.TableRow(
+        children: [
+          pw.Padding(
+            padding: const pw.EdgeInsets.all(9),
+            child: pw.Text(
+              label,
+              style: const pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            ),
+          ),
+          pw.Padding(
+            padding: const pw.EdgeInsets.all(9),
+            child: pw.Text(value),
+          ),
+        ],
+      );
+
   Future<void> _editMarks(QueryRow student, int maxMarks) async {
     if (_saving) return;
     final existing = student.read<double?>('marks_obtained');
@@ -505,12 +666,29 @@ class _ExamResultsScreenState extends ConsumerState<ExamResultsScreen> {
                               title: Text(student.read<String>('full_name')),
                               subtitle: Text(
                                   'Admission no. ${student.read<String>('admission_number')} • $enteredMarks'),
-                              trailing: IconButton(
-                                tooltip: 'Enter or edit marks',
-                                onPressed: _saving
-                                    ? null
-                                    : () => _editMarks(student, maxMarks),
-                                icon: const Icon(Icons.edit_outlined),
+                              trailing: Wrap(
+                                spacing: 4,
+                                children: [
+                                  IconButton(
+                                    tooltip: marks == null
+                                        ? 'Enter marks before generating certificate'
+                                        : 'Generate result certificate',
+                                    onPressed: _saving || marks == null
+                                        ? null
+                                        : () => _printStudentResultCertificate(
+                                              data,
+                                              student,
+                                            ),
+                                    icon: const Icon(Icons.picture_as_pdf_outlined),
+                                  ),
+                                  IconButton(
+                                    tooltip: 'Enter or edit marks',
+                                    onPressed: _saving
+                                        ? null
+                                        : () => _editMarks(student, maxMarks),
+                                    icon: const Icon(Icons.edit_outlined),
+                                  ),
+                                ],
                               ),
                               onTap: _saving
                                   ? null
