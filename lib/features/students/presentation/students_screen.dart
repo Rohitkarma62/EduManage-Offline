@@ -130,7 +130,8 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                             if (action == 'edit') {
                               context.push('/students/${student.id}/edit');
                             } else if (action == 'certificates') {
-                              context.push('/students/${student.id}/certificates');
+                              context
+                                  .push('/students/${student.id}/certificates');
                             } else if (action == 'history') {
                               context
                                   .push('/students/${student.id}/assignments');

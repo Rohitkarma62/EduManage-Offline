@@ -36,14 +36,15 @@ class _StudentCertificateScreenState
       variables: [Variable.withInt(widget.studentId)],
     ).getSingleOrNull();
     if (student == null) throw StateError('Student not found.');
-    final institute = await db.customSelect(
-      'SELECT name, academic_year, phone FROM institutes LIMIT 1',
-    ).getSingleOrNull();
+    final institute = await db
+        .customSelect(
+          'SELECT name, academic_year, phone FROM institutes LIMIT 1',
+        )
+        .getSingleOrNull();
     return _CertificateData(student, institute);
   }
 
-  String _dateLabel(DateTime date) =>
-      '${date.day.toString().padLeft(2, '0')}/'
+  String _dateLabel(DateTime date) => '${date.day.toString().padLeft(2, '0')}/'
       '${date.month.toString().padLeft(2, '0')}/${date.year}';
 
   Future<void> _printCertificate(_CertificateData data) async {
@@ -51,8 +52,7 @@ class _StudentCertificateScreenState
     setState(() => _printing = true);
     try {
       final studentName = data.student.read<String>('full_name');
-      final admissionNumber =
-          data.student.read<String>('admission_number');
+      final admissionNumber = data.student.read<String>('admission_number');
       final instituteName =
           data.institute?.read<String>('name') ?? 'Educational Institute';
       final date = _dateLabel(DateTime.now());
@@ -183,7 +183,8 @@ class _StudentCertificateScreenState
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Could not load student: ${snapshot.error}'));
+            return Center(
+                child: Text('Could not load student: ${snapshot.error}'));
           }
           final data = snapshot.data!;
           return ListView(
@@ -191,7 +192,8 @@ class _StudentCertificateScreenState
             children: [
               Card(
                 child: ListTile(
-                  leading: const CircleAvatar(child: Icon(Icons.school_outlined)),
+                  leading:
+                      const CircleAvatar(child: Icon(Icons.school_outlined)),
                   title: Text(data.student.read<String>('full_name')),
                   subtitle: Text(
                     'Admission no. ${data.student.read<String>('admission_number')}',
@@ -228,7 +230,8 @@ class _StudentCertificateScreenState
               FilledButton.icon(
                 onPressed: _printing ? null : () => _printCertificate(data),
                 icon: const Icon(Icons.picture_as_pdf_outlined),
-                label: Text(_printing ? 'Preparing PDF…' : 'Generate certificate PDF'),
+                label: Text(
+                    _printing ? 'Preparing PDF…' : 'Generate certificate PDF'),
               ),
             ],
           );
