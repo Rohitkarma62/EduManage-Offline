@@ -129,6 +129,8 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                           onSelected: (action) {
                             if (action == 'edit') {
                               context.push('/students/${student.id}/edit');
+                            } else if (action == 'certificates') {
+                              context.push('/students/${student.id}/certificates');
                             } else if (action == 'history') {
                               context
                                   .push('/students/${student.id}/assignments');
@@ -142,6 +144,14 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                               child: ListTile(
                                 leading: Icon(Icons.edit_outlined),
                                 title: Text('Edit student'),
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: 'certificates',
+                              child: ListTile(
+                                leading: Icon(Icons.workspace_premium_outlined),
+                                title: Text('Certificates'),
                                 contentPadding: EdgeInsets.zero,
                               ),
                             ),
