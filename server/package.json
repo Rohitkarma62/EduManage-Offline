@@ -1,0 +1,26 @@
+{
+  "name": "edumanage-licensing-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts",
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@fastify/rate-limit": "10.3.0",
+    "argon2": "0.ง",
+    "fastify": "5.2.1",
+    "jose": "6.0.8",
+    "pg": "8.13.3",
+    "zod": "3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "22.13.4",
+    "@types/pg": "8.11.11",
+    "tsx": "4.19.3",
+    "typescript": "5.7.3"
+  }
+}
