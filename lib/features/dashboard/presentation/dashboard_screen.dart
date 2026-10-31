@@ -44,6 +44,15 @@ class DashboardScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           _DashboardCard(
+            title: 'License & activation',
+            description:
+                'Activate this institute license, check expiry, and synchronize status when online.',
+            buttonLabel: 'Manage license',
+            icon: Icons.verified_user_outlined,
+            onPressed: () => context.push('/license'),
+          ),
+          const SizedBox(height: 12),
+          _DashboardCard(
             title: 'Student management',
             description:
                 'Add student records and search by name or admission number. Records stay on this device.',
