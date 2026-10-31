@@ -44,15 +44,15 @@ function bearer(request: { headers: { authorization?: string } }): string | null
   const value = request.headers.authorization;
   return value?.startsWith("Bearer ") ? value.slice(7) : null;
 }
-async function requireAdmin(request: any, reply: any): Promise<boolean> {
+async function requireAdmin(request: any, reply: any): Promise<string | null> {
   const token = bearer(request);
-  if (!token) { await reply.code(401).send({ error: "unauthorized" }); return false; }
+  if (!token) { await reply.code(401).send({ error: "unauthorized" }); return null; }
   try {
     const { jwtVerify } = await import("jose");
     const verified = await jwtVerify(token, new TextEncoder().encode(env.JWT_SECRET), { issuer: "edumanage-licensing", audience: "licensing-admin" });
     request.adminEmail = verified.payload.sub;
     return true;
-  } catch { await reply.code(401).send({ error: "unauthorized" }); return false; }
+  } catch { await reply.code(401).send({ error: "unauthorized" }); return null; }
 }
 
 app.get("/health", async () => ({ status: "ok" }));
@@ -71,7 +71,7 @@ app.post("/v1/admin/login", { config: { rateLimit: { max: 5, timeWindow: "1 minu
 });
 
 app.post("/v1/licenses", async (request, reply) => {
-  if (!await requireAdmin(request, reply)) return;
+  const adminEmail = await requireAdmin(request, reply);\n  if (!adminEmail) return;
   const parsed = issueBody.safeParse(request.body);
   if (!parsed.success) return reply.code(400).send({ error: "invalid_request" });
   const id = randomUUID();
@@ -82,7 +82,7 @@ app.post("/v1/licenses", async (request, reply) => {
       "INSERT INTO licenses (id, customer, duration) VALUES ($1,$2,$3) RETURNING *",
       [id, parsed.data.customer, parsed.data.duration],
     )).rows[0];
-    await client.query("INSERT INTO license_audit_events (license_id,event_type,actor) VALUES ($1,'issued',$2)", [id, request.adminEmail]);
+    await client.query("INSERT INTO license_audit_events (license_id,event_type,actor) VALUES ($1,'issued',$2)", [id, adminEmail]);
     await client.query("COMMIT");
     const token = signClaims({ license_id: id, customer: row.customer, device_limit: 1,
       issued_at: Math.floor(new Date(row.issued_at).getTime()/1000), activated_at: null,
@@ -154,7 +154,7 @@ app.post("/v1/licenses/:id/revoke", async (request, reply) => {
     await client.query("BEGIN");
     const updated = await client.query("UPDATE licenses SET revoked_at=COALESCE(revoked_at,now()) WHERE id=$1 RETURNING id", [id.data]);
     if (!updated.rowCount) { await client.query("ROLLBACK"); return reply.code(404).send({ error: "license_not_found" }); }
-    await client.query("INSERT INTO license_audit_events (license_id,event_type,actor) VALUES ($1,'revoked',$2)", [id.data, request.adminEmail]);
+    await client.query("INSERT INTO license_audit_events (license_id,event_type,actor) VALUES ($1,'revoked',$2)", [id.data, adminEmail]);
     await client.query("COMMIT");
     return { status: "revoked", license_id: id.data };
   } catch (error) { await client.query("ROLLBACK"); throw error; }
