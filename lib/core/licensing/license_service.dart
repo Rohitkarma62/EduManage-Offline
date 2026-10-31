@@ -17,11 +17,17 @@ abstract interface class LicenseDeviceIdentity {
 }
 
 class LicenseService {
-  LicenseService({required LicenseApiClient api, required LicenseTokenStore tokenStore,
-    required LicenseDeviceIdentity deviceIdentity, required LicenseVerifier verifier,
-    required TrustedTimeStore trustedTimeStore})
-      : _api = api, _tokenStore = tokenStore, _deviceIdentity = deviceIdentity,
-        _verifier = verifier, _trustedTimeStore = trustedTimeStore;
+  LicenseService(
+      {required LicenseApiClient api,
+      required LicenseTokenStore tokenStore,
+      required LicenseDeviceIdentity deviceIdentity,
+      required LicenseVerifier verifier,
+      required TrustedTimeStore trustedTimeStore})
+      : _api = api,
+        _tokenStore = tokenStore,
+        _deviceIdentity = deviceIdentity,
+        _verifier = verifier,
+        _trustedTimeStore = trustedTimeStore;
 
   final LicenseApiClient _api;
   final LicenseTokenStore _tokenStore;
@@ -32,11 +38,13 @@ class LicenseService {
   Future<LicenseVerification> activate(String issuedToken) async {
     final claims = _claimsFromToken(issuedToken);
     final deviceId = await _deviceIdentity.readOrCreateDeviceId();
-    final activatedToken = await _api.activate(licenseId: claims.licenseId,
-        token: issuedToken, deviceId: deviceId);
-    final result = await _verifier.verify(token: activatedToken, deviceId: deviceId);
+    final activatedToken = await _api.activate(
+        licenseId: claims.licenseId, token: issuedToken, deviceId: deviceId);
+    final result =
+        await _verifier.verify(token: activatedToken, deviceId: deviceId);
     if (!result.isActive) {
-      throw LicenseApiException(result.message ?? 'Activated license verification failed.');
+      throw LicenseApiException(
+          result.message ?? 'Activated license verification failed.');
     }
     await _tokenStore.writeToken(activatedToken);
     return result;
@@ -45,8 +53,10 @@ class LicenseService {
   Future<LicenseVerification> verifyOffline() async {
     final token = await _tokenStore.readToken();
     if (token == null || token.isEmpty) {
-      return const LicenseVerification(status: LicenseStatus.activationRequired,
-          message: 'Enter the issued license token to activate this institute.');
+      return const LicenseVerification(
+          status: LicenseStatus.activationRequired,
+          message:
+              'Enter the issued license token to activate this institute.');
     }
     final deviceId = await _deviceIdentity.readOrCreateDeviceId();
     return _verifier.verify(token: token, deviceId: deviceId);
@@ -57,13 +67,14 @@ class LicenseService {
   Future<LicenseVerification> synchronize() async {
     final token = await _tokenStore.readToken();
     if (token == null || token.isEmpty) {
-      return const LicenseVerification(status: LicenseStatus.activationRequired,
+      return const LicenseVerification(
+          status: LicenseStatus.activationRequired,
           message: 'No activated license is stored on this device.');
     }
     final claims = _claimsFromToken(token);
     final deviceId = await _deviceIdentity.readOrCreateDeviceId();
-    final serverTime = await _api.validate(licenseId: claims.licenseId,
-        token: token, deviceId: deviceId);
+    final serverTime = await _api.validate(
+        licenseId: claims.licenseId, token: token, deviceId: deviceId);
     await _trustedTimeStore.writeLastTrustedTime(serverTime);
     return _verifier.verify(token: token, deviceId: deviceId, now: serverTime);
   }
