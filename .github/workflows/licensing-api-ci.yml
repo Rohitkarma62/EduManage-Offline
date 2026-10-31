@@ -1,0 +1,33 @@
+name: Licensing API CI
+
+on:
+  push:
+    branches: [feature/**]
+    paths:
+      - "server/**"
+      - ".github/workflows/licensing-api-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "server/**"
+      - ".github/workflows/licensing-api-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Typecheck and unit tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --package-lock-only
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
