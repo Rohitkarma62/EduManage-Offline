@@ -16,7 +16,8 @@ class LicenseScreen extends StatefulWidget {
 
 class _LicenseScreenState extends State<LicenseScreen> {
   static const _apiBaseUrl = String.fromEnvironment('LICENSE_API_BASE_URL');
-  static const _publicKey = String.fromEnvironment('LICENSE_ED25519_PUBLIC_KEY');
+  static const _publicKey =
+      String.fromEnvironment('LICENSE_ED25519_PUBLIC_KEY');
 
   final _tokenController = TextEditingController();
   final _storage = AndroidSecureLicenseStorage();
@@ -115,7 +116,8 @@ class _LicenseScreenState extends State<LicenseScreen> {
                           : verification.status.name)),
                   if (claims != null) ...[
                     Text('Institute: ${claims.customer}'),
-                    Text('Expires: ${claims.expiresAt?.toLocal().toString() ?? 'Not activated'}'),
+                    Text(
+                        'Expires: ${claims.expiresAt?.toLocal().toString() ?? 'Not activated'}'),
                   ],
                   if (_configurationError != null) ...[
                     const SizedBox(height: 8),
@@ -143,11 +145,12 @@ class _LicenseScreenState extends State<LicenseScreen> {
           ),
           const SizedBox(height: 12),
           FilledButton(
-            onPressed: _busy || _service == null ||
+            onPressed: _busy ||
+                    _service == null ||
                     _tokenController.text.trim().isEmpty
                 ? null
-                : () => _run(() =>
-                    _service!.activate(_tokenController.text.trim())),
+                : () => _run(
+                    () => _service!.activate(_tokenController.text.trim())),
             child: Text(_busy ? 'Please wait…' : 'Activate license'),
           ),
           OutlinedButton(

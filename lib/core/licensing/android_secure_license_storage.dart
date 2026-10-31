@@ -9,7 +9,8 @@ import 'license_verifier.dart';
 class AndroidSecureLicenseStorage
     implements LicenseTokenStore, LicenseDeviceIdentity, TrustedTimeStore {
   AndroidSecureLicenseStorage({MethodChannel? channel})
-      : _channel = channel ?? const MethodChannel('com.edumanage/license_storage');
+      : _channel =
+            channel ?? const MethodChannel('com.edumanage/license_storage');
 
   final MethodChannel _channel;
   static const _tokenKey = 'license.token';
