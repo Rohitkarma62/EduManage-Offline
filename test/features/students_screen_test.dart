@@ -18,7 +18,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Open students'));
+    final openStudentsButton = find.text('Open students');
+    await tester.ensureVisible(openStudentsButton);
+    await tester.pumpAndSettle();
+    await tester.tap(openStudentsButton);
     await tester.pumpAndSettle();
     expect(find.text('Students'), findsOneWidget);
     expect(find.text('No students yet. Add the first student.'), findsOneWidget);
