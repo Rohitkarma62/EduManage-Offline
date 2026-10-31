@@ -11,6 +11,7 @@ import '../../features/fees/presentation/fee_payments_screen.dart';
 import '../../features/expenses/presentation/expenses_screen.dart';
 import '../../features/exams/presentation/exams_screen.dart';
 import '../../features/institute/presentation/institute_setup_screen.dart';
+import '../../features/licensing/presentation/license_screen.dart';
 import '../../features/students/presentation/student_assignment_history_screen.dart';
 import '../../features/students/presentation/student_certificate_screen.dart';
 import '../../features/students/presentation/student_form_screen.dart';
@@ -20,6 +21,11 @@ import '../../features/staff/presentation/staff_screen.dart';
 import '../../features/staff/presentation/staff_salary_payments_screen.dart';
 
 final GoRouter appRouter = GoRouter(routes: <RouteBase>[
+  GoRoute(
+    path: '/license',
+    name: 'license',
+    builder: (context, state) => const LicenseScreen(),
+  ),
   GoRoute(
     path: '/',
     name: 'dashboard',
