@@ -72,7 +72,9 @@ class LicenseService {
 
   LicenseClaims _claimsFromToken(String token) {
     final parts = token.split('.');
-    if (parts.length != 2) throw const FormatException('Malformed license token.');
+    if (parts.length != 2) {
+      throw const FormatException('Malformed license token.');
+    }
     try {
       final bytes = base64Url.decode(base64Url.normalize(parts.first));
       return LicenseClaims.fromJson(LicenseClaims.decodePayload(bytes));
