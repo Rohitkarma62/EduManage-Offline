@@ -3,7 +3,7 @@ import rateLimit from "@fastify/rate-limit";
 import { Pool } from "pg";
 import { SignJWT } from "jose";
 import argon2 from "argon2";
-import { randomUUID, timingSafeEqual } from "node:crypto";
+import { createPrivateKey, createPublicKey, randomUUID, verify as verifySignature } from "node:crypto";
 import { z } from "zod";
 import { addDuration, deviceHash, DURATIONS, signClaims } from "./license.js";
 
@@ -22,8 +22,23 @@ await app.register(rateLimit, { max: 60, timeWindow: "1 minute" });
 
 const loginBody = z.object({ email: z.string().email(), password: z.string().min(1).max(256) });
 const issueBody = z.object({ customer: z.string().trim().min(1).max(200), duration: z.enum(DURATIONS) });
-const activateBody = z.object({ device_id: z.string().min(1).max(512) });
-const validateBody = z.object({ device_id: z.string().min(1).max(512) });
+const activateBody = z.object({ device_id: z.string().min(1).max(512), token: z.string().min(20).max(8192) });
+const validateBody = z.object({ device_id: z.string().min(1).max(512), token: z.string().min(20).max(8192) });
+
+
+function verifyLicenseToken(token: string): Record<string, unknown> | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 2) return null;
+    const payload = Buffer.from(parts[0]!, "base64url");
+    const signature = Buffer.from(parts[1]!, "base64url");
+    const publicKey = createPublicKey(createPrivateKey(env.LICENSE_SIGNING_PRIVATE_KEY_PEM));
+    if (!verifySignature(null, payload, publicKey, signature)) return null;
+    const claims: unknown = JSON.parse(payload.toString("utf8"));
+    return claims && typeof claims === "object" && !Array.isArray(claims)
+      ? claims as Record<string, unknown> : null;
+  } catch { return null; }
+}
 
 function bearer(request: { headers: { authorization?: string } }): string | null {
   const value = request.headers.authorization;
@@ -121,11 +136,11 @@ app.post("/v1/licenses/:id/validate", async (request, reply) => {
   const id = z.string().uuid().safeParse((request.params as any).id);
   const parsed = validateBody.safeParse(request.body);
   if (!id.success || !parsed.success) return reply.code(400).send({ error: "invalid_request" });
-  const result = await pool.query("SELECT customer,activated_at,expires_at,device_id_hash,revoked_at FROM licenses WHERE id=$1", [id.data]);
+  const claims = verifyLicenseToken(parsed.data.token);\n  if (!claims || claims.license_id !== id.data || claims.device_limit !== 1) return reply.code(401).send({ error: "invalid_license_token" });\n  const result = await pool.query("SELECT customer,activated_at,expires_at,device_id_hash,revoked_at FROM licenses WHERE id=$1", [id.data]);
   if (!result.rowCount) return reply.code(404).send({ error: "license_not_found" });
   const row = result.rows[0], hash = deviceHash(parsed.data.device_id);
   if (row.revoked_at) return reply.code(403).send({ status: "revoked", server_time: new Date().toISOString() });
-  if (!row.activated_at || row.device_id_hash !== hash) return reply.code(403).send({ status: "device_mismatch", server_time: new Date().toISOString() });
+  if (!row.activated_at || row.device_id_hash !== hash || claims.device_id_hash !== hash) return reply.code(403).send({ status: "device_mismatch", server_time: new Date().toISOString() });
   if (new Date(row.expires_at) <= new Date()) return reply.code(403).send({ status: "expired", server_time: new Date().toISOString() });
   return { status: "active", customer: row.customer, expires_at: row.expires_at, server_time: new Date().toISOString() };
 });
